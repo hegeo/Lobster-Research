@@ -1,0 +1,144 @@
+{
+  "_version": "3.0",
+  "_updated": "2026-04-26T15:46:20.950700",
+  "user": {
+    "country": "CN",
+    "language": "zh-CN",
+    "investment_style": "balanced",
+    "total_assets_range": "below_10w",
+    "operation_freq": "medium",
+    "risk_level": "low",
+    "allow_cross_sector_switch": true
+  },
+  "output": {
+    "mode": "expert",
+    "format": "markdown",
+    "report_style": "ios_liquid",
+    "default_dir": "output"
+  },
+  "market": {
+    "index_codes": {
+      "sh000001": "上证指数",
+      "sz399001": "深证成指",
+      "sz399006": "创业板指",
+      "sh000688": "科创50"
+    },
+    "focus_stocks": [
+      "上证指数",
+      "深证成指",
+      "创业板指"
+    ],
+    "focus_news_types": [
+      "全球科技",
+      "新能源",
+      "AI"
+    ]
+  },
+  "api": {
+    "timeout": 10,
+    "search_fresh_seconds": 604800,
+    "prosearch_base": "http://localhost:19000/proxy/prosearch/search",
+    "headers": {
+      "User-Agent": "Mozilla/5.0",
+      "Accept": "application/json"
+    }
+  },
+  "cross_assets": {
+    "symbols": [
+      {
+        "code": "GC=F",
+        "name": "黄金 XAU/USD"
+      },
+      {
+        "code": "DX=F",
+        "name": "美元指数 DXY"
+      },
+      {
+        "code": "BTC-USD",
+        "name": "比特币 BTC/USD"
+      },
+      {
+        "code": "SI=F",
+        "name": "白银 XAG/USD"
+      },
+      {
+        "code": "ETH-USD",
+        "name": "以太坊 ETH/USD"
+      }
+    ],
+    "fx": [
+      {
+        "code": "CNY=X",
+        "name": "美元/人民币 USD/CNY"
+      },
+      {
+        "code": "EUR=X",
+        "name": "EUR/USD"
+      },
+      {
+        "code": "JPY=X",
+        "name": "USD/JPY"
+      }
+    ],
+    "fred": [
+      {
+        "code": "DGS10",
+        "name": "10Y名义利率(%)"
+      },
+      {
+        "code": "DFII10",
+        "name": "10Y通胀保值债券(TIPS)"
+      },
+      {
+        "code": "DGS2",
+        "name": "2Y名义利率(%)"
+      },
+      {
+        "code": "DTB3",
+        "name": "3M LIBOR(%)"
+      }
+    ]
+  },
+  "system": {
+    "encoding": "utf-8",
+    "win_encoding": "gbk"
+  },
+  "labels": {
+    "investment_style": {
+      "conservative": "保守",
+      "balanced": "平衡",
+      "aggressive": "积极"
+    },
+    "total_assets_range": {
+      "below_10w": "10万以下",
+      "10w_to_50w": "10-50万",
+      "50w_to_100w": "50-100万",
+      "above_100w": "100万以上"
+    },
+    "operation_freq": {
+      "short": "短期(1-3天)",
+      "medium": "中期(3-15天)",
+      "long": "长期(>15天)"
+    },
+    "risk_level": {
+      "low": "低风险",
+      "medium": "中风险",
+      "high": "高风险"
+    },
+    "output_mode": {
+      "normal": "普通",
+      "expert": "专家"
+    },
+    "output_format": {
+      "message": "消息",
+      "markdown": "结构化文档",
+      "pdf": "PDF文档"
+    },
+    "report_style": {
+      "liquid": "液态简约(白底靛蓝渐变，大圆角柔阴影)",
+      "orange": "经典橙色(暖橙渐变，橙色边框高亮)",
+      "blue": "经典蓝色(蓝色渐变，蓝色边框高亮)",
+      "ios_liquid": "液态简约(白底靛蓝渐变，大圆角柔阴影)"
+    }
+  }
+}

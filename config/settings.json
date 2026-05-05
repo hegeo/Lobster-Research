@@ -1,0 +1,88 @@
+{
+  "_version": "1.0",
+  "_updated": "2026-04-26T19:20:05.707994",
+  "_description": "工具配置和 API Keys（不要提交到 git）",
+  "websearch_pro": {
+    "apis": {
+      "tavily_api_key": "",
+      "tavily_api_base": "https://api.tavily.com/search",
+      "auth_gateway_port": "19000",
+      "auth_gateway_base": "http://localhost:19000/proxy/prosearch/search"
+    },
+    "engines": {
+      "primary": "360",
+      "secondary": "baidu",
+      "enable_all": false,
+      "enabled_list": [
+        "360",
+        "baidu",
+        "bing"
+      ],
+      "fetch_count": {
+        "tavily": 5,
+        "prosearch": 10,
+        "bing": 15,
+        "360": 12,
+        "baidu": 12,
+        "htmldoc": 2
+      },
+      "keep_count": {
+        "tavily": 5,
+        "prosearch": 5,
+        "bing": 5,
+        "360": 5,
+        "baidu": 5,
+        "htmldoc": 2
+      }
+    },
+    "quality_levels": {
+      "level_5": [
+        "gov.cn",
+        "xinhuanet",
+        "people",
+        "cri.cn",
+        "wikipedia",
+        "baike",
+        "cninfo.com.cn",
+        "qichacha",
+        "aiqicha",
+        "eastmoney"
+      ],
+      "level_4": [
+        "caixin",
+        "stcn",
+        "36kr",
+        "cyzone",
+        "oschina",
+        "geekpark",
+        "tmtpost",
+        "ithome",
+        "huxiu",
+        "huanqiu",
+        "linkshop",
+        "sina"
+      ],
+      "level_3": [
+        "qq",
+        "163.com",
+        "sohu",
+        "ifeng",
+        "zhihu"
+      ],
+      "level_2": [
+        "toutiao",
+        "baijiahao",
+        "tiktok",
+        "douyin",
+        "dykt",
+        "bilibili.com"
+      ]
+    },
+    "defaults": {
+      "global_max_results": 16,
+      "fresh_days": 7,
+      "request_timeout": 12,
+      "similarity_threshold": 0.6
+    }
+  }
+}

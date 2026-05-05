@@ -1,0 +1,39 @@
+**rompt_manager.py`：**
+
+| 命令 | 说明 |
+|------|------|
+| `list` | 列出所有26个提示词 |
+| `get <名称>` | 查看详细（含style字段） |
+| `cat <名称> <字段>` | **新增** 查看指定字段内容 |
+| `create <名称> <类型>` | 创建新模板 |
+| `update <名称> <字段> <值>` | 修改字段 |
+| `update <名称> --json '<json>'` | 完整替换 |
+| `fields <名称>` | 查看所有可用字段 |
+
+**26个JSON已添加 `style` 字段：**
+
+| 颜色 | 研究类型 | 模板 |
+|------|----------|------|
+| orange | 快报/通讯物流 | 5个快报 + 通讯与物流航运 |
+| green | 金融投资 | 大盘行情/持仓诊断/选股研究/跨资产研究 |
+| purple | 科技技术 | 技术发展/科技风向/游戏与娱乐 |
+| pink | 生物医疗/消费 | 生物与医疗/消费与潮流 |
+| blue | 企业财经 | 企业发展/社会金融 |
+| yellow | 农业食品/资源工业 | 农业与食品/资源源与工业 |
+| cyan | 社会文化 | 社会发展/文化与艺术 |
+| brown | 期货 | 期货方向 |
+| indigo | 宇宙地理/行业 | 行业发展/宇宙与地理前沿研究 |
+| red | 战争军事/政治 | 战争与军事/政治与影响力 |
+
+**使用示例：**
+```bash
+# 查看指定字段
+python prompt_manager.py cat 快报-持仓 promptBody
+python prompt_manager.py cat 研报-大盘行情 recommendedKeywords
+
+# 查看字段列表
+python prompt_manager.py fields 研报-大盘行情
+
+# 修改样式
+python prompt_manager.py update 快报-持仓 style purple
+```
