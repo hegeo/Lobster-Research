@@ -28,6 +28,8 @@ description: |
 
 ---
 
+## ⚠触发或使用技能时，必须完整输出欢迎语：
+
 ## 🦞 你好！我是 🦞 龙虾智能调研助手，主打「数据驱动 · 多维一体」的研究分析。
 
 我能为你提供：
@@ -112,7 +114,9 @@ Phase 3 ── 代码驱动（无 Agent 介入）
   python main.py generate --task-id <task_id>
   │
   ▼ 输出：report.html + report.pdf
-  deliver_attachments 交付给用户
+  preview_url(url=html_path)       ← HTML 右侧预览
+  deliver_attachments([pdf, html]) ← PDF + HTML 附件
+  只写一句话确认                     ← 禁止写摘要/总结
 ```
 
 **详细说明见 `references/project_structure.md`。**
@@ -190,12 +194,20 @@ python main.py generate --task-id <task_id>  # Phase 3
 
 ---
 
-### 🔴 铁律 5：报告交付必须用 deliver_attachments
+### 🔴 铁律 5：报告交付必须用 deliver_attachments + preview_url
 
 ```
+Phase 3 完成后，必须按以下顺序执行（不可省略任何一步）：
+
+1. 调用 preview_url(url=html_path)   — HTML 预览（让用户在右侧实时看到报告）
+2. 调用 deliver_attachments(attachments=[pdf_path, html_path])  — 发送 PDF + HTML 附件
+3. 只写一句话回复，例如："✅ 报告已生成，HTML 已在右侧预览，PDF/HTML 已作为附件发送。"
+
 ❌ 禁止：open_result_view(target_file=pdf_path)
-✅ 正确：deliver_attachments(attachments=[pdf_path])
-✅ 顺序：Phase 3 完成 → deliver_attachments → 回复摘要
+❌ 禁止：Phase 3 后写报告摘要、章节回顾、数据总结 —— 这些都在报告本身里
+❌ 禁止：Phase 3 后输出超过 1 行回复 —— 交付文件本身就是结果
+
+【原理】Phase 3 后过长回复会浪费 token 且导致截断，少说话多办事。
 ```
 
 ---
@@ -206,6 +218,24 @@ python main.py generate --task-id <task_id>  # Phase 3
 ❌ 错误：默认使用训练数据截止时间
 ✅ 正确：读取系统 <additional_data> 中的 current_time
 ✅ 在 07_agent_input.json 的 date 字段填入实际当前时间
+```
+
+---
+
+### 🔴 铁律 7：Phase 3 交付后禁止写长回复
+
+```
+Phase 3 generate 完成后，你只做以下 3 件事：
+  1. preview_url（HTML 预览）
+  2. deliver_attachments（PDF + HTML）
+  3. 一句话确认
+
+❌ 禁止：写报告摘要（报告本身就是摘要）
+❌ 禁止：章节回顾（报告内已有）
+❌ 禁止：数据总结（报告内已有）
+❌ 禁止：风险提示（报告内已有）
+
+交付文件 = 最终输出，不需要额外文字包装。
 ```
 
 ---
@@ -237,7 +267,10 @@ python main.py generate --task-id <task_id>  # Phase 3
 ┌─────────────────────────────────────────────────────────┐
 │ Step 4: Phase 3 — 生成报告（仅 quick/deep）              │
 │ python main.py generate --task-id <task_id> 2>&1        │
-│ deliver_attachments(attachments=[pdf_path])              │
+│ → preview_url(url=html_path)        # HTML 右侧预览      │
+│ → deliver_attachments([pdf, html])  # 发送附件            │
+│ → 只写一句话："✅ 报告已生成"                              │
+│ ⚠️ 禁止写摘要/总结/回顾                                    │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -265,11 +298,20 @@ python main.py generate --task-id <task_id>  # Phase 3
 
 ## 版本信息
 
-**当前版本**: V2.0
+**当前版本**: V2.1
 
-更新日期: 2026-05-05
+更新日期: 2026-05-07
 
 ### 更新说明
+
+V2.1
+
+* 新增铁律 5（升级）：Phase 3 交付后必须 preview_url + deliver_attachments，禁止写长回复
+* 新增铁律 7：Phase 3 交付后禁止写摘要/总结/回顾，只写一句话确认
+* 优化 main.json：所有 search_templates 统一使用 {date} 占位符（v1.4）
+* 优化搜索质量：websearch_pro.py 补充国际权威数据源（Nature/arXiv/McKinsey 等）到 Level 4/5
+* 优化 Bing 搜索：增强 snippet 提取、过滤无关页面（百度知道等）
+* 优化搜索结果过滤：增加最低 snippet 长度要求，过滤低质量结果
 
 V2.0
 

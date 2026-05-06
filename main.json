@@ -1,25 +1,26 @@
 {
   "_doc": "龙虾智能调研 — Smart 路由配置。Agent 直接传用户输入给 main.py smart 命令，main.py 自动匹配。CLI 子命令（stock/company/market/industry/portfolio/screener）也从此文件读取配置，通过 cli_default_type 和 cli_prompt_template 字段区分。",
   "_match_logic": "双层关键词匹配：先匹配 domain（领域），再匹配 tier_tag（输出类型）。domain 命中但 tier_tag 未命中 → 默认走 news 快讯。",
-  "_version": "1.1",
+  "_version": "1.4",
+  "_changelog_v1.4": "统一所有 search_templates 使用 {date} 占位符（去除硬编码 2026），增强时效性；缩短信源关键词提升匹配率",
+  "_changelog_v1.3": "精简 search_templates：4→2/3→2/2→1，合并重叠维度，收紧关键词减少噪声，总模板数 67→42（-37%），提速约 40%",
+  "_changelog_v1.2": "收紧过度宽泛的领域关键词（市场/技术/推荐/关注/细分/公司/潮流等），差异化各 domain 的 search_templates 避免同质化",
 
   "tier_tags": {
     "_doc": "输出类型关键词：决定生成什么格式的输出",
     "quick": ["快报", "日报", "速览", "今日推荐", "周报"],
-    "deep":  ["研报", "深度", "研究", "深度分析", "尽调", "调查", "报告", "分析"]
+    "deep":  ["研报", "深度", "研究", "深度分析", "尽调", "调查", "报告"]
   },
 
   "domains": [
     {
       "id": "market",
       "label": "大盘行情",
-      "keywords": ["大盘", "行情", "A股", "沪指", "上证", "创业板", "科创", "沪深", "指数", "市场"],
+      "keywords": ["大盘", "行情", "A股", "沪指", "上证", "创业板", "科创", "沪深", "指数"],
       "steps": ["market_index", "search"],
       "search_templates": [
-        "A股 大盘 今日行情 {date}",
-        "沪深两市 北向资金 情绪 {date}",
-        "今日热点板块 涨停 龙头 {date}",
-        "宏观政策 经济数据 {date}"
+        "A股 大盘 今日走势 板块热点 涨停 {date}",
+        "沪深 北向资金 主力资金流向 {date}"
       ],
       "quick_template": "快报-今日行情.json",
       "deep_template":  "研报-大盘行情.json",
@@ -35,9 +36,8 @@
       "keywords": ["股票", "个股", "走势", "股价", "涨停", "跌停", "K线", "龙虎榜"],
       "steps": ["quote", "kline", "master", "search"],
       "search_templates": [
-        "{name} 2026 最新动态 业绩 财报",
-        "{name} {code} 机构评级 目标价",
-        "{name} 行业竞争 技术优势"
+        "{name} {code} 最新消息 业绩 财报 {date}",
+        "{name} 机构评级 目标价 券商研报 {date}"
       ],
       "quick_template": "快报-个股分析.json",
       "deep_template":  "研报-企业发展.json",
@@ -53,8 +53,7 @@
       "keywords": ["持仓", "仓位", "组合", "资产配置", "投资组合"],
       "steps": ["portfolio", "market_index", "search"],
       "search_templates": [
-        "A股 大盘 市场情绪 {date}",
-        "仓位管理 分散投资 风险控制"
+        "A股 大盘 市场情绪 板块轮动 {date}"
       ],
       "quick_template": "快报-持仓分析.json",
       "deep_template":  "研报-持仓诊断.json",
@@ -67,12 +66,11 @@
     {
       "id": "screener",
       "label": "选股",
-      "keywords": ["选股", "推荐", "买什么", "标的", "关注"],
+      "keywords": ["选股", "买什么", "标的", "快速选股"],
       "steps": ["market_index", "search"],
       "search_templates": [
-        "{topic} 概念股 龙头 2026",
-        "{topic} 相关个股 业绩 增长",
-        "A股 今日强势股 涨停 {date}"
+        "A股 涨停复盘 连板梯队 龙头股 {date}",
+        "龙虎榜 主力资金 游资动向 {date}"
       ],
       "quick_template": "快报-今日行情.json",
       "deep_template":  "研报-选股研究.json",
@@ -88,9 +86,8 @@
       "keywords": ["短线", "打板", "情绪", "盘前", "龙头股", "连板", "首板"],
       "steps": ["market_index", "search"],
       "search_templates": [
-        "A股 今日涨停 龙头 {date}",
-        "短线情绪 热点板块 {date}",
-        "打板策略 连板 {date}"
+        "A股 涨停 龙头 连板梯队 短线情绪 {date}",
+        "打板策略 炸板率 封单金额 {date}"
       ],
       "quick_template": "快报-短线机会.json",
       "deep_template":  "研报-选股研究.json",
@@ -104,8 +101,7 @@
       "keywords": ["ETF", "基金", "定投", "宽基", "红利", "指数基金"],
       "steps": ["search"],
       "search_templates": [
-        "ETF 热门 今日 {date}",
-        "行业ETF 红利ETF 宽基ETF {date}"
+        "ETF 资金流入 热门 净值 排名 {date}"
       ],
       "quick_template": "快报-ETF选择.json",
       "deep_template":  "研报-选股研究.json",
@@ -116,13 +112,11 @@
     {
       "id": "industry",
       "label": "行业",
-      "keywords": ["行业", "板块", "赛道", "产业", "细分"],
+      "keywords": ["行业", "板块", "赛道", "产业链"],
       "steps": ["search"],
       "search_templates": [
-        "{topic} 行业 2026 市场规模 发展趋势",
-        "{topic} 行业 竞争格局 龙头企业",
-        "{topic} 行业 政策 技术路线 催化剂",
-        "{topic} 行业 投资机会 风险 券商观点"
+        "{topic} 市场规模 竞争格局 头部企业 {date}",
+        "{topic} 政策红利 投资机会 券商研报 {date}"
       ],
       "quick_template": null,
       "deep_template":  "研报-行业发展.json",
@@ -135,13 +129,11 @@
     {
       "id": "company",
       "label": "企业",
-      "keywords": ["企业", "公司", "尽调", "商业", "财报", "年报"],
+      "keywords": ["企业", "公司研报", "尽调", "商业模式", "财报", "年报"],
       "steps": ["quote", "kline", "master", "search"],
       "search_templates": [
-        "{name} 2026 年报 财报 营收利润",
-        "{name} 护城河 竞争优势 商业模式",
-        "{name} 机构评级 估值 目标价 券商",
-        "{name} 风险 风险因素 行业竞争"
+        "{name} 年报 财报 营收 利润 业绩 {date}",
+        "{name} 机构评级 估值 竞争优势 目标价 {date}"
       ],
       "quick_template": "快报-个股分析.json",
       "deep_template":  "研报-企业发展.json",
@@ -154,12 +146,11 @@
     {
       "id": "tech",
       "label": "科技",
-      "keywords": ["科技", "技术", "AI", "人工智能", "芯片", "半导体", "互联网", "软件"],
+      "keywords": ["科技", "AI", "人工智能", "芯片", "半导体", "互联网", "软件", "大模型", "算力", "数据中心"],
       "steps": ["search"],
       "search_templates": [
-        "{topic} 科技趋势 2026",
-        "{topic} 技术突破 产业应用 2026",
-        "{topic} 竞争格局 投资机会"
+        "{topic} 技术突破 趋势 {date}",
+        "{topic} 融资 市场规模 {date}"
       ],
       "quick_template": "快报-科技风向.json",
       "deep_template":  "研报-科技风向.json",
@@ -170,11 +161,11 @@
     {
       "id": "frontier",
       "label": "前沿技术",
-      "keywords": ["前沿", "量子", "脑机", "基因编辑", "核聚变", "6G", "具身智能"],
+      "keywords": ["前沿", "量子计算", "脑机接口", "基因编辑", "核聚变", "6G", "具身智能", "机器人"],
       "steps": ["search"],
       "search_templates": [
-        "{topic} 前沿技术 发展趋势 2026",
-        "{topic} 技术突破 产业应用 2026"
+        "{topic} 技术突破 进展 {date}",
+        "{topic} 商业化 投资 {date}"
       ],
       "quick_template": "快报-技术发展.json",
       "deep_template":  "研报-技术发展.json",
@@ -188,9 +179,8 @@
       "keywords": ["黄金", "比特币", "美元", "BTC", "宏观", "外汇", "原油", "铜", "大宗", "通胀", "利率", "降息", "加息", "汇率"],
       "steps": ["search"],
       "search_templates": [
-        "{topic} 最新行情 趋势分析 {date}",
-        "{topic} 宏观经济 影响 2026",
-        "{topic} 投资策略 风险"
+        "{topic} 最新行情 价格走势 {date}",
+        "{topic} 宏观影响 投资策略 资产配置 {date}"
       ],
       "quick_template": null,
       "deep_template":  "研报-跨资产研究.json",
@@ -204,8 +194,7 @@
       "keywords": ["期货", "螺纹钢", "铁矿石", "焦炭", "玻璃", "纯碱", "甲醇"],
       "steps": ["search"],
       "search_templates": [
-        "{topic} 期货 行情分析 {date}",
-        "{topic} 供需 库存 趋势 2026"
+        "{topic} 期货 行情 供需 库存 持仓 {date}"
       ],
       "quick_template": null,
       "deep_template":  "研报-期货方向.json",
@@ -219,8 +208,7 @@
       "keywords": ["农业", "食品", "粮食", "种植", "养殖", "猪肉", "鸡蛋", "牛奶", "饲料"],
       "steps": ["search"],
       "search_templates": [
-        "{topic} 行业 2026 市场 趋势",
-        "{topic} 政策 价格 供需"
+        "{topic} 价格走势 供需格局 政策调控 {date}"
       ],
       "quick_template": null,
       "deep_template":  "研报-农业与食品.json",
@@ -234,8 +222,8 @@
       "keywords": ["资源", "工业", "能源", "煤炭", "钢铁", "化工", "锂矿", "稀土", "光伏", "风电", "储能", "新能源"],
       "steps": ["search"],
       "search_templates": [
-        "{topic} 行业 2026 市场 趋势",
-        "{topic} 供需 价格 竞争"
+        "{topic} 产能 价格 龙头企业 {date}",
+        "{topic} 碳中和 政策 出海 绿色转型 {date}"
       ],
       "quick_template": null,
       "deep_template":  "研报-资源与工业.json",
@@ -246,11 +234,11 @@
     {
       "id": "telecom",
       "label": "通讯物流",
-      "keywords": ["通讯", "物流", "航运", "快递", "5G", "6G", "运营商", "卫星", "港口", "机场"],
+      "keywords": ["通讯", "物流", "航运", "快递", "5G", "6G", "运营商", "卫星通信", "港口", "机场"],
       "steps": ["search"],
       "search_templates": [
-        "{topic} 行业 2026 市场 趋势",
-        "{topic} 公司 竞争 政策"
+        "{topic} 运营数据 市占率 {date}",
+        "{topic} 政策 供应链 {date}"
       ],
       "quick_template": null,
       "deep_template":  "研报-通讯与物流航运.json",
@@ -261,11 +249,11 @@
     {
       "id": "consumer",
       "label": "消费潮流",
-      "keywords": ["消费", "潮流", "品牌", "零售", "电商", "新消费", "国潮", "服装", "白酒", "饮料", "餐饮"],
+      "keywords": ["消费", "品牌", "零售", "电商", "新消费", "国潮", "服装", "白酒", "饮料", "餐饮"],
       "steps": ["search"],
       "search_templates": [
-        "{topic} 消费 趋势 2026",
-        "{topic} 品牌 市场 数据"
+        "{topic} 消费趋势 龙头业绩 {date}",
+        "{topic} 品牌 渠道 估值 {date}"
       ],
       "quick_template": null,
       "deep_template":  "研报-消费与潮流.json",
@@ -276,11 +264,11 @@
     {
       "id": "game",
       "label": "游戏娱乐",
-      "keywords": ["游戏", "娱乐", "短视频", "直播", "影视", "综艺", "动漫", "IP", "电影", "综艺"],
+      "keywords": ["游戏", "娱乐", "短视频", "直播", "影视", "动漫", "IP", "电影"],
       "steps": ["search"],
       "search_templates": [
-        "{topic} 行业 2026 市场 趋势",
-        "{topic} 公司 产品 用户"
+        "{topic} 用户规模 收入 爆款产品 {date}",
+        "{topic} 版号 出海 AI赋能 政策 {date}"
       ],
       "quick_template": null,
       "deep_template":  "研报-游戏与娱乐.json",
@@ -291,11 +279,11 @@
     {
       "id": "biomedical",
       "label": "生物医疗",
-      "keywords": ["生物", "医疗", "医药", "创新药", "医疗器械", "CRO", "CXO", "疫苗", "中药", "医院"],
+      "keywords": ["生物", "医疗", "医药", "创新药", "医疗器械", "CRO", "CXO", "疫苗", "中药"],
       "steps": ["search"],
       "search_templates": [
-        "{topic} 医药 生物 2026",
-        "{topic} 研发 审批 市场"
+        "{topic} 研发管线 审批 集采 医保 {date}",
+        "{topic} 出海 License-out 竞争格局 {date}"
       ],
       "quick_template": null,
       "deep_template":  "研报-生物与医疗.json",
@@ -309,8 +297,8 @@
       "keywords": ["文化", "艺术", "出版", "文旅", "博物馆", "文化遗产", "音乐"],
       "steps": ["search"],
       "search_templates": [
-        "{topic} 文化 趋势 2026",
-        "{topic} 市场 政策 发展"
+        "{topic} 市场规模 政策扶持 消费数据 {date}",
+        "{topic} 数字化 IP运营 文旅融合 {date}"
       ],
       "quick_template": null,
       "deep_template":  "研报-文化与艺术.json",
@@ -324,8 +312,7 @@
       "keywords": ["政治", "国际关系", "地缘", "外交", "选举", "政策影响", "制裁", "贸易战"],
       "steps": ["search"],
       "search_templates": [
-        "{topic} 国际关系 地缘政治 {date}",
-        "{topic} 政策 影响 分析"
+        "{topic} 地缘政治 最新动态 经济影响 {date}"
       ],
       "quick_template": null,
       "deep_template":  "研报-政治与影响力.json",
@@ -339,8 +326,7 @@
       "keywords": ["战争", "军事", "国防", "军备", "冲突", "武装", "导弹", "海军", "空军"],
       "steps": ["search"],
       "search_templates": [
-        "{topic} 军事 最新 {date}",
-        "{topic} 军备 国防 分析"
+        "{topic} 军事动态 最新战况 军备采购 {date}"
       ],
       "quick_template": null,
       "deep_template":  "研报-战争与军事.json",
@@ -351,11 +337,10 @@
     {
       "id": "space",
       "label": "宇宙地理",
-      "keywords": ["宇宙", "地球", "天文", "地理", "航天", "火星", "太空", "卫星发射"],
+      "keywords": ["宇宙", "天文", "航天", "火星", "太空", "卫星发射", "空间站"],
       "steps": ["search"],
       "search_templates": [
-        "{topic} 最新 发现 {date}",
-        "{topic} 前沿 研究 发展"
+        "{topic} 最新发现 航天任务 商业航天 {date}"
       ],
       "quick_template": null,
       "deep_template":  "研报-宇宙与地理前沿研究.json",
@@ -369,8 +354,7 @@
       "keywords": ["社会", "人口", "就业", "教育", "房产", "房价", "养老", "生育"],
       "steps": ["search"],
       "search_templates": [
-        "{topic} 社会发展 趋势 2026",
-        "{topic} 政策 数据 报告"
+        "{topic} 最新数据 政策变化 趋势 {date}"
       ],
       "quick_template": null,
       "deep_template":  "研报-社会发展.json",
@@ -381,11 +365,11 @@
     {
       "id": "finance",
       "label": "金融",
-      "keywords": ["金融", "银行", "保险", "支付", "信贷", "理财", "财富管理", "数字货币"],
+      "keywords": ["金融", "银行", "保险", "支付", "信贷", "财富管理", "数字货币", "央行"],
       "steps": ["search"],
       "search_templates": [
-        "{topic} 金融趋势 政策 2026",
-        "{topic} 市场 数据 发展"
+        "{topic} 金融政策 监管动向 央行动态 {date}",
+        "{topic} 业绩 竞争格局 数字化转型 {date}"
       ],
       "quick_template": null,
       "deep_template":  "研报-社会金融.json",

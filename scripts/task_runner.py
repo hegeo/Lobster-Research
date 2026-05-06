@@ -862,13 +862,111 @@ python main.py generate --task-id {meta['task_id']}
     # Phase 3: 生成报告
     # ─────────────────────────────────────────────────────────
 
-    def generate_report(self, agent_input_path: str) -> Tuple[bool, str]:
+    @staticmethod
+    def _fix_json_chinese_quotes(raw: str) -> str:
+        """
+        自动修复 JSON 字符串值中的中文引号冲突。
+        Agent 填写内容时常用 ASCII 双引号 "..." 表示中文引用，
+        但 ASCII " 在 JSON 中是字符串定界符，会导致解析失败。
+        本方法将成对的、非 JSON 结构性的 " 替换为 Unicode 中文引号 "..."。
+        """
+        result = []
+        i = 0
+        in_string = False
+        escape_next = False
+
+        while i < len(raw):
+            c = raw[i]
+
+            # 处理转义字符
+            if escape_next:
+                result.append(c)
+                escape_next = False
+                i += 1
+                continue
+
+            if c == '\\' and in_string:
+                result.append(c)
+                escape_next = True
+                i += 1
+                continue
+
+            if c == '"':
+                if not in_string:
+                    in_string = True
+                    result.append(c)
+                else:
+                    # 判断这个 " 是 JSON 字符串终止符还是内容中的中文引号
+                    rest = raw[i + 1:].lstrip()
+                    # 如果后面紧跟 JSON 结构字符 → 是真正的终止符
+                    if rest and rest[0] in ':,]}\n\r':
+                        in_string = False
+                        result.append(c)
+                    elif rest and rest[0] == '"':
+                        # "key": "value" 或 "key": "" 的情况 → 终止符
+                        in_string = False
+                        result.append(c)
+                    else:
+                        # 内容中的中文引号，向前找配对的闭合引号
+                        j = i + 1
+                        close_pos = -1
+                        while j < len(raw):
+                            if raw[j] == '"':
+                                rest2 = raw[j + 1:].lstrip()
+                                # 闭合引号后面也应该是非 JSON 结构字符
+                                if rest2 and rest2[0] in ':,]}\n\r':
+                                    break  # 这是真正的字符串终止符，不是配对
+                                elif rest2 and rest2[0] == '"':
+                                    break  # 也不是配对
+                                else:
+                                    close_pos = j
+                                    break
+                            j += 1
+
+                        if close_pos > 0:
+                            inner = raw[i + 1:close_pos]
+                            result.append('\u201c')   # "
+                            result.append(inner)
+                            result.append('\u201d')   # "
+                            i = close_pos + 1
+                            continue
+                        else:
+                            # 找不到配对，当作终止符处理
+                            in_string = False
+                            result.append(c)
+
+                i += 1
+                continue
+
+            result.append(c)
+            i += 1
+
+        return ''.join(result)
+
+    def generate_report(self, agent_input_path: str) -> Tuple[bool, dict]:
         """
         读取 07_agent_input.json，调用 generate_report 生成 HTML + PDF
+
+        返回:
+            (ok, result_dict) 其中 result_dict 包含:
+                - pdf_path: PDF 文件路径
+                - html_path: HTML 文件路径
+                - error: 失败时的错误信息
         """
         try:
             with open(agent_input_path, encoding="utf-8") as f:
-                report_data = json.load(f)
+                raw_text = f.read()
+
+            # 第一次尝试：直接解析
+            try:
+                report_data = json.loads(raw_text)
+            except json.JSONDecodeError:
+                # 自动修复中文引号冲突后重试
+                fixed_text = self._fix_json_chinese_quotes(raw_text)
+                report_data = json.loads(fixed_text)
+                # 将修复后的 JSON 回写文件，避免下次再出错
+                with open(agent_input_path, "w", encoding="utf-8") as f:
+                    f.write(fixed_text)
 
             # 清理 _开头的注释字段
             report_data = self._clean_schema_comments(report_data)
@@ -888,13 +986,20 @@ python main.py generate --task-id {meta['task_id']}
             )
 
             if result.get("success"):
-                path = result.get("path") or result.get("html_path", "")
-                return True, path
+                pdf_path = result.get("path", "")
+                html_path = result.get("html_path", "")
+                # 降级为 HTML 时，path 本身就是 html_path
+                if not html_path:
+                    html_path = pdf_path
+                # 确保 html_path 存在（有些情况 PDF 生成失败会降级）
+                if pdf_path.endswith(".html"):
+                    html_path = pdf_path
+                return True, {"pdf_path": pdf_path, "html_path": html_path}
             else:
-                return False, result.get("error", "未知错误")
+                return False, {"error": result.get("error", "未知错误")}
 
         except Exception as e:
-            return False, str(e)
+            return False, {"error": str(e)}
 
     # ─────────────────────────────────────────────────────────
     # Step 6: 百度新闻快讯

@@ -90,6 +90,16 @@ def _load_smart_config() -> dict:
 SMART_CONFIG = _load_smart_config()
 
 
+def _load_user_config() -> dict:
+    """从 config/config.json 加载用户偏好配置，失败时返回空 dict"""
+    try:
+        from config.config import get
+        return get() or {}
+    except Exception as e:
+        print(f"  ⚠️ 加载用户配置失败: {e}")
+        return {}
+
+
 # CLI 子命令对应的 domain id 映射（"命令名" → "domain id"）
 # company 和 stock 都对应 main.json 中各自的 domain，
 # 但 company 有更详细的 search_templates（参见 company domain 配置）
@@ -513,7 +523,7 @@ def run_task(cmd: str, args: argparse.Namespace):
 
 
 def run_generate(task_id: str, base_output: str = "output"):
-    """Phase 3：读取 07_agent_input.json，生成最终报告"""
+    """Phase 3：读取 07_agent_input.json，生成最终报告（HTML + PDF）"""
     task_dir = os.path.join(PROJECT_ROOT, base_output, "tasks", task_id)
     if not os.path.exists(task_dir):
         print(f"❌ 找不到任务目录：{task_dir}")
@@ -530,18 +540,27 @@ def run_generate(task_id: str, base_output: str = "output"):
     banner(f"🦞 Phase 3：生成报告 ｜ 任务 {task_id}")
 
     runner = TaskRunner(task_dir, meta, PROJECT_ROOT)
-    ok, report_path = runner.generate_report(agent_input_path)
+    ok, result = runner.generate_report(agent_input_path)
 
     if ok:
         meta["status"] = TaskState.DONE
-        meta["report_path"] = report_path
+        meta["report_path"] = result.get("pdf_path", "")
+        meta["html_path"] = result.get("html_path", "")
         save_meta(task_dir, meta)
         print(f"\n  ✅ 报告生成成功！")
-        print(f"     {report_path}")
+        print(f"     PDF:  {result.get('pdf_path', '')}")
+        print(f"     HTML: {result.get('html_path', '')}")
+        print(f"\n  📦 交付指引（铁律 5/7）：")
+        print(f"     1. preview_url(url=\"{result.get('html_path', '')}\")")
+        print(f"     2. deliver_attachments(attachments=[\"{result.get('pdf_path', '')}\", \"{result.get('html_path', '')}\"])")
+        print(f"     3. 只写一句话：\"✅ 报告已生成，HTML 已在右侧预览，PDF/HTML 已作为附件发送。\"")
+        print(f"\n  ⚠️ 禁止写摘要/总结/回顾 — 交付文件本身就是结果")
     else:
         meta["status"] = TaskState.FAILED
+        meta["error"] = result.get("error", "未知错误")
         save_meta(task_dir, meta)
         print(f"\n  ❌ 报告生成失败")
+        print(f"     原因：{result.get('error', '未知错误')}")
 
 
 def cmd_status(task_id: str, base_output: str = "output"):
@@ -769,32 +788,65 @@ def run_smart_task(domain: dict, tier: str, prompt_template: str, agent_hint: st
     # 加载 prompt 模板
     prompt_tpl = load_prompt_template(prompt_template) if prompt_template else {}
 
-    # 搜索关键词
-    search_queries = [q.format(**tpl_vars) for q in domain.get("search_templates", [])]
-    kw_set = set(search_queries)
-    for kw in prompt_tpl.get("recommendedKeywords", []):
-        kw_formatted = f"{kw} {today}"
-        if kw_formatted not in kw_set:
-            search_queries.append(kw_formatted)
-            kw_set.add(kw_formatted)
+    # ── 搜索关键词 ──
+    # 1. topic 清洗：去掉逗号、多余空格，剥离 tier_tag 关键词
+    topic_raw = tpl_vars.get("topic", "")
+    clean_topic = topic_raw.replace("，", " ").replace(",", " ").strip()
+    # 剥离 tier_tags（快报/日报/研报/深度...）避免污染搜索词
+    tier_tags_conf = SMART_CONFIG.get("tier_tags", {})
+    all_tier_words = []
+    for words in tier_tags_conf.values():
+        if isinstance(words, list):
+            all_tier_words.extend(words)
+    for tw in all_tier_words:
+        clean_topic = clean_topic.replace(tw, "").strip()
+    # 再次清理多余空格
+    clean_topic = re.sub(r"\s+", " ", clean_topic).strip()
+    clean_vars = {**tpl_vars, "topic": clean_topic}
 
-    # keyword_groups
+    # 2. search_templates 渲染（核心关键词）
+    search_queries = [q.format(**clean_vars) for q in domain.get("search_templates", [])]
+    kw_set = set(search_queries)
+
+    # 3. recommendedKeywords：仅追加带时效性的关键词（含 {date} 占位的）
+    #    不再盲目追加所有 recommendedKeywords（它们是报告结构标签，不是搜索词）
+    #    选股类特殊处理：追加高质量时效性关键词
+    if domain["id"] == "screener":
+        extra_kws = [
+            f"今日涨停复盘 {today}",
+            f"连板股 龙虎榜 {today}",
+            f"主力资金 游资动向 {today}",
+        ]
+        for kw in extra_kws:
+            if kw not in kw_set:
+                search_queries.append(kw)
+                kw_set.add(kw)
+
+    # ── keyword_groups：去重，不再重复搜两遍 ──
     keyword_groups = []
     data_sources = prompt_tpl.get("recommendedDataSources", [])
+    # 过滤掉非域名的数据源标签（如"通达信""龙虎榜""交易所公告"等）
+    src_domain_map = {
+        "东方财富": "eastmoney.com", "同花顺": "10jqka.com.cn",
+        "Wind": "wind.com.cn", "新浪财经": "finance.sina.com.cn",
+        "证券时报": "stcn.com", "上海证券报": "cnstock.com",
+        "财新": "caixin.com", "36氪": "36kr.com", "雪球": "xueqiu.com",
+        "巨潮资讯": "cninfo.com.cn",
+    }
     if data_sources:
-        src_domain_map = {
-            "东方财富": "eastmoney.com", "同花顺": "10jqka.com.cn",
-            "Wind": "wind.com.cn", "新浪财经": "finance.sina.com.cn",
-            "证券时报": "stcn.com", "上海证券报": "cnstock.com",
-            "财新": "caixin.com", "36氪": "36kr.com", "雪球": "xueqiu.com",
-        }
-        source_domains = [src_domain_map.get(s, s.lower()) for s in data_sources]
-        keyword_groups.append({
-            "keywords": search_queries,
-            "sources": source_domains,
-            "max_per_source": 8,
-            "group_label": f"{domain['label']}_数据源搜索",
-        })
+        source_domains = []
+        for s in data_sources:
+            mapped = src_domain_map.get(s)
+            if mapped:
+                source_domains.append(mapped)
+        if source_domains:
+            keyword_groups.append({
+                "keywords": search_queries,
+                "sources": source_domains,
+                "max_per_source": 8,
+                "group_label": f"{domain['label']}_数据源搜索",
+            })
+    # 通用搜索：只用核心关键词（search_templates），不重复全部
     keyword_groups.append({
         "keywords": search_queries,
         "max_per_keyword": 12,
@@ -805,6 +857,9 @@ def run_smart_task(domain: dict, tier: str, prompt_template: str, agent_hint: st
     task_dir = os.path.join(PROJECT_ROOT, base_output, "tasks", task_id)
     os.makedirs(task_dir, exist_ok=True)
 
+    # 加载用户配置
+    user_prefs = _load_user_config()
+
     meta = {
         "task_id":     task_id,
         "cmd":         "smart",
@@ -813,6 +868,7 @@ def run_smart_task(domain: dict, tier: str, prompt_template: str, agent_hint: st
         "created_at":  datetime.now().isoformat(),
         "date":        today,
         "status":      TaskState.PENDING,
+        "user_prefs":  user_prefs,  # 注入用户配置
         "args": {
             "code":   getattr(args, "code", ""),
             "name":   getattr(args, "name", ""),

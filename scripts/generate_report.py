@@ -305,12 +305,12 @@ def generate_report(
                 cmd = [
                     chrome,
                     "--headless", "--disable-gpu",
-                    f'--print-to-pdf="{output_path}"',
+                    f"--print-to-pdf={output_path}",
                     "--print-to-pdf-no-header",
-                    f'file:///{html_path.replace(chr(92), "/")}',
+                    f"file:///{html_path.replace(chr(92), '/')}",
                 ]
                 try:
-                    subprocess.run(cmd, capture_output=True, timeout=30)
+                    result = subprocess.run(cmd, capture_output=True, timeout=30)
                     if os.path.exists(output_path):
                         return {
                             "success": True,
@@ -319,8 +319,10 @@ def generate_report(
                             "html_path": html_path,
                             "content": f"[PDF] {output_path}",
                         }
+                    else:
+                        print(f"⚠️ Chrome headless 未生成 PDF，stdout: {result.stdout.decode('utf-8', errors='ignore')[:200]}, stderr: {result.stderr.decode('utf-8', errors='ignore')[:200]}")
                 except Exception as chrome_err:
-                    pass  # 降级：返回 HTML 路径
+                    print(f"⚠️ Chrome headless 异常: {chrome_err}")
 
             # 降级：返回 HTML 路径（由调用方自行打印）
             return {

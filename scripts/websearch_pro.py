@@ -102,10 +102,23 @@ _lvl = _ws.get("quality_levels", {})
 LEVEL_5 = _lvl.get("level_5", [
     "gov.cn", "xinhuanet", "people", "cri.cn", "wikipedia", "baike",
     "cninfo.com.cn", "qichacha", "aiqicha", "eastmoney",
+    # 国际权威数据源
+    "nature.com", "science.org", "arxiv.org", "ieee.org", "acm.org",
+    "who.int", "imf.org", "worldbank.org", "bis.org", "oecd.org",
 ])
 LEVEL_4 = _lvl.get("level_4", [
     "caixin", "stcn", "36kr", "cyzone", "oschina", "geekpark",
     "tmtpost", "ithome", "huxiu", "huanqiu", "linkshop", "sina",
+    # 国际知名财经/科技媒体
+    "bloomberg.com", "reuters.com", "wsj.com", "ft.com", "cnbc.com",
+    "techcrunch.com", "wired.com", "theverge.com", "arstechnica.com",
+    # 研究机构/咨询公司
+    "mckinsey.com", "deloitte.com", "gartner.com", "cbinsights.com",
+    "morganstanley.com", "goldmansachs.com", "jpmorgan.com",
+    "semiconductorpackagingnews.com", "semi.org",
+    # 中文优质媒体
+    "thepaper.cn", "jiemian.com", "yicai.com", "caixin.com",
+    "cls.cn", "wallstreetcn.com", "gelonghui.com",
 ])
 LEVEL_3 = _lvl.get("level_3", ["qq", "163.com", "sohu", "ifeng", "zhihu"])
 LEVEL_2 = _lvl.get("level_2", ["toutiao", "baijiahao", "tiktok", "douyin", "dykt", "bilibili.com"])
@@ -289,7 +302,7 @@ def bing_search(keyword: str, limit=None):
     results_blocks = re.findall(r'<li class="b_algo".*?</li>', html, re.DOTALL)
     seen_urls = set()
 
-    for block in results_blocks[:limit]:
+    for block in results_blocks[:limit * 2]:  # 抓取更多块，后面会过滤
         title_match = re.search(r'data-heading="([^"]+)"', block)
         if not title_match:
             title_match = re.search(r'<h2.*?<a.*?>(.*?)</a>', block, re.DOTALL)
@@ -302,11 +315,25 @@ def bing_search(keyword: str, limit=None):
             if "bing.com" not in raw_url and "javascript:" not in raw_url:
                 url_val = raw_url.split("#")[0].split("&")[0]
 
-        snippet_match = re.search(r'class="b_paractext.*?">(.*?)</p>', block, re.DOTALL)
-        snippet = clean(snippet_match.group(1))[:200] if snippet_match else ""
+        # 多种 snippet 匹配模式，提高提取率
+        snippet = ""
+        for pattern in [
+            r'class="b_paractext.*?">(.*?)</p>',
+            r'class="b_caption".*?<p>(.*?)</p>',
+            r'<p class=".*?">(.*?)</p>',
+        ]:
+            snippet_match = re.search(pattern, block, re.DOTALL)
+            if snippet_match:
+                snippet = clean(snippet_match.group(1))[:300]
+                break
+
         date_str = parse_date(block)
 
-        if not title or len(title) < 3:
+        # 过滤：标题太短 或 空 snippet（质量太低）
+        if not title or len(title) < 4:
+            continue
+        # 过滤明显无关页面
+        if any(kw in url_val.lower() for kw in ["zhidao.baidu.com", "tieba.baidu.com", "wenku.baidu.com"]):
             continue
 
         url_key = url_val[:80] if url_val else title[:30]
@@ -318,6 +345,9 @@ def bing_search(keyword: str, limit=None):
             "title": title, "url": url_val,
             "snippet": snippet, "date": date_str, "source": "Bing",
         })
+        if len(results) >= limit:
+            break
+
     return results
 
 
@@ -444,6 +474,9 @@ def filter_sort_and_trim(all_results, max_total=None, skip_quality_sort=False):
         for it in sorted_items:
             t = it["title"].strip()
             if len(t) < 4:
+                continue
+            # 过滤空 snippet 结果（质量太低，对 Agent 无价值）
+            if not it.get("snippet") or len(it["snippet"].strip()) < 20:
                 continue
             if any(is_similar(t, x) for x in seen):
                 continue
