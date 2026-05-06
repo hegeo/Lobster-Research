@@ -28,3 +28,18 @@
 - 禁止并行执行多个 main.py 命令
 - Phase 2 必须先读完所有 JSON 再填写 07_agent_input.json
 - 报告交付用 `deliver_attachments`，不要用 `open_result_view`
+
+---
+
+## JSON 中文引号冲突
+
+**现象**：Agent 填写 `07_agent_input.json` 时，在字符串值内使用了 ASCII 双引号（如 `"构建者—协同者—守护者"`），导致 JSON 格式错误，`json.load()` 抛出 `Expecting ',' delimiter`。
+
+**根因**：JSON 字符串值内的 `"` 与 JSON 语法引号冲突，且 `json.dump()` 不会自动转义中文语境下的引号。
+
+**解决**：
+1. Agent 填写时应使用中文引号 `"""` 和 `"""`，避免 ASCII `"`
+2. 或确保所有 `"` 都经过 `"` → `\"` 转义
+3. 若已出错，用脚本批量替换 `"` → `"` / `"`
+
+**预防**：在 `generate_report.py` 的 HTML 构建阶段，对插入内容做 HTML escape（见代码修复）。

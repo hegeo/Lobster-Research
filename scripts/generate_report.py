@@ -38,12 +38,12 @@ def _build_overview_table(data: dict) -> str:
     t = data.get("overview_table")
     if not t:
         return ""
-    headers = t.get("headers", [])
+    headers = [_escape_html(h) for h in t.get("headers", [])]
     rows = t.get("rows", [])
     header_html = "".join(f"<th>{h}</th>" for h in headers)
     rows_html = ""
     for row in rows:
-        cells = "".join(f"<td>{c}</td>" for c in row)
+        cells = "".join(f"<td>{_escape_html(str(c))}</td>" for c in row)
         rows_html += f"<tr>{cells}</tr>"
     return f"""
 <div class="overview-table-wrap">
@@ -59,9 +59,9 @@ def _build_metrics_bar(data: dict) -> str:
         return ""
     cards = ""
     for m in metrics:
-        label = m.get("label", "")
-        value = m.get("value", "-")
-        change = m.get("change", "")
+        label = _escape_html(m.get("label", ""))
+        value = _escape_html(m.get("value", "-"))
+        change = _escape_html(m.get("change", ""))
         cards += f"""<div class="metric-card">
   <div class="metric-label">{label}</div>
   <div class="metric-value">{value}</div>
@@ -75,12 +75,12 @@ def _build_trends_table(data: dict) -> str:
     t = data.get("trends_table")
     if not t:
         return ""
-    headers = t.get("headers", [])
+    headers = [_escape_html(h) for h in t.get("headers", [])]
     rows = t.get("rows", [])
     header_html = "".join(f"<th>{h}</th>" for h in headers)
     rows_html = ""
     for row in rows:
-        cells = "".join(f"<td>{c}</td>" for c in row)
+        cells = "".join(f"<td>{_escape_html(str(c))}</td>" for c in row)
         rows_html += f"<tr>{cells}</tr>"
     return f"""
 <div class="data-table-wrap" style="margin-top:16px">
@@ -89,14 +89,26 @@ def _build_trends_table(data: dict) -> str:
 </div>"""
 
 
+def _escape_html(text: str) -> str:
+    """转义 HTML 特殊字符，防止引号冲突"""
+    if not text:
+        return ""
+    return (text
+            .replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+            .replace('"', "&quot;")
+            .replace("'", "&#x27;"))
+
+
 def _build_section(s: dict) -> str:
     """生成单个章节 HTML"""
-    title = s.get("title", "")
+    title = _escape_html(s.get("title", ""))
     subs_html = ""
     for sub in s.get("subsections", []):
-        sub_title = sub.get("title", "")
-        content = sub.get("content", "").replace("\n", "<br>")
-        highlight = sub.get("highlight", "")
+        sub_title = _escape_html(sub.get("title", ""))
+        content = _escape_html(sub.get("content", "")).replace("\n", "<br>")
+        highlight = _escape_html(sub.get("highlight", ""))
         table = sub.get("table", None)
 
         sub_html = f'<div class="subsection-title">{sub_title}</div>' if sub_title else ""
@@ -106,10 +118,11 @@ def _build_section(s: dict) -> str:
             sub_html += f'<div class="highlight-box">{highlight}</div>'
 
         if table:
-            t_headers = "".join(f"<th>{h}</th>" for h in table.get("headers", []))
+            headers = [_escape_html(h) for h in table.get("headers", [])]
+            t_headers = "".join(f"<th>{h}</th>" for h in headers)
             t_rows = ""
             for row in table.get("rows", []):
-                cells = "".join(f"<td>{c}</td>" for c in row)
+                cells = "".join(f"<td>{_escape_html(str(c))}</td>" for c in row)
                 t_rows += f"<tr>{cells}</tr>"
             style = table.get("style", "default")
             sub_html += f"""<div class="data-table-wrap">
@@ -123,16 +136,16 @@ def _build_section(s: dict) -> str:
 
 def _build_html(data: dict, report_type_label: str = "龙虾研报", css: str = "") -> str:
     """构建完整 HTML 报告"""
-    title = data.get("title", report_type_label)
-    subtitle = data.get("subtitle", "")
-    date = data.get("date", datetime.now().strftime("%Y年%m月%d日"))
-    author = data.get("author", "龙虾财经研究院")
-    summary = data.get("summary", "")
-    quote = data.get("quote", "市场从不缺机会，缺的是等待的耐心。 🦞")
-    disclaimer = data.get(
+    title = _escape_html(data.get("title", report_type_label))
+    subtitle = _escape_html(data.get("subtitle", ""))
+    date = _escape_html(data.get("date", datetime.now().strftime("%Y年%m月%d日")))
+    author = _escape_html(data.get("author", "龙虾财经研究院"))
+    summary = _escape_html(data.get("summary", ""))
+    quote = _escape_html(data.get("quote", "市场从不缺机会，缺的是等待的耐心。 🦞"))
+    disclaimer = _escape_html(data.get(
         "disclaimer",
         "免责声明：数据来源于公开网络搜索整理，仅供信息参考，不构成任何投资建议。"
-    )
+    ))
 
     # 概览 + 指标
     overview_html = _build_overview_table(data)
@@ -160,7 +173,7 @@ def _build_html(data: dict, report_type_label: str = "龙虾研报", css: str = 
 <!-- 封面 -->
 <div class="cover">
   <div class="cover-inner">
-    <div class="cover-label">Lobster Research · {report_type_label}</div>
+    <div class="cover-label">Lobster Research · {_escape_html(report_type_label)}</div>
     <div class="cover-title">{title}</div>
     <div class="cover-subtitle">{subtitle}</div>
     <div class="cover-meta">
