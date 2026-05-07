@@ -528,21 +528,13 @@ class TaskRunner:
 """
             data_check_section = data_check_header + separator.join(check_rows) + separator
 
-        # 构建报告结构参考
+        # 构建报告结构参考（大纲保留在 07_agent_input.json 的 _prompt_body 中，不在 briefing 重复）
         structure_section = ""
         if prompt_body:
-            # 截取 promptBody 前 2000 字，避免 briefing 太长
-            body_preview = prompt_body[:2000]
-            if len(prompt_body) > 2000:
-                body_preview += f"\n\n...(共 {len(prompt_body)} 字符，已截断)"
             structure_section = f"""
-## 报告结构参考（来自模板：{tpl_name}）
+## 报告结构
 
-以下是大纲结构，按此结构组织报告内容：
-
-```
-{body_preview}
-```
+大纲结构详见 `07_agent_input.json` 的 `_prompt_body` 字段（共 {len(prompt_body)} 字），请直接参考该字段组织报告内容。
 """
 
         # 数据来源
@@ -565,6 +557,43 @@ class TaskRunner:
         # 模板来源行
         template_line = ('**模板来源**: ' + tpl_name) if tpl_name else ''
 
+        # ── 用户画像（从 user_prefs 构建） ──
+        user_prefs = meta.get("user_prefs", {})
+        user_section = ""
+        if user_prefs:
+            u = user_prefs.get("user", {})
+            m = user_prefs.get("market", {})
+
+            style_map = {"conservative": "保守", "balanced": "平衡", "aggressive": "积极"}
+            risk_map  = {"low": "低风险", "medium": "中风险", "high": "高风险"}
+            freq_map  = {"short": "短期(1-3天)", "medium": "中期(3-15天)", "long": "长期(>15天)"}
+            asset_map = {"below_10w": "10万以下", "10w_to_50w": "10-50万", "50w_to_100w": "50-100万", "above_100w": "100万以上"}
+
+            style     = style_map.get(u.get("investment_style", ""), u.get("investment_style", "未设置"))
+            risk      = risk_map.get(u.get("risk_level", ""), u.get("risk_level", "未设置"))
+            freq      = freq_map.get(u.get("operation_freq", ""), u.get("operation_freq", "未设置"))
+            assets    = asset_map.get(u.get("total_assets_range", ""), u.get("total_assets_range", "未设置"))
+            focus     = ", ".join(m.get("focus_news_types", [])) or "未设置"
+            focus_stk = ", ".join(m.get("focus_stocks", [])) or "未设置"
+
+            user_section = f"""
+## 用户画像（必须据此调整报告风格）
+
+**投资风格**: {style}
+**风险偏好**: {risk}
+**操作周期**: {freq}
+**资产规模**: {assets}
+**关注领域**: {focus}
+**关注标的**: {focus_stk}
+
+⚠️ **铁律：你必须根据以上用户画像调整报告内容！**
+- 保守型/低风险用户：侧重低估值、高股息、防御性标的，仓位控制更严格，止损更窄
+- 积极型/高风险用户：可覆盖追涨、打板、连板接力等激进策略
+- 平衡型用户：确定性仓位为主，博弈性仓位为辅
+- 报告中的仓位配比、止损幅度、持股周期、选股风格必须与用户画像一致
+- 不同用户收到的报告内容应有实质性差异，禁止写万能模板
+"""
+
         content = f"""# 🦞 龙虾调研 Agent 工作简报
 
 **任务ID**: {meta['task_id']}
@@ -572,6 +601,7 @@ class TaskRunner:
 **日期**: {meta['date']}
 **任务目录**: {self.task_dir}
 {template_line}
+{user_section}
 
 ---
 

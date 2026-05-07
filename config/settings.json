@@ -15,8 +15,7 @@
       "enable_all": false,
       "enabled_list": [
         "360",
-        "baidu",
-        "bing"
+        "baidu"
       ],
       "fetch_count": {
         "tavily": 5,
@@ -82,7 +81,19 @@
       "global_max_results": 16,
       "fresh_days": 7,
       "request_timeout": 12,
-      "similarity_threshold": 0.6
+      "similarity_threshold": 0.6,
+      "max_result_age_days": 30,
+      "min_quality_level": 2,
+      "blacklist_domains": [
+        "zhidao.baidu.com",
+        "tieba.baidu.com",
+        "wenku.baidu.com",
+        "jingyan.baidu.com",
+        "baijiahao.baidu.com",
+        "zhihu.com/question",
+        "zhidao.sogou.com",
+        "wenda.so.com"
+      ]
     }
   }
 }
