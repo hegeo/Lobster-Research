@@ -1,99 +1,48 @@
 {
-  "_version": "1.0",
-  "_updated": "2026-04-26T19:20:05.707994",
-  "_description": "工具配置和 API Keys（不要提交到 git）",
+  "_version": "3.1",
+  "_updated": "2026-05-07T22:10:00",
+  "_description": "搜索配置 v3.1 — API 优先 + 兜底降级。兜底改为百度+国际 Bing，ProSearch 需手动启用，SerpBase 编码修复",
+  "_engine_priority": ["serpbase", "bing_api", "tavily", "prosearch", "baidu", "bing_intl"],
   "websearch_pro": {
+    "prosearch_enabled": false,
+    "_prosearch_doc": "ProSearch 需要本地网关运行，手动设为 true 启用",
     "apis": {
+      "_doc": "有 key 的引擎优先尝试，无 key 的自动跳过",
+      "serpbase_api_key": "",
+      "serpbase_base_url": "https://api.serpbase.dev",
+      "bing_api_key": "",
+      "bing_api_base": "https://api.bing.microsoft.com/v7.0/search",
       "tavily_api_key": "",
       "tavily_api_base": "https://api.tavily.com/search",
       "auth_gateway_port": "19000",
       "auth_gateway_base": "http://localhost:19000/proxy/prosearch/search"
     },
     "engines": {
-      "primary": "360",
-      "secondary": "baidu",
-      "enable_all": false,
-      "enabled_list": [
-        "360",
-        "baidu"
-      ],
+      "_doc": "primary=主引擎, secondary=备引擎, primary=all 则启用全部有key的引擎; 均为空则报错",
+      "primary": "baidu",
+      "secondary": "bing_intl",
       "fetch_count": {
+        "serpbase": 5,
+        "bing_api": 10,
         "tavily": 5,
         "prosearch": 10,
-        "bing": 15,
-        "360": 12,
         "baidu": 12,
-        "htmldoc": 2
+        "bing_intl": 10
       },
       "keep_count": {
+        "serpbase": 5,
+        "bing_api": 5,
         "tavily": 5,
         "prosearch": 5,
-        "bing": 5,
-        "360": 5,
         "baidu": 5,
-        "htmldoc": 2
+        "bing_intl": 5
       }
-    },
-    "quality_levels": {
-      "level_5": [
-        "gov.cn",
-        "xinhuanet",
-        "people",
-        "cri.cn",
-        "wikipedia",
-        "baike",
-        "cninfo.com.cn",
-        "qichacha",
-        "aiqicha",
-        "eastmoney"
-      ],
-      "level_4": [
-        "caixin",
-        "stcn",
-        "36kr",
-        "cyzone",
-        "oschina",
-        "geekpark",
-        "tmtpost",
-        "ithome",
-        "huxiu",
-        "huanqiu",
-        "linkshop",
-        "sina"
-      ],
-      "level_3": [
-        "qq",
-        "163.com",
-        "sohu",
-        "ifeng",
-        "zhihu"
-      ],
-      "level_2": [
-        "toutiao",
-        "baijiahao",
-        "tiktok",
-        "douyin",
-        "dykt",
-        "bilibili.com"
-      ]
     },
     "defaults": {
       "global_max_results": 16,
       "fresh_days": 7,
       "request_timeout": 12,
-      "similarity_threshold": 0.6,
-      "max_result_age_days": 30,
-      "min_quality_level": 2,
-      "blacklist_domains": [
-        "zhidao.baidu.com",
-        "tieba.baidu.com",
-        "wenku.baidu.com",
-        "jingyan.baidu.com",
-        "baijiahao.baidu.com",
-        "zhihu.com/question",
-        "zhidao.sogou.com",
-        "wenda.so.com"
-      ]
+      "similarity_threshold": 0.6
     }
   }
 }

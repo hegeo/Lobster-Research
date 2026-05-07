@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>低风险科技选股建仓研报</title>
+<style>
+@page {
+  size: A4;
+  margin: 15mm 18mm;
+  @top-left     { content: none; }
+  @top-center   { content: none; }
+  @top-right    { content: none; }
+  @bottom-left  { content: none; }
+  @bottom-center{ content: none; }
+  @bottom-right { content: none; }
+}
+
+@media print {
+  body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  @page { margin: 0; }
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', 'PingFang SC',
+               'Helvetica Neue', 'Microsoft YaHei', sans-serif;
+  font-size: 14px;
+  color: #0F172A;
+  background: #f8f6ff;
+  line-height: 1.65;
+  padding: 0;
+  margin: 0;
+}
+
+.page-frame {
+  background: #FFFFFF;
+  overflow: hidden;
+  margin: 4%;
+}
+
+/* ══ 封面 ═══════════════════════════════════════════ */
+.cover {
+  width: 100%;
+  min-height: 280mm;
+  background: linear-gradient(160deg, #ffffff 0%, #8B5CF6 50%, #7543e4 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 20mm 20mm 20mm 20mm;
+  page-break-after: always;
+}
+.cover .cover-inner {
+  background: #ffffff;
+  padding: 44px 52px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.10);
+}
+.cover .cover-label {
+  font-size: 12px;
+  color: #5c5c5c;
+  font-weight: 600;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+.cover .cover-title {
+  font-size: 30px;
+  font-weight: 700;
+  color: #000000;
+  line-height: 1.25;
+  margin-bottom: 14px;
+  letter-spacing: -0.5px;
+}
+.cover .cover-subtitle {
+  font-size: 14px;
+  color: #5c5c5c;
+  margin-bottom: 32px;
+  line-height: 1.55;
+}
+.cover .cover-meta {
+  display: flex;
+  gap: 15px;
+  font-size: 12px;
+  color: #5c5c5c;
+}
+.cover .cover-lobster {
+  font-size: 32px;
+  margin-top: 24px;
+}
+
+/* ══ 概览表格 ═════════════════════════════════════ */
+.overview-table-wrap {
+  margin: 15px 20px;
+  background: #FFFFFF;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 6px 20px rgba(0,0,0,0.04);
+}
+.overview-table-wrap h3 {
+  font-size: 14px;
+  color: #6366F1;
+  font-weight: 600;
+  margin: 16px 20px 10px;
+  letter-spacing: 0.3px;
+}
+.overview-table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+.overview-table-wrap th {
+  background: #F8FAFC;
+  color: #64748B;
+  padding: 10px 16px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border-bottom: 1px solid #E2E8F0;
+}
+.overview-table-wrap td {
+  padding: 10px 16px;
+  border-bottom: 1px solid #F1F5F9;
+  vertical-align: top;
+  color: #334155;
+}
+.overview-table-wrap tr:last-child td { border-bottom: none; }
+.overview-table-wrap tr:nth-child(even) td { background: #FAFBFE; }
+
+/* ══ 章节 ═════════════════════════════════════════ */
+.section {
+  margin: 32px 0;
+}
+.section-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0F172A;
+  background-color: #f5f2ff;
+  padding: 14px 0 14px 16px;
+  border-left: 4px solid #6366F1;
+  margin-bottom: 4px;
+  letter-spacing: -0.3px;
+}
+.subsection {
+  margin: 12px 0;
+  background: #FFFFFF;
+  padding: 18px 24px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+}
+.subsection-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 10px;
+}
+.subsection-content {
+  font-size: 13.5px;
+  color: #475569;
+  line-height: 1.8;
+  margin-bottom: 10px;
+  text-align: justify;
+}
+
+/* ══ 高亮框 ═══════════════════════════════════════ */
+.highlight-box {
+  background: #EEF2FF;
+  padding: 14px 18px;
+  margin: 12px 0;
+  font-size: 13px;
+  color: #3730A3;
+  line-height: 1.7;
+}
+.highlight-box::before {
+  content: "";
+  display: none;
+}
+
+/* ══ 数据表格 ═════════════════════════════════════ */
+.data-table-wrap {
+  margin: 14px 0;
+  overflow-x: auto;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.data-table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+.data-table-wrap th {
+  background: #F8FAFC;
+  color: #64748B;
+  padding: 9px 14px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.3px;
+  border-bottom: 1px solid #E2E8F0;
+}
+.data-table-wrap td {
+  padding: 8px 14px;
+  border-bottom: 1px solid #F1F5F9;
+  min-width: 100px;
+  color: #334155;
+}
+.data-table-wrap tr:nth-child(even) td { background: #FAFBFE; }
+.data-table-wrap tr:last-child td { border-bottom: none; }
+
+/* ══ 摘要 ═════════════════════════════════════════ */
+.summary-box {
+  background: linear-gradient(135deg, #FFFFFF 0%, #E0E7FF 100%);
+  padding: 22px 26px;
+  margin: 32px 0;
+}
+.summary-box .summary-label {
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #6366F1;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+.summary-box .summary-text {
+  font-size: 13.5px;
+  line-height: 1.8;
+  color: #1E293B;
+}
+
+/* ══ 龙虾寄语 ═════════════════════════════════════ */
+.quote-box {
+  background: linear-gradient(135deg, #FFFFFF 0%, #8B5CF6 100%);
+  color: white;
+  padding: 20px 28px;
+  margin: 24px 0;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+/* ══ 免责声明 ═════════════════════════════════════ */
+.disclaimer {
+  font-size: 10.5px;
+  color: #94A3B8;
+  border-top: 1px solid #F1F5F9;
+  padding-top: 14px;
+  margin-top: 32px;
+  line-height: 1.6;
+}
+
+/* ══ 指标卡 ═══════════════════════════════════════ */
+.metrics-bar {
+  display: flex;
+  gap: 14px;
+  margin: 30px 20px 20px 20px;
+  flex-wrap: wrap;
+}
+.metric-card {
+  background: #FFFFFF;
+  padding: 14px 18px;
+  text-align: center;
+  min-width: 100px;
+  flex: 1;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
+}
+.metric-card .metric-label {
+  font-size: 10px;
+  color: #94A3B8;
+  letter-spacing: 1px;
+  font-weight: 500;
+}
+.metric-card .metric-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #6366F1;
+  margin: 6px 0;
+  letter-spacing: -0.5px;
+}
+.metric-card .metric-change {
+  font-size: 11px;
+  color: #64748B;
+}
+
+/* ══ 分页控制 ═════════════════════════════════════ */
+.page-break { page-break-before: always; }
+</style>
+</head>
+<body>
+<div class="page-frame">
+
+<!-- 封面 -->
+<div class="cover">
+  <div class="cover-inner">
+    <div class="cover-label">Lobster Research · 快速选股</div>
+    <div class="cover-title">低风险科技选股建仓研报</div>
+    <div class="cover-subtitle">平衡策略 · 业绩验证 · 科技主线</div>
+    <div class="cover-meta">
+      <span>📅 2026-05-07 22:28</span>
+      <span>👨‍💻 🦞 龙虾财经研究院</span>
+      <span>🦞 龙虾智能研报中心</span>
+    </div>
+    <div class="cover-lobster">🦞</div>
+  </div>
+</div>
+
+<!-- 概览 + 指标 -->
+
+
+
+<!-- 章节内容 -->
+<div class="page-break"></div>
+<div class="section"><div class="section-title">前置导读</div><div class="subsection"><div class="subsection-title">1. 选股热力指数</div><div class="subsection-content">5月7日A股市场情绪偏暖，赚钱效应结构性分化。上证指数收报4180.09点（+0.48%），深成指15641.89点（+1.18%），创业板指3833.06点（+1.45%），科创综指+1.99%，北证50+3.05%，创业板指创十年新高。全天成交额3.14万亿元，较上一交易日缩量828.79亿元。涨停个股127只，盘中触及涨停41只，封板率75.6%，市场做多意愿仍在。连板高度看金螳螂（002081）12天10板居首，但该标的偏建筑装饰，非科技主线，对低风险投资者参考价值有限。科技方向上，电子板块单日主力资金净流入230.1亿元居申万一级行业首位，通信、计算机尾盘资金净流入均超4亿元，显示科技主线资金认可度高。综合评估：情绪温度偏暖（70/100），资金活跃度中等（缩量但板块资金集中），题材爆发力偏强（科技主线持续发酵）。</div><div class="highlight-box">电子板块单日净流入230亿居首，科技主线资金认可度高，创业板创十年新高</div></div><div class="subsection"><div class="subsection-title">2. 选股导航</div><div class="subsection-content">本报告用户画像为平衡型、低风险偏好、中期持仓（3-15天）、资产规模10万以下。据此调整策略：以确定性仓位为主（70%），博弈性仓位为辅（30%）；单票仓位上限20%，总仓位控制在60%-80%；止损线设-3%至-5%（破5日线或放量破位即离场），止盈参考前高/整数关口分批兑现。选股策略上，不追涨停板、不打板、不参与连板接力，而是聚焦「业绩兑现+机构推荐+资金流入」三重验证的科技龙头，采用趋势低吸策略：回踩5日/10日均线支撑位分批建仓，放量突破前高时加仓。持股周期3-10个交易日，目标收益5%-10%，盈亏比控制在2:1以上。</div><div class="highlight-box">确定性仓位70%+博弈性30%，单票≤20%，止损-3%至-5%，趋势低吸策略</div></div><div class="subsection"><div class="subsection-title">3. 选股快照</div><div class="subsection-content">5月7日盘面核心信号：①电子板块净流入230亿元，远超其他行业，其中新易盛单日主力净流入25.2亿元居个股首位；②券商5月金股推荐中，中际旭创（7次推荐）、立讯精密（4次）、中科曙光（多次）均为科技标的；③机构龙虎榜抢筹兴森科技等电子股，显示机构资金持续加仓科技赛道。5月首个交易日后，多家机构判断5月焦点大概率为科技板块，北美四大云服务商集体上修资本开支预期，利好AI算力与光模块产业链。A股一季报收官，73.4%公司盈利，51.68%净利增长，科技板块业绩兑现度高。板块强度排序：电子&gt;通信&gt;计算机&gt;新能源&gt;消费。</div></div></div><div class="section"><div class="section-title">第一章 个股版图扫描</div><div class="subsection"><div class="subsection-title">涨停基因｜股性脉络｜主力路线｜联动生态</div><div class="subsection-content">基于券商金股推荐频次、龙虎榜机构动向、一季报业绩验证三个维度，筛选出5只标的构成建仓组合：中际旭创（300308，7次推荐，全球数通光模块龙头）、中科曙光（603019，国产算力龙头，海光AI芯片上量）、立讯精密（002475，消费电子+通信+汽车三线布局）、阳光电源（300274，新能源储能龙头+AIDC电源新业务）、新易盛（光模块标的，5月7日主力净流入25.2亿元）。这5只标的的联动生态清晰：中际旭创与新易盛同属光模块产业链，受益于北美云厂商AI资本开支持续扩张；中科曙光与中际旭创构成「算力+互联」组合；立讯精密横跨消费电子与通信；阳光电源代表新能源方向。五标的分属不同细分赛道，分散风险的同时覆盖了用户关注的科技、AI、新能源三大领域。</div><div class="highlight-box">5只标的覆盖光模块/算力/消费电子/新能源，分散风险，三大关注领域全覆盖</div></div><div class="subsection"><div class="subsection-title">个股基因对比/股性矩阵</div><div class="subsection-content">从股性角度看：中际旭创属于趋势型标的，4月累计涨幅较大但回调后资金承接力强，适合回踩低吸；中科曙光属于稳健型标的，国产算力政策催化持续，波动相对可控；立讯精密属于业绩驱动型，一季报表现稳健，汽车业务增量明确；阳光电源属于景气反转标的，Q1毛利率修复信号明确，AIDC电源业务打开第二增长曲线；新易盛属于资金驱动型，短期主力资金大幅流入，但需警惕追高风险。对于低风险投资者，建议以中科曙光、立讯精密、阳光电源为确定性仓位（各配15%-20%），中际旭创和新易盛为博弈性仓位（各配10%-15%），总仓位控制在65%-80%。</div></div></div><div class="section"><div class="section-title">第二章 个股深度解析</div><div class="subsection"><div class="subsection-title">涨停护城河评估｜资金验证</div><div class="subsection-content">逐一评估5只标的的核心壁垒：中际旭创——全球数通光模块市占率领先，硅光芯片自研增强话语权，泰国工厂产能加速上量，800G/1.6T产品布局充分，2027年估值对应当前盈利预测处于较低位置（据国联民生证券）；中科曙光——作为海光信息第一大股东，构筑「芯片-服务器-液冷-算力服务」全产业链布局，超节点在AI4S领域快速落地（据中原证券）；立讯精密——224G高速互连方案已在主流AI集群投入商用，通过整合莱尼打通海外车企供应链，消费电子+通信+汽车三大业务协同（据西部证券）；阳光电源——2026年储能出货目标60GWh以上，Q1毛利率大幅修复，AIDC电源业务预计年底前出产品（据交银国际）；新易盛——5月7日主力资金净流入25.2亿元居全市场个股首位，资金验证力度强。五标的均具备明确的业绩增长逻辑和资金验证支撑。</div><div class="highlight-box">五标的均有券商深度覆盖+一季报业绩验证+资金流入确认，三重共振</div></div></div><div class="section"><div class="section-title">第三章 个股资金侦探</div><div class="subsection"><div class="subsection-title">主力流向｜筹码分布｜龙虎榜追踪</div><div class="subsection-content">资金层面：5月7日A股全天主力资金净流出175.68亿元，但结构性分化显著——电子板块逆势净流入230.1亿元，显示资金从其他行业向科技赛道集中。个股层面，新易盛主力净流入25.2亿元，兴森科技获龙虎榜机构抢筹。沪深300主力净流出27.65亿元、创业板净流出63.42亿元、科创板净流出41.32亿元，但科创综指仍涨1.99%，表明科创板资金换手积极、筹码交换充分。对于推荐标的：中际旭创作为光模块龙头，4月以来筹码经历了充分换手，当前处于回调企稳阶段；中科曙光筹码结构相对稳定，机构持仓占比高；立讯精密一季报后筹码锁定性较好。整体看，科技板块资金呈现「机构加仓、游资轮动」的格局，为中期持仓提供了较好的资金环境。</div><div class="highlight-box">电子板块逆势净流入230亿，机构加仓科技格局明确，筹码换手充分</div></div><div class="subsection"><div class="subsection-title">资金TOP榜/席位对比</div><div class="subsection-content">5月7日主力资金净流入个股TOP5：新易盛（+25.2亿元，光模块龙头，算力基建核心标的）领涨。龙虎榜方面，兴森科技获机构净买入，宝光股份遭机构净卖出。从游资风格看，当前市场游资以格局型为主（金螳螂12天10板未被砸盘），资金对有基本面支撑的标的容忍度较高。对低风险投资者而言，应重点关注机构净买入的标的（如兴森科技所属的PCB/半导体方向），避免跟风游资主导的纯情绪票。推荐的5只标的中，中际旭创、中科曙光、立讯精密均有机构深度覆盖和持续调研，资金来源以机构为主，稳定性优于纯游资票。</div></div></div><div class="section"><div class="section-title">第四章 消息与席位情报</div><div class="subsection"><div class="subsection-title">题材催化格局｜个股玩家矩阵</div><div class="subsection-content">消息层面：①北美四大云服务商（微软、谷歌、亚马逊、Meta）集体上修2026年AI资本开支预期，直接利好光模块（中际旭创、新易盛）和算力（中科曙光）产业链；②4月电子行业涨幅26.79%居首、通信22.23%居次，科技板块景气度持续验证；③券商共识「5月焦点大概率为科技板块」，消费电子盈利预期上修、半导体独立景气、存储芯片领涨；④中东地缘冲突延续，AI与石化能源构成「新杠铃结构」（据新浪财经），科技与能源两条主线均有支撑。对推荐标的的影响：中际旭创直接受益于云厂商资本开支上修；中科曙光受益于国产算力自主可控政策；立讯精密受益于消费电子景气+汽车智能化；阳光电源受益于新能源+AIDC储能双驱动。消息面整体偏多，无重大监管风险预警。</div><div class="highlight-box">北美云厂商集体上修AI资本开支，科技板块消息面持续偏多</div></div></div><div class="section"><div class="section-title">第五章 主力与散户行为</div><div class="subsection"><div class="subsection-title">核心操盘席位评估｜信息链路</div><div class="subsection-content">当前市场主力行为特征：机构资金持续加仓科技赛道，龙虎榜显示机构抢筹电子/半导体标的，游资以格局型操作为主（金螳螂12天10板未被大规模砸盘）。券商研报对科技板块的一致看好形成了正反馈循环，多家机构上调光模块、算力、消费电子评级。散户行为方面，股吧/雪球对科技标的讨论热度高，但尚未出现过度狂热的「全民追科技」信号（成交量缩量828亿元说明散户追高意愿有限）。对低风险投资者的启示：当前科技板块处于「机构驱动、散户跟随」的中段位置，既非底部无人问津，也非顶部全民疯狂，是中期布局的较好时间窗口。但需警惕连续上涨后的技术性回调，建议分批建仓而非一次性重仓。</div><div class="highlight-box">科技板块处于机构驱动中段，非底部非顶部，分批建仓为宜</div></div></div><div class="section"><div class="section-title">第六章 个股估值建模</div><div class="subsection"><div class="subsection-title">涨停评级｜溢价空间时间线｜多维盈亏分析</div><div class="subsection-content">对5只标的进行中期（3-15天）盈亏评估：中际旭创——券商目标价对应当前仍有10%-15%空间，回踩20日均线附近为较好低吸位，止损-3%（破20日线），止盈+8%至+10%（前高附近），盈亏比约3:1；中科曙光——估值合理偏低，国产算力政策催化持续，止损-4%（破10日线），止盈+6%至+8%，盈亏比约2:1；立讯精密——一季报业绩兑现后估值回归合理，止损-3%（破5日线），止盈+5%至+8%，盈亏比约2:1；阳光电源——Q1毛利率修复逻辑明确，AIDC电源为新增量预期，止损-4%（破平台支撑），止盈+6%至+10%，盈亏比约2:1；新易盛——资金流入最强但短期涨幅较大，建议仅轻仓参与，止损-5%（破10日线），止盈+8%至+12%，盈亏比约2:1。综合组合层面，预期收益5%-10%，最大回撤控制在-3%至-5%。</div><div class="highlight-box">组合预期收益5%-10%，最大回撤-3%至-5%，盈亏比≥2:1</div></div></div><div class="section"><div class="section-title">第七章 风险全景</div><div class="subsection"><div class="subsection-title">风险矩阵｜应对预案</div><div class="subsection-content">主要风险：①科技板块4月累计涨幅较大（电子+26.79%、通信+22.23%），存在技术性回调压力，多家机构已提示「5月或重回震荡阶段」；②中东地缘冲突延续可能引发避险情绪升温，对成长股估值构成压制；③光模块板块估值已不便宜，若北美云厂商资本开支不及预期将引发杀估值；④A股全天主力资金净流出175.68亿元，增量资金有限背景下持续上涨动力不足；⑤个别标的一季报后可能存在「利好兑现即见光死」风险。应对预案：严格执行-3%至-5%止损线，不恋战不补仓；分3批建仓（40%/30%/30%），预留调整空间；若板块指数破20日均线，全部减仓至半仓以下；若出现监管信号（如重点监控、窗口指导），立即清仓观望。</div><div class="highlight-box">4月涨幅较大存回调压力，严格止损+分批建仓+破位即减仓</div></div></div><div class="section"><div class="section-title">第八章 核心结论与执行清单</div><div class="subsection"><div class="subsection-title">选股建议｜执行清单</div><div class="subsection-content">确定性仓位（70%）：中科曙光（15%-20%，国产算力龙头，政策+业绩双驱动）、立讯精密（15%-20%，三线布局，业绩稳健）、阳光电源（15%-20%，新能源+AIDC储能双驱动，毛利率修复）。博弈性仓位（30%）：中际旭创（10%-15%，光模块龙头，AI资本开支受益）、新易盛（5%-10%，资金流入最强，轻仓参与）。执行动作：回踩5日/10日均线支撑位分批低吸，不追高不打板；放量突破前高可加仓一成；跌破止损线无条件离场。止盈触发：断板/板块退潮/达到目标价分批兑现。总仓位首次建仓40%，确认支撑后加至70%，留30%现金应对回调。</div><div class="highlight-box">确定性70%（曙光+立讯+阳光）+博弈性30%（旭创+新易盛），回踩低吸，破位即走</div></div></div><div class="section"><div class="section-title">第九章 选股跟踪框架</div><div class="subsection"><div class="subsection-title">关键信号｜每日复核机制</div><div class="subsection-content">每日复盘checklist：①科技板块指数（电子/通信/计算机）是否仍在5日均线上方运行；②推荐标的是否出现放量破位信号（成交量&gt;前日2倍且跌破5日线）；③龙虎榜机构是否持续净买入科技标的；④消息面是否出现重大利空（监管降温、外围暴跌、地缘冲突升级）。关键消息日历：关注5月中旬A股上市公司股东大会密集期、北美云厂商Q2财报指引（6-7月）、国内AI政策催化窗口。个股强度信号：竞价量&gt;前日均量1.5倍且高开&gt;1%为强势信号；封单比&gt;3:1且换手率&lt;5%为筹码锁定信号；连续3日缩量回调至10日线附近为龙回头低吸信号。</div><div class="highlight-box">关注科技板块指数运行、龙虎榜机构动向、消息面催化三维度</div></div></div><div class="section"><div class="section-title">第十章 交易伦理与可持续盈利</div><div class="subsection"><div class="subsection-title">风控纪律｜仓位管理</div><div class="subsection-content">针对10万以下资产规模的纪律要求：①单票仓位严格≤2万元（20%），绝不因看好而加重；②止损是铁律，-3%至-5%无条件执行，不心存侥幸不补仓摊薄；③避免产业链陷阱，不跟风股吧/抖音/雪球的「吹票」信息，只信券商研报+龙虎榜+一季报数据；④每笔交易记录买入理由、止损位、目标位，事后归因分析，持续优化选股模型；⑤复利思维：小资金的优势在于灵活，每次赚5%-10%及时兑现，积小胜为大胜，不追求一夜暴富。当前市场科技板块处于景气上行周期，但估值已不便宜，保持敬畏心、严格执行纪律是长期盈利的基础。</div><div class="highlight-box">小资金灵活优势，积小胜为大胜，止损铁律不可动摇</div></div></div>
+
+<!-- 趋势预判表格（若在各章节内未包含则独立显示）-->
+
+
+<!-- 摘要 -->
+<div class="summary-box"><div class="summary-label">📌 核心摘要</div><div class="summary-text">5月7日A股三大指数全线收红，创业板指创十年新高，电子板块单日净流入230亿元居首。本报告针对低风险偏好、中期持仓（3-15天）的投资者，从券商金股推荐、龙虎榜资金验证、一季报业绩兑现三个维度筛选5只科技龙头标的，以确定性仓位为主、分散建仓为原则，控制单票仓位不超过20%，止损线设在-3%至-5%。</div></div>
+
+<!-- 龙虾寄语 -->
+<div class="quote-box">投资不是赌方向，而是计算概率与赔率后的理性决策。</div>
+
+<!-- 免责声明 -->
+<div class="disclaimer">免责声明：本报告由AI生成，数据来源于公开网络，仅供参考，不构成投资建议。</div>
+
+</div><!-- /.page-frame -->
+</body>
+</html>

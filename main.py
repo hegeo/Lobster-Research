@@ -293,13 +293,27 @@ def create_task(cmd: str, args: argparse.Namespace) -> dict:
     }
     search_queries = [q.format(**tpl_vars) for q in cfg["search_templates"]]
 
-    # 从 prompt 模板追加 recommendedKeywords（避免重复）
+    # 从 prompt 模板追加 recommendedKeywords（智能去重）
+    # 策略：只保留与 search_templates 不重叠的关键词，且最多追加 2 个
     kw_set = set(q.format(**tpl_vars) for q in cfg["search_templates"])
+    _template_words = set()
+    for q in search_queries:
+        _template_words.update(q.split())
+    added = 0
     for kw in prompt_tpl.get("recommendedKeywords", []):
+        if added >= 2:
+            break
         kw_formatted = f"{kw} {today}"
-        if kw_formatted not in kw_set:
-            search_queries.append(kw_formatted)
-            kw_set.add(kw_formatted)
+        if kw_formatted in kw_set:
+            continue
+        # 如果新关键词的核心词（去掉日期）有 70%+ 已在模板关键词中出现，跳过
+        kw_core = set(kw.split())
+        overlap = len(kw_core & _template_words) / len(kw_core) if kw_core else 0
+        if overlap >= 0.7:
+            continue
+        search_queries.append(kw_formatted)
+        kw_set.add(kw_formatted)
+        added += 1
 
     # 构造 keyword_groups（批量搜索模式）
     # 从 prompt 模板的 recommendedDataSources 提取数据源
@@ -808,19 +822,32 @@ def run_smart_task(domain: dict, tier: str, prompt_template: str, agent_hint: st
     search_queries = [q.format(**clean_vars) for q in domain.get("search_templates", [])]
     kw_set = set(search_queries)
 
-    # 3. recommendedKeywords：仅追加带时效性的关键词（含 {date} 占位的）
+    # 3. recommendedKeywords：智能追加时效性关键词（带去重）
     #    不再盲目追加所有 recommendedKeywords（它们是报告结构标签，不是搜索词）
-    #    选股类特殊处理：追加高质量时效性关键词
+    #    选股类特殊处理：追加高质量时效性关键词（去重后最多追加 2 个）
     if domain["id"] == "screener":
         extra_kws = [
             f"今日涨停复盘 {today}",
             f"连板股 龙虎榜 {today}",
             f"主力资金 游资动向 {today}",
         ]
+        _template_words = set()
+        for q in search_queries:
+            _template_words.update(q.split())
+        added = 0
         for kw in extra_kws:
-            if kw not in kw_set:
-                search_queries.append(kw)
-                kw_set.add(kw)
+            if added >= 2:
+                break
+            if kw in kw_set:
+                continue
+            kw_core = set(kw.split())
+            overlap = len(kw_core & _template_words) / len(kw_core) if kw_core else 0
+            if overlap >= 0.7:
+                continue
+            search_queries.append(kw)
+            kw_set.add(kw)
+            _template_words.update(kw.split())
+            added += 1
 
     # ── keyword_groups：去重，不再重复搜两遍 ──
     keyword_groups = []
