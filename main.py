@@ -376,8 +376,8 @@ def create_task(cmd: str, args: argparse.Namespace) -> dict:
         "keyword_groups": keyword_groups,       # 新模式：批量搜索参数
         "files": {},     # 记录各步骤生成的文件路径
         "agent_hint": cfg["agent_hint"],
-        # prompt 模板数据，task_runner 用来注入 AGENT_BRIEFING
-        "prompt_template": prompt_tpl,
+        # prompt 模板文件路径（不注入完整模板数据，减少 meta.json 冗余）
+        "prompt_template_path": cfg.get("prompt_template", ""),
         "report_path": "",
         "error": "",
     }
@@ -687,7 +687,7 @@ def cmd_smart(user_input: str, code: str = "", name: str = "", topic: str = "",
             "keyword_groups": [],
             "files": {},
             "agent_hint": agent_hint,
-            "prompt_template": {},
+            "prompt_template_path": "",
             "report_path": "",
             "error": "",
             "smart_tier": "news",
@@ -908,7 +908,8 @@ def run_smart_task(domain: dict, tier: str, prompt_template: str, agent_hint: st
         "keyword_groups": keyword_groups,
         "files": {},
         "agent_hint": agent_hint,
-        "prompt_template": prompt_tpl,
+        # prompt 模板文件路径（不注入完整模板数据，减少 meta.json 冗余）
+        "prompt_template_path": prompt_template,
         "report_path": "",
         "error": "",
         "smart_tier": tier,

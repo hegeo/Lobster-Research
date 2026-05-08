@@ -320,7 +320,7 @@ class TaskRunner:
         try:
             # 使用 websearch_pro 的 API 模式（不通过命令行子进程）
             sys.path.insert(0, os.path.join(self.project_root, "scripts"))
-            from websearch_pro import run_batch_search, render_batch
+            from websearch_pro import run_batch_search
 
             result = run_batch_search(
                 keyword_groups=keyword_groups,
@@ -357,15 +357,9 @@ class TaskRunner:
                 data["groups"].append(group_entry)
 
             # 生成文本版输出（方便 Agent 快速浏览）
-            text_output = render_batch(result)
-            data["raw_output"] = text_output[:15000]  # 限制 15k
+            # 已移除 raw_output 和 05_search_batch.txt，减少冗余
 
             path = self._write_json("05_search_batch.json", data)
-
-            # 同时也输出一个纯文本版，方便直接读取
-            txt_path = os.path.join(self.task_dir, "05_search_batch.txt")
-            with open(txt_path, "w", encoding="utf-8") as f:
-                f.write(text_output)
 
             return [path]
 
@@ -378,7 +372,6 @@ class TaskRunner:
                     "fetched_at": datetime.now().isoformat(),
                     "success": False,
                 },
-                "raw_output": "",
                 "agent_note": f"批量搜索失败: {str(e)}",
             }
             path = self._write_json("05_search_batch.json", data)
@@ -487,9 +480,10 @@ class TaskRunner:
 
     def write_agent_briefing(self):
         """
-        生成 AGENT_BRIEFING.md：
-        告诉 Agent：任务是什么、有哪些数据文件、需要填写什么、输出格式是什么
-        如果有 prompt_template，会注入 dataRequirements 和 promptBody
+        生成精简版 AGENT_BRIEFING.md：
+        只告知任务基本信息、数据文件列表、用户画像，
+        提示 Agent 按照当前任务目录的 07_agent_input.json 来操作。
+        不再注入 promptBody 大纲、数据检查清单、schema 模板等冗余内容。
         """
         meta = self.meta
         files_list = ""
@@ -500,62 +494,8 @@ class TaskRunner:
             elif val:
                 files_list += f"  - {os.path.basename(val)}\n"
 
-        # 读取 agent_input 模板
-        schema = self._get_agent_input_schema(meta)
-        schema_str = json.dumps(schema, ensure_ascii=False, indent=2)
-
-        # 从 prompt_template 提取额外信息
-        tpl = meta.get("prompt_template", {})
-        tpl_name = tpl.get("name", "")
-        data_req = tpl.get("dataRequirements", "")
-        data_sources = tpl.get("recommendedDataSources", [])
-        core_idea = tpl.get("coreIdea", "")
-        prompt_body = tpl.get("promptBody", "")
-
-        # 构建数据检查清单
-        data_check_section = ""
-        if data_req:
-            separator = "\n"
-            data_items = [item.strip() for item in data_req.replace("、", ",").split(",") if item.strip()]
-            check_rows = [f"| {item} | _注明文件名_ | ⬜待检查 |" for item in data_items]
-            data_check_header = """
-## 数据完整性检查清单
-
-请逐一确认以下数据是否已在数据文件或搜索结果中获取。**缺失的项需补充搜索获取。**
-
-| 数据项 | 来源文件 | 状态 |
-|:---|:---|:---|
-"""
-            data_check_section = data_check_header + separator.join(check_rows) + separator
-
-        # 构建报告结构参考（大纲保留在 07_agent_input.json 的 _prompt_body 中，不在 briefing 重复）
-        structure_section = ""
-        if prompt_body:
-            structure_section = f"""
-## 报告结构
-
-大纲结构详见 `07_agent_input.json` 的 `_prompt_body` 字段（共 {len(prompt_body)} 字），请直接参考该字段组织报告内容。
-"""
-
-        # 数据来源
-        sources_section = ""
-        if data_sources:
-            joined_sources = ", ".join(data_sources)
-            sources_section = "\n**推荐数据源**：" + joined_sources + "\n"
-
-        # 核心思路段落（提前构建避免嵌套 f-string）
-        core_idea_section = ""
-        if core_idea:
-            core_idea_section = "\n**核心分析思路**：" + core_idea
-
-        # 搜索关键词列表（提前构建）
+        # 搜索关键词列表
         search_list = chr(10).join('- ' + q for q in meta.get('search_queries', []))
-
-        # 数据检查的占位文本
-        data_check_text = data_check_section if data_check_section else "请先读取所有数据文件，确认数据是否完整。"
-
-        # 模板来源行
-        template_line = ('**模板来源**: ' + tpl_name) if tpl_name else ''
 
         # ── 用户画像（从 user_prefs 构建） ──
         user_prefs = meta.get("user_prefs", {})
@@ -600,7 +540,6 @@ class TaskRunner:
 **报告类型**: {meta['label']} (`{meta['report_type']}`)
 **日期**: {meta['date']}
 **任务目录**: {self.task_dir}
-{template_line}
 {user_section}
 
 ---
@@ -611,31 +550,23 @@ class TaskRunner:
 
 {files_list}
 每个文件都有 `agent_note` 字段说明你需要从中提取什么。
-{sources_section}
+
 ---
 
 ## Phase 2 你的任务：整合 + 补充
 
-### 第一步：检查数据完整性
-{data_check_text}
+### 第一步：读取所有数据文件，确认数据是否完整
+缺失的项需自行补充搜索获取。
 
-### 第二步：补充搜索
-以下关键词搜索结果已在 05_search_*.json 中，**但你仍可自行补充搜索**
+### 第二步：补充搜索（可选）
+以下关键词搜索结果已在 05_search_batch.json 中，**但你仍可自行补充搜索**
 来获取更新、更深入的信息：
 {search_list}
-{core_idea_section}
 
 ### 第三步：填写 07_agent_input.json
-按下方 JSON 结构，把分析内容填入 `07_agent_input.json`。
+**按照当前任务目录的 `07_agent_input.json` 结构填写。**
+该文件已包含完整的填写指引（含 `_prompt_body` 大纲结构），请直接打开参考。
 **填写质量决定报告质量。**
-{structure_section}
----
-
-## 07_agent_input.json 填写模板
-
-```json
-{schema_str}
-```
 
 ---
 
@@ -654,7 +585,22 @@ python main.py generate --task-id {meta['task_id']}
         with open(briefing_path, "w", encoding="utf-8") as f:
             f.write(content)
 
-        # 同时写入空的 07_agent_input.json 占位
+        # 写入 07_agent_input.json（含 prompt_body 等注入）
+        # 需要从模板文件路径加载 prompt_tpl（meta 中已改为只存路径）
+        prompt_tpl = {}
+        tpl_path = meta.get("prompt_template_path", "")
+        if tpl_path:
+            full_path = os.path.join(self.project_root, "prompts", "json", tpl_path)
+            if os.path.exists(full_path):
+                try:
+                    with open(full_path, encoding="utf-8") as f:
+                        prompt_tpl = json.load(f)
+                except Exception:
+                    pass
+        # 临时注入 prompt_template 到 meta 副本供 schema 使用
+        schema_meta = {**meta, "prompt_template": prompt_tpl}
+        schema = self._get_agent_input_schema(schema_meta)
+
         schema_path = os.path.join(self.task_dir, "07_agent_input.json")
         if not os.path.exists(schema_path):
             with open(schema_path, "w", encoding="utf-8") as f:
