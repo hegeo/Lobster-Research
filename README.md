@@ -62,8 +62,8 @@
 | 组件         | 推荐                                                              |
 |:---------- |:--------------------------------------------------------------- |
 | **Agent**  | [WorkBuddy](https://www.workbuddy.ai) — 原生技能支持 + 文件交付            |
-| **AI 模型**  | [Mimo 2.5](https://mimo.xiaomi.com/) 或 [Kimi 2.5](https://www.kimi.com/) — 中文金融推理能力强，速度与质量均衡                        |
-| **搜索 API** | [Serpbase](https://serpbase.dev) — 多引擎聚合，JSON 输出稳定可靠             |
+| **AI 模型**  | Mimo 2.5 或 Kimi 2.5 — 中文金融推理能力强，速度与质量均衡                        |
+| **搜索 API** | [Serpbase](https://serpbase.com) — 多引擎聚合，JSON 输出稳定可靠             |
 
 以上组合用于生成 `showcase/` 中的所有演示报告。其他 Agent 与模型同样兼容，但输出质量可能有所差异。
 
@@ -294,8 +294,8 @@ No matter your background, just speak naturally. The system routes your request 
 | Component      | Recommendation                                                                  |
 |:-------------- |:------------------------------------------------------------------------------- |
 | **Agent**      | [WorkBuddy](https://www.workbuddy.ai) — native skill support + file delivery    |
-| **AI Model**   | [Mimo 2.5](https://mimo.xiaomi.com/) or [Kimi 2.5](https://www.kimi.com/) — best balance of Chinese financial reasoning and speed    |
-| **Search API** | [Serpbase](https://serpbase.dev) — reliable multi-engine search with JSON output |
+| **AI Model**   | Mimo 2.5 or Kimi 2.5 — best balance of Chinese financial reasoning and speed    |
+| **Search API** | [Serpbase](https://serpbase.com) — reliable multi-engine search with JSON output |
 
 These combinations were used to produce all demo reports in `showcase/`. Other agents and models will also work, but output quality may vary.
 
