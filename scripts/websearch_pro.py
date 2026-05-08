@@ -31,6 +31,7 @@
 import sys, os, time, json, re, math, random
 from difflib import SequenceMatcher
 from typing import List, Dict, Optional, Any
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 sys.stdout.reconfigure(encoding="utf-8")
 
@@ -727,56 +728,83 @@ def run_batch_search(
     keyword_groups: List[Dict[str, Any]],
     global_max_total: Optional[int] = None,
     fresh: bool = False,
+    max_workers: int = 8,
 ) -> Dict[str, Any]:
     """
-    批量搜索：关键词组 × 数据源组，循环搜索后汇总。
-    使用 run_all_available 合并所有可用引擎的结果。
+    批量搜索：关键词组 × 数据源组，并发搜索后汇总。
+    使用 ThreadPoolExecutor 并发执行搜索任务，显著减少等待时间。
+    每个搜索任务按主备引擎优先级（run_with_fallback），第一个成功即停。
     """
     days = 7 if fresh else None
-    all_results = []
     group_results = []
+    all_group_tasks = []  # (group_index, query_label, future)
 
+    # Phase 1: 构建所有搜索任务
     for gi, group in enumerate(keyword_groups):
         keywords = group.get("keywords", [])
         sources  = group.get("sources", [])
-        max_per_kw  = group.get("max_per_keyword")
         max_per_src = group.get("max_per_source")
+        max_per_kw  = group.get("max_per_keyword")
         group_label = group.get("group_label", f"group_{gi}")
-
         if not keywords:
+            group_results.append({
+                "label": group_label, "keywords": keywords,
+                "sources": sources if sources else None,
+                "results": [], "result_count": 0,
+            })
             continue
 
-        group_all = []
         per_engine = max_per_src or max_per_kw
-
+        tasks = []
         for kw in keywords:
             if sources:
-                # 指定数据源：用 site: 语法
                 for src_domain in sources:
                     site_query = f"{kw} site:{src_domain}"
-                    raw = run_all_available(site_query, days, per_engine)
-                    group_all.extend(raw)
+                    tasks.append((site_query, per_engine))
             else:
-                raw = run_all_available(kw, days, per_engine)
-                group_all.extend(raw)
+                tasks.append((kw, per_engine))
 
-        skip_quality = bool(sources)
-        group_final = filter_sort_and_trim(
-            group_all,
-            max_total=max_per_kw or global_max_total,
-            skip_quality_sort=skip_quality,
-        )
-
+        # 初始化 group 结果槽位
         group_results.append({
-            "label": group_label,
-            "keywords": keywords,
+            "label": group_label, "keywords": keywords,
             "sources": sources if sources else None,
-            "results": group_final,
-            "result_count": len(group_final),
+            "_tasks": tasks, "_raw": [],  # 临时字段
         })
-        all_results.extend(group_final)
 
-    # 全局去重
+    # Phase 2: 并发执行所有搜索任务
+    with ThreadPoolExecutor(max_workers=max_workers) as pool:
+        futures = {}
+        for gi, gr in enumerate(group_results):
+            for query, per_engine in gr.pop("_tasks", []):
+                f = pool.submit(run_with_fallback, query, days, per_engine)
+                futures[f] = gi
+
+        for f in as_completed(futures):
+            gi = futures[f]
+            try:
+                results = f.result()
+                if results:
+                    group_results[gi]["_raw"].extend(results)
+            except Exception:
+                pass
+
+    # Phase 3: 每个组去重 + 裁剪
+    all_results = []
+    for gi, gr in enumerate(group_results):
+        has_sources = bool(gr.get("sources"))
+        gr["results"] = filter_sort_and_trim(
+            gr.pop("_raw", []),
+            max_total=gr.get("max_per_keyword") if has_sources else global_max_total,
+            skip_quality_sort=has_sources,
+        ) if has_sources else filter_sort_and_trim(
+            gr.pop("_raw", []),
+            max_total=global_max_total,
+            skip_quality_sort=False,
+        )
+        gr["result_count"] = len(gr["results"])
+        all_results.extend(gr["results"])
+
+    # Phase 4: 全局去重
     seen_titles = set()
     deduped = []
     for r in all_results:

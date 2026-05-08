@@ -17,7 +17,7 @@
       "id": "market",
       "label": "大盘行情",
       "keywords": ["大盘", "行情", "A股", "沪指", "上证", "创业板", "科创", "沪深", "指数"],
-      "steps": ["market_index", "search"],
+      "steps": ["market_index", "market_state", "search"],
       "search_templates": [
         "A股 大盘 今日走势 板块热点 涨停 {date}",
         "沪深 北向资金 主力资金流向 {date}"
@@ -34,7 +34,7 @@
       "id": "stock",
       "label": "个股",
       "keywords": ["股票", "个股", "走势", "股价", "涨停", "跌停", "K线", "龙虎榜"],
-      "steps": ["quote", "kline", "master", "search"],
+      "steps": ["quote", "kline", "master", "market_state", "search"],
       "search_templates": [
         "{name} {code} 最新消息 业绩 财报 {date}",
         "{name} 机构评级 目标价 券商研报 {date}"
@@ -51,7 +51,7 @@
       "id": "portfolio",
       "label": "持仓",
       "keywords": ["持仓", "仓位", "组合", "资产配置", "投资组合"],
-      "steps": ["portfolio", "market_index", "search"],
+      "steps": ["portfolio", "market_index", "market_state", "search"],
       "search_templates": [
         "A股 大盘 市场情绪 板块轮动 {date}"
       ],
@@ -67,7 +67,7 @@
       "id": "screener",
       "label": "选股",
       "keywords": ["选股", "买什么", "标的", "快速选股"],
-      "steps": ["market_index", "search"],
+      "steps": ["market_index", "market_state", "search"],
       "search_templates": [
         "A股 涨停复盘 连板梯队 龙头股 {date}",
         "龙虎榜 主力资金 游资动向 {date}"
@@ -84,7 +84,7 @@
       "id": "shortterm",
       "label": "短线",
       "keywords": ["短线", "打板", "情绪", "盘前", "龙头股", "连板", "首板"],
-      "steps": ["market_index", "search"],
+      "steps": ["market_index", "market_state", "search"],
       "search_templates": [
         "A股 涨停 龙头 连板梯队 短线情绪 {date}",
         "打板策略 炸板率 封单金额 {date}"
@@ -99,7 +99,7 @@
       "id": "etf",
       "label": "ETF",
       "keywords": ["ETF", "基金", "定投", "宽基", "红利", "指数基金"],
-      "steps": ["search"],
+      "steps": ["market_state", "search"],
       "search_templates": [
         "ETF 资金流入 热门 净值 排名 {date}"
       ],
@@ -161,7 +161,7 @@
     {
       "id": "frontier",
       "label": "前沿技术",
-      "keywords": ["前沿", "量子计算", "脑机接口", "基因编辑", "核聚变", "6G", "具身智能", "机器人"],
+      "keywords": ["前沿", "技术研报", "技术研究", "技术发展", "核聚变", "6G", "具身智能", "机器人"],
       "steps": ["search"],
       "search_templates": [
         "{topic} 技术突破 进展 {date}",

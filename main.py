@@ -376,8 +376,8 @@ def create_task(cmd: str, args: argparse.Namespace) -> dict:
         "keyword_groups": keyword_groups,       # 新模式：批量搜索参数
         "files": {},     # 记录各步骤生成的文件路径
         "agent_hint": cfg["agent_hint"],
-        # prompt 模板文件路径（不注入完整模板数据，减少 meta.json 冗余）
-        "prompt_template_path": cfg.get("prompt_template", ""),
+        # prompt 模板数据，task_runner 用来注入 AGENT_BRIEFING
+        "prompt_template": prompt_tpl,
         "report_path": "",
         "error": "",
     }
@@ -474,6 +474,15 @@ def run_task(cmd: str, args: argparse.Namespace):
                     step_ok("market_index", f"大盘指数 → {os.path.basename(path)}")
                 else:
                     step_warn("market_index", "大盘数据获取失败")
+
+            elif step == "market_state":
+                ok, path = runner.run_market_state()
+                meta["steps"]["market_state"] = "done" if ok else "failed"
+                if ok:
+                    meta["files"]["market_state"] = path
+                    step_ok("market_state", f"大盘整体状况 → {os.path.basename(path)}")
+                else:
+                    step_warn("market_state", "大盘整体状况获取失败，可手动补充")
 
             elif step == "portfolio":
                 portfolio_file = meta["args"].get("portfolio_file", "")
@@ -687,7 +696,7 @@ def cmd_smart(user_input: str, code: str = "", name: str = "", topic: str = "",
             "keyword_groups": [],
             "files": {},
             "agent_hint": agent_hint,
-            "prompt_template_path": "",
+            "prompt_template": {},
             "report_path": "",
             "error": "",
             "smart_tier": "news",
@@ -711,6 +720,14 @@ def cmd_smart(user_input: str, code: str = "", name: str = "", topic: str = "",
                         step_ok("market_index", f"大盘指数 → {os.path.basename(path)}")
                     else:
                         step_warn("market_index", "大盘数据获取失败")
+                elif step == "market_state":
+                    ok, path = runner.run_market_state()
+                    meta["steps"]["market_state"] = "done" if ok else "failed"
+                    if ok:
+                        meta["files"]["market_state"] = path
+                        step_ok("market_state", f"大盘整体状况 → {os.path.basename(path)}")
+                    else:
+                        step_warn("market_state", "大盘整体状况获取失败，可手动补充")
                 elif step == "portfolio":
                     portfolio_file = meta["args"].get("portfolio_file", "")
                     ok, path = runner.run_portfolio(portfolio_file if portfolio_file else None)
@@ -908,8 +925,7 @@ def run_smart_task(domain: dict, tier: str, prompt_template: str, agent_hint: st
         "keyword_groups": keyword_groups,
         "files": {},
         "agent_hint": agent_hint,
-        # prompt 模板文件路径（不注入完整模板数据，减少 meta.json 冗余）
-        "prompt_template_path": prompt_template,
+        "prompt_template": prompt_tpl,
         "report_path": "",
         "error": "",
         "smart_tier": tier,
@@ -952,6 +968,12 @@ def run_smart_task(domain: dict, tier: str, prompt_template: str, agent_hint: st
                 meta["steps"]["market_index"] = "done" if ok else "failed"
                 if ok: meta["files"]["market_index"] = path; step_ok("market_index", os.path.basename(path))
                 else: step_warn("market_index", "大盘数据获取失败")
+
+            elif step == "market_state":
+                ok, path = runner.run_market_state()
+                meta["steps"]["market_state"] = "done" if ok else "failed"
+                if ok: meta["files"]["market_state"] = path; step_ok("market_state", os.path.basename(path))
+                else: step_warn("market_state", "大盘整体状况获取失败，可手动补充")
 
             elif step == "portfolio":
                 portfolio_file = meta["args"].get("portfolio_file", "")
