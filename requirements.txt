@@ -1,0 +1,23 @@
+# lobster-research-v2.0 dependencies
+# ================================
+# Core (required)
+requests>=2.28.0
+urllib3>=1.26.0
+beautifulsoup4>=4.12.0
+chardet>=5.0.0
+pandas>=1.5.0
+
+# Data source
+akshare>=1.10.0
+
+# Browser automation
+playwright>=1.40.0
+
+# Optional: image OCR (parse_image.py Tier 2)
+# easyocr>=1.7.0
+
+# Optional: browser-based OCR fallback (parse_image.py Tier 4A)
+# DrissionPage>=4.0.0
+
+# Optional: image processing (parse_image.py)
+# Pillow>=9.0.0

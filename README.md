@@ -46,40 +46,6 @@
 
 无论您是什么背景，直接用自然语言说出需求，系统自动识别并路由。
 
-### 使用方式
-
-**龙虾调研是一款 OpenClaw 兼容的技能。** 它在支持工具调用和文件系统访问的 AI Agent 平台中表现最佳：
-
-| 平台                   | 使用方式                                                                           |
-|:-------------------- |:------------------------------------------------------------------------------ |
-| **WorkBuddy**        | 作为技能安装。Agent 读取 `SKILL.md`，运行 `main.py smart`，填写 `07_agent_input.json`，交付 PDF。 |
-| **QClaw / OpenClaw** | 部署技能文件夹。Agent 编排 Phase 1（数据采集）→ Phase 2（内容整合）→ Phase 3（PDF 生成）。                |
-| **其他 Agent 框架**      | 任何能执行 Python 脚本、读写 JSON、调用 `deliver_attachments` 的框架均可兼容。                      |
-
-`SKILL.md` 文件是 **Agent 的操作手册** —— 它告诉 AI 每个阶段该做什么、遵守什么规则、如何交付结果。
-
-### 独立客户端使用
-
-如果您希望**不依赖 AI Agent 平台**使用龙虾调研（例如作为纯 CLI 工具或桌面应用），需要改造 `main.py`，将 Agent 的 Phase 2 职责融合进代码流程：
-
-```
-当前（Agent 辅助）：
-  Phase 1（代码） → Phase 2（AI Agent 读 JSON + 写 07_agent_input.json） → Phase 3（代码）
-
-独立客户端目标：
-  Phase 1（代码） → Phase 2（自行调用 AI API：将 JSON 数据发送给 GPT/Claude 等） → Phase 3（代码）
-```
-
-**需要在 `main.py` 中改造的内容：**
-
-1. Phase 1 完成后，读取所有生成的 JSON 数据文件
-2. 构建包含 JSON 数据 + `meta.json` 中 `agent_hint` 的 prompt
-3. 调用您的 AI API（OpenAI、Anthropic、本地大模型等）
-4. 将 AI 返回结果解析写入 `07_agent_input.json`
-5. 自动触发 Phase 3（`generate`）生成报告
-
-详见 `references/project_structure.md` 了解完整的数据流和文件结构。
-
 ### 核心特性
 
 - 🎯 **智能 NLP 路由**：自然语言输入 → 双层关键词自动匹配领域和输出类型
@@ -88,35 +54,6 @@
 - 🤖 **人机协作**：代码负责确定性数据采集，AI 负责理解性分析整合
 - 🎨 **精美 PDF 输出**：多主题样式（iOS 液态 / 蓝色 / 橙色），支持表格和图表
 - 🔧 **热更新配置**：所有路由关键词和领域设置放在 `main.json` 中，无需改代码
-
-### 架构设计
-
-```
-┌─────────────┐     ┌─────────────────────────────────────────────────────┐
-│   用户      │────▶│  Phase 1: 代码驱动数据采集                           │
-│   输入      │     │  • 实时行情（新浪/腾讯）                              │
-│             │     │  • K线 + 技术指标                                     │
-│             │     │  • 个股详细资料                                       │
-│             │     │  • 大盘指数                                           │
-│             │     │  • 联网搜索（多引擎）                                 │
-└─────────────┘     └────────────────────┬────────────────────────────────┘
-                                         │ JSON 文件写入 output/tasks/<id>/
-                                         ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│  Phase 2: AI 整合（Agent 填写 07_agent_input.json）                      │
-│  • 读取所有 JSON 数据文件                                                 │
-│  • 联网搜索补充缺失信息                                                   │
-│  • 填写结构化报告内容                                                     │
-└────────────────────┬────────────────────────────────────────────────────┘
-                     │ 07_agent_input.json
-                     ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│  Phase 3: 代码驱动报告生成                                               │
-│  • HTML 渲染（Jinja2 + CSS 主题）                                        │
-│  • PDF 转换（OpenClaw browser.pdf）                                      │
-│  • 交付用户                                                               │
-└─────────────────────────────────────────────────────────────────────────┘
-```
 
 ### 推荐配置
 
@@ -160,26 +97,45 @@ cp config/settings.json.example config/settings.json
 # 编辑 settings.json，填入 Tavily/Bing 等 API 密钥
 ```
 
-### 命令参考（开发者）
+### 使用方式
 
-```bash
-# Smart 模式 — 自然语言自动路由
-python main.py smart --input "大盘今日行情"
-python main.py smart --input "新能源汽车行业研报"
-python main.py smart --input "分析我的持仓"
+**龙虾调研是一款 OpenClaw 兼容的技能。** 它在支持工具调用和文件系统访问的 AI Agent 平台中表现最佳：
 
-# 直接命令
-python main.py stock --code 000063 --name 中兴通讯
-python main.py company --code 000063 --name 中兴通讯
-python main.py market
-python main.py industry --topic AI芯片
-python main.py screener --topic 机器人
-python main.py portfolio --file portfolio.json
+| 平台                   | 使用方式                                                                           |
+|:-------------------- |:------------------------------------------------------------------------------ |
+| **WorkBuddy**        | 作为技能安装。Agent 读取 `SKILL.md`，运行 `main.py smart`，填写 `07_agent_input.json`，交付 PDF。 |
+| **QClaw / OpenClaw** | 部署技能文件夹。Agent 编排 Phase 1（数据采集）→ Phase 2（内容整合）→ Phase 3（PDF 生成）。                |
+| **其他 Agent 框架**      | 任何能执行 Python 脚本、读写 JSON、调用 `deliver_attachments` 的框架均可兼容。                      |
 
-# 生命周期
-python main.py generate --task-id 20260505_143022
-python main.py status --task-id 20260505_143022
-python main.py list
+`SKILL.md` 文件是 **Agent 的操作手册** —— 它告诉 AI 每个阶段该做什么、遵守什么规则、如何交付结果。
+
+### 架构设计
+
+```
+┌─────────────┐     ┌─────────────────────────────────────────────────────┐
+│   用户      │────▶│  Phase 1: 代码驱动数据采集                           │
+│   输入      │     │  • 实时行情（新浪/腾讯）                              │
+│             │     │  • K线 + 技术指标                                     │
+│             │     │  • 个股详细资料                                       │
+│             │     │  • 大盘指数                                           │
+│             │     │  • 联网搜索（多引擎）                                 │
+└─────────────┘     └────────────────────┬────────────────────────────────┘
+                                         │ JSON 文件写入 output/tasks/<id>/
+                                         ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│  Phase 2: AI 整合（Agent 填写 07_agent_input.json）                      │
+│  • 读取所有 JSON 数据文件                                                 │
+│  • 联网搜索补充缺失信息                                                   │
+│  • 填写结构化报告内容                                                     │
+└────────────────────┬────────────────────────────────────────────────────┘
+                     │ 07_agent_input.json
+                     ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│  Phase 3: 代码驱动报告生成                                               │
+│  • HTML 渲染（Jinja2 + CSS 主题）                                        │
+│  • PDF 转换（OpenClaw browser.pdf）                                      │
+│  • 交付用户                                                               │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### 项目结构
@@ -224,9 +180,53 @@ lobster-research/
 | PDF 生成 | OpenClaw browser.pdf()                   |
 | 配置格式   | JSON                                     |
 
-### 截图展示
+### 独立客户端使用
 
-> 截图存放在 `showcase/` 目录下。
+如果您希望**不依赖 AI Agent 平台**使用龙虾调研（例如作为纯 CLI 工具或桌面应用），需要改造 `main.py`，将 Agent 的 Phase 2 职责融合进代码流程：
+
+```
+当前（Agent 辅助）：
+  Phase 1（代码） → Phase 2（AI Agent 读 JSON + 写 07_agent_input.json） → Phase 3（代码）
+
+独立客户端目标：
+  Phase 1（代码） → Phase 2（自行调用 AI API：将 JSON 数据发送给 GPT/Claude 等） → Phase 3（代码）
+```
+
+**需要在 `main.py` 中改造的内容：**
+
+1. Phase 1 完成后，读取所有生成的 JSON 数据文件
+2. 构建包含 JSON 数据 + `meta.json` 中 `agent_hint` 的 prompt
+3. 调用您的 AI API（OpenAI、Anthropic、本地大模型等）
+4. 将 AI 返回结果解析写入 `07_agent_input.json`
+5. 自动触发 Phase 3（`generate`）生成报告
+
+详见 `references/project_structure.md` 了解完整的数据流和文件结构。
+
+### 命令参考（开发者）
+
+```bash
+# Smart 模式 — 自然语言自动路由
+python main.py smart --input "大盘今日行情"
+python main.py smart --input "新能源汽车行业研报"
+python main.py smart --input "分析我的持仓"
+
+# 直接命令
+python main.py stock --code 000063 --name 中兴通讯
+python main.py company --code 000063 --name 中兴通讯
+python main.py market
+python main.py industry --topic AI芯片
+python main.py screener --topic 机器人
+python main.py portfolio --file portfolio.json
+
+# 生命周期
+python main.py generate --task-id 20260505_143022
+python main.py status --task-id 20260505_143022
+python main.py list
+```
+
+### 案例展示
+
+> 更多实机运行截图和研报案例 PDF 文件在本仓库的 `showcase/` 目录内。
 
 <div align="center">
   <img src="showcase/WorkBuddy_4gPcUw3g9u.png" width="400">
@@ -278,40 +278,6 @@ Lobster Research is an **AI-powered financial research report generator** design
 
 No matter your background, just speak naturally. The system routes your request automatically.
 
-### How to Use It
-
-**Lobster Research is designed as an OpenClaw-compatible skill.** It works best within AI Agent platforms that support tool calling and file system access:
-
-| Platform                   | How to Use                                                                                                                          |
-|:-------------------------- |:----------------------------------------------------------------------------------------------------------------------------------- |
-| **WorkBuddy**              | Install as a skill. The Agent reads `SKILL.md`, runs `main.py smart`, fills `07_agent_input.json`, and delivers the PDF.            |
-| **QClaw / OpenClaw**       | Deploy the skill folder. The Agent orchestrates Phase 1 (data collection) → Phase 2 (content synthesis) → Phase 3 (PDF generation). |
-| **Other Agent frameworks** | Any framework that can execute Python scripts, read/write JSON, and call `deliver_attachments` is compatible.                       |
-
-The `SKILL.md` file serves as the **Agent instruction manual** — it tells the AI exactly what to do at each phase, what rules to follow, and how to deliver results.
-
-### Standalone Mode
-
-If you want to use Lobster Research **without an AI Agent platform** (e.g., as a pure CLI tool or a desktop app), you will need to modify `main.py` to fuse the Agent's Phase 2 responsibilities into the code pipeline:
-
-```
-Current (Agent-assisted):
-  Phase 1 (code) → Phase 2 (AI Agent reads JSON + writes 07_agent_input.json) → Phase 3 (code)
-
-Standalone target:
-  Phase 1 (code) → Phase 2 (your own AI API call: send JSON to GPT/Claude/etc.) → Phase 3 (code)
-```
-
-**What to change in `main.py`:**
-
-1. After Phase 1 completes, read all generated JSON files
-2. Construct a prompt containing the JSON data + the `agent_hint` from `meta.json`
-3. Call your AI API (OpenAI, Anthropic, local LLM, etc.) with this prompt
-4. Parse the AI's response into `07_agent_input.json`
-5. Trigger Phase 3 (`generate`) automatically
-
-See `references/project_structure.md` for the full file layout and data flow.
-
 ### Key Features
 
 - 🎯 **Smart NLP Routing**: Natural language input → automatic domain + output-type matching via dual-layer keyword system
@@ -320,35 +286,6 @@ See `references/project_structure.md` for the full file layout and data flow.
 - 🤖 **Human-AI Collaboration**: Code handles deterministic data collection; AI handles analytical synthesis
 - 🎨 **Beautiful PDF Output**: Multiple themes (iOS Liquid / Blue / Orange) with table and chart support
 - 🔧 **Hot-Reload Config**: All routing keywords and domain settings live in `main.json` — no code changes needed
-
-### Architecture
-
-```
-┌─────────────┐     ┌─────────────────────────────────────────────────────┐
-│   User      │────▶│  Phase 1: Code-Driven Data Collection               │
-│   Input     │     │  • Real-time quotes (Sina/Tencent)                  │
-│             │     │  • K-line + technical indicators                    │
-│             │     │  • Individual stock profiles                          │
-│             │     │  • Market indices                                     │
-│             │     │  • Web search (multi-engine)                          │
-└─────────────┘     └────────────────────┬────────────────────────────────┘
-                                         │ JSON files in output/tasks/<id>/
-                                         ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│  Phase 2: AI Integration (Agent fills 07_agent_input.json)              │
-│  • Read all JSON data files                                             │
-│  • Supplement with additional web search                                │
-│  • Fill structured report content                                       │
-└────────────────────┬────────────────────────────────────────────────────┘
-                     │ 07_agent_input.json
-                     ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│  Phase 3: Code-Driven Report Generation                                 │
-│  • HTML rendering (Jinja2 + CSS themes)                                 │
-│  • PDF conversion (OpenClaw browser.pdf)                                │
-│  • Deliver to user                                                      │
-└─────────────────────────────────────────────────────────────────────────┘
-```
 
 ### Recommended Setup
 
@@ -392,26 +329,45 @@ cp config/settings.json.example config/settings.json
 # Edit settings.json with your Tavily/Bing API keys
 ```
 
-### CLI Commands (for developers)
+### How to Use It
 
-```bash
-# Smart mode — natural language routing
-python main.py smart --input "大盘今日行情"
-python main.py smart --input "新能源汽车行业研报"
-python main.py smart --input "分析我的持仓"
+**Lobster Research is designed as an OpenClaw-compatible skill.** It works best within AI Agent platforms that support tool calling and file system access:
 
-# Direct commands
-python main.py stock --code 000063 --name 中兴通讯
-python main.py company --code 000063 --name 中兴通讯
-python main.py market
-python main.py industry --topic AI芯片
-python main.py screener --topic 机器人
-python main.py portfolio --file portfolio.json
+| Platform                   | How to Use                                                                                                                          |
+|:-------------------------- |:----------------------------------------------------------------------------------------------------------------------------------- |
+| **WorkBuddy**              | Install as a skill. The Agent reads `SKILL.md`, runs `main.py smart`, fills `07_agent_input.json`, and delivers the PDF.            |
+| **QClaw / OpenClaw**       | Deploy the skill folder. The Agent orchestrates Phase 1 (data collection) → Phase 2 (content synthesis) → Phase 3 (PDF generation). |
+| **Other Agent frameworks** | Any framework that can execute Python scripts, read/write JSON, and call `deliver_attachments` is compatible.                       |
 
-# Lifecycle
-python main.py generate --task-id 20260505_143022
-python main.py status --task-id 20260505_143022
-python main.py list
+The `SKILL.md` file serves as the **Agent instruction manual** — it tells the AI exactly what to do at each phase, what rules to follow, and how to deliver results.
+
+### Architecture
+
+```
+┌─────────────┐     ┌─────────────────────────────────────────────────────┐
+│   User      │────▶│  Phase 1: Code-Driven Data Collection               │
+│   Input     │     │  • Real-time quotes (Sina/Tencent)                  │
+│             │     │  • K-line + technical indicators                    │
+│             │     │  • Individual stock profiles                          │
+│             │     │  • Market indices                                     │
+│             │     │  • Web search (multi-engine)                          │
+└─────────────┘     └────────────────────┬────────────────────────────────┘
+                                         │ JSON files in output/tasks/<id>/
+                                         ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│  Phase 2: AI Integration (Agent fills 07_agent_input.json)              │
+│  • Read all JSON data files                                             │
+│  • Supplement with additional web search                                │
+│  • Fill structured report content                                       │
+└────────────────────┬────────────────────────────────────────────────────┘
+                     │ 07_agent_input.json
+                     ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│  Phase 3: Code-Driven Report Generation                                 │
+│  • HTML rendering (Jinja2 + CSS themes)                                 │
+│  • PDF conversion (OpenClaw browser.pdf)                                │
+│  • Deliver to user                                                      │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### Project Structure
@@ -456,9 +412,53 @@ lobster-research/
 | PDF Generation   | OpenClaw browser.pdf()                                       |
 | Config Format    | JSON                                                         |
 
-### Screenshots
+### Standalone Mode
 
-> Screenshots are stored in the `showcase/` directory.
+If you want to use Lobster Research **without an AI Agent platform** (e.g., as a pure CLI tool or a desktop app), you will need to modify `main.py` to fuse the Agent's Phase 2 responsibilities into the code pipeline:
+
+```
+Current (Agent-assisted):
+  Phase 1 (code) → Phase 2 (AI Agent reads JSON + writes 07_agent_input.json) → Phase 3 (code)
+
+Standalone target:
+  Phase 1 (code) → Phase 2 (your own AI API call: send JSON to GPT/Claude/etc.) → Phase 3 (code)
+```
+
+**What to change in `main.py`:**
+
+1. After Phase 1 completes, read all generated JSON files
+2. Construct a prompt containing the JSON data + the `agent_hint` from `meta.json`
+3. Call your AI API (OpenAI, Anthropic, local LLM, etc.) with this prompt
+4. Parse the AI's response into `07_agent_input.json`
+5. Trigger Phase 3 (`generate`) automatically
+
+See `references/project_structure.md` for the full file layout and data flow.
+
+### CLI Commands (for developers)
+
+```bash
+# Smart mode — natural language routing
+python main.py smart --input "大盘今日行情"
+python main.py smart --input "新能源汽车行业研报"
+python main.py smart --input "分析我的持仓"
+
+# Direct commands
+python main.py stock --code 000063 --name 中兴通讯
+python main.py company --code 000063 --name 中兴通讯
+python main.py market
+python main.py industry --topic AI芯片
+python main.py screener --topic 机器人
+python main.py portfolio --file portfolio.json
+
+# Lifecycle
+python main.py generate --task-id 20260505_143022
+python main.py status --task-id 20260505_143022
+python main.py list
+```
+
+### Showcase
+
+> More screenshots and sample report PDFs are available in the `showcase/` directory.
 
 <div align="center">
   <img src="showcase/WorkBuddy_4gPcUw3g9u.png" width="400">
