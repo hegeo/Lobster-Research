@@ -59,11 +59,11 @@
 
 > 本仓库中的所有演示研报均基于以下配置输出，推荐使用以获得最佳效果。
 
-| 组件         | 推荐                                                              |
-|:---------- |:--------------------------------------------------------------- |
-| **Agent**  | [WorkBuddy](https://www.workbuddy.ai) — 原生技能支持 + 文件交付            |
-| **AI 模型**  | [Mimo 2.5](https://mimo.xiaomi.com/) 或 [Kimi 2.5](https://www.kimi.com/) — 中文金融推理能力强，速度与质量均衡                        |
-| **搜索 API** | [Serpbase](https://serpbase.dev) — 多引擎聚合，JSON 输出稳定可靠             |
+| 组件         | 推荐                                                                                           |
+|:---------- |:-------------------------------------------------------------------------------------------- |
+| **Agent**  | [WorkBuddy](https://www.workbuddy.ai) — 原生技能支持 + 文件交付                                        |
+| **AI 模型**  | [Mimo 2.5](https://mimo.xiaomi.com/) 或 [Kimi 2.5](https://www.kimi.com/) — 中文金融推理能力强，速度与质量均衡 |
+| **搜索 API** | [Serpbase](https://serpbase.dev) — 多引擎聚合，JSON 输出稳定可靠                                         |
 
 以上组合用于生成 `showcase/` 中的所有演示报告。其他 Agent 与模型同样兼容，但输出质量可能有所差异。
 
@@ -77,10 +77,11 @@
 
 ```
 请帮我安装 Lobster Research 技能：
-https://github.com/yourusername/lobster-research.git
+https://github.com/hegeo/lobster-research.git
 ```
 
 Agent 会自动完成：
+
 1. `git clone` 仓库到技能目录
 2. `pip install -r requirements.txt` 安装所有依赖
 3. 加载 `SKILL.md` 作为操作手册，开始处理你的请求
@@ -88,7 +89,7 @@ Agent 会自动完成：
 **手动安装（如需）**
 
 ```bash
-git clone https://github.com/yourusername/lobster-research.git
+git clone https://github.com/hegeo/lobster-research.git
 cd lobster-research
 pip install -r requirements.txt
 
@@ -169,16 +170,16 @@ lobster-research/
 
 ### 技术栈
 
-| 层级     | 技术                                       |
-|:------ |:---------------------------------------- |
-| 语言     | Python 3.10+                             |
-| 数据源    | 新浪财经、腾讯财经、AKShare、证券之星                   |
-| 搜索     | Tavily API、百度搜索、Bing 搜索、Serpbase、ProSearch      |
-| 网页抓取   | requests、Playwright                      |
-| OCR    | easyocr（持仓截图解析）                          |
-| 报告渲染   | Jinja2 + 自定义 CSS                         |
-| PDF 生成 | OpenClaw browser.pdf()                   |
-| 配置格式   | JSON                                     |
+| 层级     | 技术                                         |
+|:------ |:------------------------------------------ |
+| 语言     | Python 3.10+                               |
+| 数据源    | 新浪财经、腾讯财经、AKShare、证券之星                     |
+| 搜索     | Tavily API、百度搜索、Bing 搜索、Serpbase、ProSearch |
+| 网页抓取   | requests、Playwright                        |
+| OCR    | easyocr（持仓截图解析）                            |
+| 报告渲染   | Jinja2 + 自定义 CSS                           |
+| PDF 生成 | OpenClaw browser.pdf()                     |
+| 配置格式   | JSON                                       |
 
 ### 独立客户端使用
 
@@ -291,11 +292,11 @@ No matter your background, just speak naturally. The system routes your request 
 
 > The showcase reports in this repository were generated using the following configuration. We recommend it for the best experience.
 
-| Component      | Recommendation                                                                  |
-|:-------------- |:------------------------------------------------------------------------------- |
-| **Agent**      | [WorkBuddy](https://www.workbuddy.ai) — native skill support + file delivery    |
-| **AI Model**   | [Mimo 2.5](https://mimo.xiaomi.com/) or [Kimi 2.5](https://www.kimi.com/) — best balance of Chinese financial reasoning and speed    |
-| **Search API** | [Serpbase](https://serpbase.dev) — reliable multi-engine search with JSON output |
+| Component      | Recommendation                                                                                                                    |
+|:-------------- |:--------------------------------------------------------------------------------------------------------------------------------- |
+| **Agent**      | [WorkBuddy](https://www.workbuddy.ai) — native skill support + file delivery                                                      |
+| **AI Model**   | [Mimo 2.5](https://mimo.xiaomi.com/) or [Kimi 2.5](https://www.kimi.com/) — best balance of Chinese financial reasoning and speed |
+| **Search API** | [Serpbase](https://serpbase.dev) — reliable multi-engine search with JSON output                                                  |
 
 These combinations were used to produce all demo reports in `showcase/`. Other agents and models will also work, but output quality may vary.
 
@@ -309,10 +310,11 @@ Just paste this message to your Agent:
 
 ```
 Please install the Lobster Research skill from:
-https://github.com/yourusername/lobster-research.git
+https://github.com/hegeo/lobster-research.git
 ```
 
 The Agent will:
+
 1. `git clone` the repository into the skills directory
 2. `pip install -r requirements.txt` to install all dependencies
 3. Load `SKILL.md` as the operating manual and start handling your requests
@@ -320,7 +322,7 @@ The Agent will:
 **Manual setup (if needed)**
 
 ```bash
-git clone https://github.com/yourusername/lobster-research.git
+git clone https://github.com/hegeo/lobster-research.git
 cd lobster-research
 pip install -r requirements.txt
 
@@ -401,16 +403,16 @@ lobster-research/
 
 ### Tech Stack
 
-| Layer            | Technology                                                   |
-|:---------------- |:------------------------------------------------------------ |
-| Language         | Python 3.10+                                                 |
-| Data Sources     | Sina Finance, Tencent Finance, AKShare, Securities Star      |
-| Search           | Tavily API, Baidu Search, Bing Search, Serpbase, ProSearch   |
-| Web Scraping     | requests, Playwright                                         |
-| OCR              | easyocr (portfolio screenshot parsing)                       |
-| Report Rendering | Jinja2 + custom CSS                                          |
-| PDF Generation   | OpenClaw browser.pdf()                                       |
-| Config Format    | JSON                                                         |
+| Layer            | Technology                                                 |
+|:---------------- |:---------------------------------------------------------- |
+| Language         | Python 3.10+                                               |
+| Data Sources     | Sina Finance, Tencent Finance, AKShare, Securities Star    |
+| Search           | Tavily API, Baidu Search, Bing Search, Serpbase, ProSearch |
+| Web Scraping     | requests, Playwright                                       |
+| OCR              | easyocr (portfolio screenshot parsing)                     |
+| Report Rendering | Jinja2 + custom CSS                                        |
+| PDF Generation   | OpenClaw browser.pdf()                                     |
+| Config Format    | JSON                                                       |
 
 ### Standalone Mode
 
