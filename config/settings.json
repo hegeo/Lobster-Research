@@ -23,19 +23,19 @@
       "secondary": "bing_intl",
       "fetch_count": {
         "serpbase": 5,
-        "bing_api": 10,
-        "tavily": 5,
-        "prosearch": 10,
-        "baidu": 12,
-        "bing_intl": 10
-      },
-      "keep_count": {
-        "serpbase": 5,
         "bing_api": 5,
         "tavily": 5,
         "prosearch": 5,
         "baidu": 5,
         "bing_intl": 5
+      },
+      "keep_count": {
+        "serpbase": 2,
+        "bing_api": 2,
+        "tavily": 2,
+        "prosearch": 2,
+        "baidu": 2,
+        "bing_intl": 2
       }
     },
     "defaults": {
@@ -44,5 +44,17 @@
       "request_timeout": 12,
       "similarity_threshold": 0.6
     }
+  },
+  "apis": {
+    "_doc": "LLM API 配置（OpenAI 兼容接口），按 preferred_api 优先级尝试",
+    "kimi_api_key": "",
+    "kimi_base_url": "https://api.moonshot.cn/v1",
+    "kimi_model": "moonshot-v1-8k",
+    "mimo_api_key": "",
+    "mimo_base_url": "https://api.minimax.chat/v1",
+    "mimo_model": "minimax-text-01",
+    "deepseek_api_key": "",
+    "deepseek_base_url": "https://api.deepseek.com/v1",
+    "deepseek_model": "deepseek-chat"
   }
 }

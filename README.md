@@ -104,7 +104,7 @@ cp config/settings.json.example config/settings.json
 
 | 平台                   | 使用方式                                                                           |
 |:-------------------- |:------------------------------------------------------------------------------ |
-| **WorkBuddy**        | 作为技能安装。Agent 读取 `SKILL.md`，运行 `main.py smart`，填写 `07_agent_input.json`，交付 PDF。 |
+| **WorkBuddy**        | 作为技能安装。Agent 读取 `SKILL.md`，运行 `main.py smart`，填写 `5_agent_report_input.json`，交付 PDF。 |
 | **QClaw / OpenClaw** | 部署技能文件夹。Agent 编排 Phase 1（数据采集）→ Phase 2（内容整合）→ Phase 3（PDF 生成）。                |
 | **其他 Agent 框架**      | 任何能执行 Python 脚本、读写 JSON、调用 `deliver_attachments` 的框架均可兼容。                      |
 
@@ -124,12 +124,12 @@ cp config/settings.json.example config/settings.json
                                          │ JSON 文件写入 output/tasks/<id>/
                                          ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
-│  Phase 2: AI 整合（Agent 填写 07_agent_input.json）                      │
+│  Phase 2: AI 整合（Agent 填写 5_agent_report_input.json）                      │
 │  • 读取所有 JSON 数据文件                                                 │
 │  • 联网搜索补充缺失信息                                                   │
 │  • 填写结构化报告内容                                                     │
 └────────────────────┬────────────────────────────────────────────────────┘
-                     │ 07_agent_input.json
+                     │ 5_agent_report_input.json
                      ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
 │  Phase 3: 代码驱动报告生成                                               │
@@ -156,7 +156,8 @@ lobster-research/
 │   ├── baidu_dailynews.py       # 新闻头条
 │   ├── market_state.py  # 市场情绪（Playwright）
 │   ├── parse_image.py   # 持仓截图 OCR
-│   └── generate_report.py       # HTML/PDF 渲染器
+│   ├── generate_report.py       # HTML/PDF 渲染器
+│   └── generate_alonemode.py    # Alone 模式：自动调 LLM API
 ├── config/              # 配置
 │   ├── config.py        # 配置管理 + 持仓操作
 │   ├── config.json      # 用户偏好
@@ -181,27 +182,33 @@ lobster-research/
 | PDF 生成 | OpenClaw browser.pdf()                     |
 | 配置格式   | JSON                                       |
 
-### 独立客户端使用
+### 独立客户端使用 + Alone 模式（内置）
 
-如果您希望**不依赖 AI Agent 平台**使用龙虾调研（例如作为纯 CLI 工具或桌面应用），需要改造 `main.py`，将 Agent 的 Phase 2 职责融合进代码流程：
+龙虾调研内置 **Alone 模式**，支持不依赖 AI Agent 平台独立运行：
 
 ```
-当前（Agent 辅助）：
-  Phase 1（代码） → Phase 2（AI Agent 读 JSON + 写 07_agent_input.json） → Phase 3（代码）
+skill 模式（默认）：
+  Phase 1（代码采集） → Phase 2（AI Agent 读 JSON + 写 5_agent_report_input.json） → Phase 3（代码生成）
 
-独立客户端目标：
-  Phase 1（代码） → Phase 2（自行调用 AI API：将 JSON 数据发送给 GPT/Claude 等） → Phase 3（代码）
+alone 模式：
+  Phase 1（代码采集） → Phase 2（自动调 LLM API → 写 5_agent_report_input.json） → Phase 3（代码生成）
 ```
 
-**需要在 `main.py` 中改造的内容：**
+在 `alone` 模式下，Phase 2 自动通过 `generate_alonemode.py` 调用 OpenAI 兼容接口：
+- 支持 Kimi / Mimo / DeepSeek 等 LLM（配置在 settings.json 的 apis 段）
+- 优先使用工具调用（function calling）写入 `5_agent_report_input.json`
+- 无工具调用能力时降级为纯 Markdown 输出
+- `cli` 模式 → stdout 纯文本；`report` 模式 → 生成 HTML + PDF
 
-1. Phase 1 完成后，读取所有生成的 JSON 数据文件
-2. 构建包含 JSON 数据 + `meta.json` 中 `agent_hint` 的 prompt
-3. 调用您的 AI API（OpenAI、Anthropic、本地大模型等）
-4. 将 AI 返回结果解析写入 `07_agent_input.json`
-5. 自动触发 Phase 3（`generate`）生成报告
+```powershell
+# 启用 alone 模式
+python config/config.py set system.run_mode alone
+python config/config.py set alone.output_mode report   # 或 cli
+python config/config.py settings set apis.kimi_api_key sk-xxx
 
-详见 `references/project_structure.md` 了解完整的数据流和文件结构。
+# 使用（与 skill 模式相同）
+python main.py smart --input "快速选股研报"
+```
 
 ### 命令参考（开发者）
 
@@ -337,7 +344,7 @@ cp config/settings.json.example config/settings.json
 
 | Platform                   | How to Use                                                                                                                          |
 |:-------------------------- |:----------------------------------------------------------------------------------------------------------------------------------- |
-| **WorkBuddy**              | Install as a skill. The Agent reads `SKILL.md`, runs `main.py smart`, fills `07_agent_input.json`, and delivers the PDF.            |
+| **WorkBuddy**              | Install as a skill. The Agent reads `SKILL.md`, runs `main.py smart`, fills `5_agent_report_input.json`, and delivers the PDF.            |
 | **QClaw / OpenClaw**       | Deploy the skill folder. The Agent orchestrates Phase 1 (data collection) → Phase 2 (content synthesis) → Phase 3 (PDF generation). |
 | **Other Agent frameworks** | Any framework that can execute Python scripts, read/write JSON, and call `deliver_attachments` is compatible.                       |
 
@@ -357,12 +364,12 @@ The `SKILL.md` file serves as the **Agent instruction manual** — it tells the 
                                          │ JSON files in output/tasks/<id>/
                                          ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
-│  Phase 2: AI Integration (Agent fills 07_agent_input.json)              │
+│  Phase 2: AI Integration (Agent fills 5_agent_report_input.json)              │
 │  • Read all JSON data files                                             │
 │  • Supplement with additional web search                                │
 │  • Fill structured report content                                       │
 └────────────────────┬────────────────────────────────────────────────────┘
-                     │ 07_agent_input.json
+                     │ 5_agent_report_input.json
                      ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
 │  Phase 3: Code-Driven Report Generation                                 │
@@ -389,7 +396,8 @@ lobster-research/
 │   ├── baidu_dailynews.py       # News headlines
 │   ├── market_state.py  # Market sentiment (Playwright)
 │   ├── parse_image.py   # Portfolio screenshot OCR
-│   └── generate_report.py       # HTML/PDF renderer
+│   ├── generate_report.py       # HTML/PDF renderer
+│   └── generate_alonemode.py    # Alone mode: auto LLM API call
 ├── config/              # Configuration
 │   ├── config.py        # Settings manager + portfolio operations
 │   ├── config.json      # User preferences
@@ -414,27 +422,23 @@ lobster-research/
 | PDF Generation   | OpenClaw browser.pdf()                                     |
 | Config Format    | JSON                                                       |
 
-### Standalone Mode
+### Standalone Mode / Alone Mode (Built-in)
 
-If you want to use Lobster Research **without an AI Agent platform** (e.g., as a pure CLI tool or a desktop app), you will need to modify `main.py` to fuse the Agent's Phase 2 responsibilities into the code pipeline:
+Lobster Research has a built-in **Alone Mode** that works without an AI Agent platform:
 
 ```
-Current (Agent-assisted):
-  Phase 1 (code) → Phase 2 (AI Agent reads JSON + writes 07_agent_input.json) → Phase 3 (code)
+skill mode (default):
+  Phase 1 (data collection) → Phase 2 (AI Agent reads JSON + writes 5_agent_report_input.json) → Phase 3 (report generation)
 
-Standalone target:
-  Phase 1 (code) → Phase 2 (your own AI API call: send JSON to GPT/Claude/etc.) → Phase 3 (code)
+alone mode:
+  Phase 1 (data collection) → Phase 2 (auto LLM API → writes 5_agent_report_input.json) → Phase 3 (report generation)
 ```
 
-**What to change in `main.py`:**
-
-1. After Phase 1 completes, read all generated JSON files
-2. Construct a prompt containing the JSON data + the `agent_hint` from `meta.json`
-3. Call your AI API (OpenAI, Anthropic, local LLM, etc.) with this prompt
-4. Parse the AI's response into `07_agent_input.json`
-5. Trigger Phase 3 (`generate`) automatically
-
-See `references/project_structure.md` for the full file layout and data flow.
+In `alone` mode, Phase 2 calls OpenAI-compatible LLM APIs through `generate_alonemode.py`:
+- Supports Kimi / Mimo / DeepSeek (configured in settings.json apis section)
+- Prioritizes function calling to write `5_agent_report_input.json`
+- Falls back to pure Markdown output if tool calling is not available
+- `cli` output → stdout text; `report` output → HTML + PDF files
 
 ### CLI Commands (for developers)
 

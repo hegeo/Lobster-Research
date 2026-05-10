@@ -81,10 +81,11 @@ _DEFAULT_CONFIG = {
     "user": {
         "country": "CN",
         "language": "zh-CN",
-        "investment_style": "balanced",
+        "investment_style": "value",
         "total_assets_range": "below_10w",
-        "operation_freq": "medium",
-        "risk_level": "low",
+        "operation_freq": "short",
+        "experience_level": "entry",
+        "risk_level": "steady",
         "allow_cross_sector_switch": True,
     },
     "output": {
@@ -133,14 +134,20 @@ _DEFAULT_CONFIG = {
         ],
     },
     "system": {
+        "run_mode": "skill",
         "encoding": "utf-8",
         "win_encoding": "gbk",
     },
+    "alone": {
+        "output_mode": "cli",
+        "preferred_api": "kimi",
+    },
     "labels": {
         "investment_style": {
-            "conservative": "保守",
-            "balanced": "平衡",
-            "aggressive": "积极",
+            "value": "价值(低估值、传统大盘蓝筹、稳业绩)",
+            "growth": "成长(高景气赛道、高增速科技新兴行业)",
+            "band": "波段(活跃度高、有箱体震荡、有资金轮动)",
+            "trend": "趋势(有持续资金流入、走明确上升通道)",
         },
         "total_assets_range": {
             "below_10w": "10万以下",
@@ -149,14 +156,22 @@ _DEFAULT_CONFIG = {
             "above_100w": "100万以上",
         },
         "operation_freq": {
-            "short": "短期(1-3天)",
-            "medium": "中期(3-15天)",
-            "long": "长期(>15天)",
+            "ultra_short": "超短线(1~5天)",
+            "short": "短期(6~15天)",
+            "medium": "中期(16~30天)",
+            "long": "长期(30天以上)",
+        },
+        "experience_level": {
+            "beginner": "小白(完全新手，几乎没投过理财/股票/基金)",
+            "entry": "入门(1年以内零星投资，知道基础涨跌)",
+            "intermediate": "进阶(1~3年经验，了解宏观/行业逻辑，会仓位配置)",
+            "professional": "专业(3年以上，有完整交易体系与风控意识)",
         },
         "risk_level": {
-            "low": "低风险",
-            "medium": "中风险",
-            "high": "高风险",
+            "conservative": "保守(±5%)",
+            "steady": "稳健(±10%)",
+            "aggressive": "积极(±18%)",
+            "bold": "进取(±25%)",
         },
         "output_mode": {
             "normal": "普通",
@@ -172,6 +187,14 @@ _DEFAULT_CONFIG = {
             "orange": "经典橙色",
             "blue": "经典蓝色",
             "ios_liquid": "液态简约",
+        },
+        "run_mode": {
+            "skill": "Skill 模式（Agent 手动填充）",
+            "alone": "Alone 模式（自动调用 LLM API）",
+        },
+        "alone_output_mode": {
+            "cli": "CLI 纯文本输出",
+            "report": "生成报告文件（HTML+PDF）",
         },
     },
 }

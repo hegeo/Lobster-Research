@@ -29,16 +29,22 @@
   python main.py list
 
 任务文件夹结构（output/tasks/<task_id>/）：
-  meta.json          ← 任务元信息 + 状态机
-  01_quote.json      ← 实时行情数据
-  02_kline.json      ← K线 + 技术指标
-  03_master.json     ← 个股详细资料（证券之星）
-  04_market.json     ← 大盘指数数据
-  05_search_*.json   ← 搜索结果（多个关键词）
-  06_akshare.json    ← AKShare 结构化数据
-  07_agent_input.json← Agent 整合后的输入数据（Agent填写）
-  report.html        ← 最终报告
-  report.pdf         ← 最终报告PDF
+  0_meta_task_info.json            ← 任务元信息 + 状态机
+  0_portfolio_img__parse.json      ← 持仓图片解析结果
+  0_portfolio_fresh.json           ← 持仓数据（刷新行情后）
+  1_market_index_tick.json         ← 大盘指数数据
+  1_market_status_sina.json        ← 大盘整体状况
+  1_market_akshare_macro.json      ← AKShare 结构化数据
+  2_stock_quote_realtime.json      ← 实时行情数据
+  2_stock_kline_indicator.json     ← K线 + 技术指标
+  2_stock_info_detail.json         ← 个股详细资料（证券之星）
+  3_news_daily_all.json            ← 当日新闻快讯
+  4_search_keyword_*.json          ← 搜索结果（多个关键词）
+  4_search_batch_summary.json      ← 批量搜索汇总结果
+  5_agent_briefing.md              ← Agent 工作说明
+  5_agent_report_input.json        ← Agent 整合后的输入数据（Agent填写）
+  report.html                      ← 最终报告
+  report.pdf                       ← 最终报告PDF
 """
 
 import sys
@@ -50,6 +56,8 @@ import subprocess
 import re
 from datetime import datetime
 from typing import Optional
+
+from config.config import get as get_user_config
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
@@ -140,6 +148,19 @@ def _build_report_types() -> dict:
 
 
 REPORT_TYPES = _build_report_types()
+
+# 预留步骤（待实现，已注册路由和 stub 方法）
+# 触发时自动创建占位文件，不会中断流程
+RESERVED_STEPS = frozenset({
+    "news_market_flash",
+    "news_stock_flash",
+    "search_research",
+    "search_market_batch",
+    "search_stock_batch",
+    "emu_portfolio",
+    "emu_operation",
+    "emu_reflection",
+})
 
 
 def smart_match(user_input: str, code: str = "", name: str = "", topic: str = "") -> dict:
@@ -376,7 +397,7 @@ def create_task(cmd: str, args: argparse.Namespace) -> dict:
         "keyword_groups": keyword_groups,       # 新模式：批量搜索参数
         "files": {},     # 记录各步骤生成的文件路径
         "agent_hint": cfg["agent_hint"],
-        # prompt 模板数据，task_runner 用来注入 AGENT_BRIEFING
+        # prompt 模板数据，task_runner 用来注入 5_agent_briefing
         "prompt_template": prompt_tpl,
         "report_path": "",
         "error": "",
@@ -385,13 +406,13 @@ def create_task(cmd: str, args: argparse.Namespace) -> dict:
 
 
 def load_meta(task_dir: str) -> dict:
-    meta_path = os.path.join(task_dir, "meta.json")
+    meta_path = os.path.join(task_dir, "0_meta_task_info.json")
     with open(meta_path, encoding="utf-8") as f:
         return json.load(f)
 
 
 def save_meta(task_dir: str, meta: dict):
-    meta_path = os.path.join(task_dir, "meta.json")
+    meta_path = os.path.join(task_dir, "0_meta_task_info.json")
     with open(meta_path, "w", encoding="utf-8") as f:
         json.dump(meta, f, ensure_ascii=False, indent=2)
 
@@ -509,6 +530,15 @@ def run_task(cmd: str, args: argparse.Namespace):
                     meta["files"]["search"] = paths
                     step_ok("search", f"搜索完成 {len(paths)} 个关键词")
 
+            elif step in RESERVED_STEPS:
+                ok, path = runner.run_reserved_step(step)
+                meta["steps"][step] = "done" if ok else "failed"
+                if ok:
+                    meta["files"][step] = path
+                    step_ok(step, f"{os.path.basename(path)}（预留占位，待实现）")
+                else:
+                    step_warn(step, f"{step} 生成占位文件失败")
+
         except Exception as e:
             meta["steps"][step] = "failed"
             step_fail(step, str(e))
@@ -520,6 +550,34 @@ def run_task(cmd: str, args: argparse.Namespace):
 
     # ── Step 2: 生成 Agent 指引文件 ──────────────────────────
     runner.write_agent_briefing()
+
+    # ── Alone 模式检查 ──
+    run_mode = get_user_config("system.run_mode", "skill")
+    if run_mode == "alone":
+        from scripts.generate_alonemode import run_alone_mode
+        alone_result = run_alone_mode(task_dir, meta, PROJECT_ROOT)
+        if alone_result.get("success"):
+            meta["status"] = TaskState.DONE
+            if alone_result.get("html_path"):
+                meta["html_path"] = alone_result["html_path"]
+            if alone_result.get("pdf_path"):
+                meta["report_path"] = alone_result["pdf_path"]
+            save_meta(task_dir, meta)
+            print(f"\n{'─'*60}")
+            print(f"  ✅ Alone 模式完成")
+            print(f"{'─'*60}\n")
+            print(f"  任务ID: {task_id}")
+            if alone_result.get("tool_called"):
+                print(f"  📝 报告数据: 5_agent_report_input.json")
+            if alone_result.get("html_path"):
+                print(f"  🌐 HTML: {alone_result['html_path']}")
+            if alone_result.get("pdf_path"):
+                print(f"  📄 PDF:  {alone_result['pdf_path']}")
+            print()
+            return task_id, task_dir
+        else:
+            print(f"\n  ⚠️ Alone 模式失败: {alone_result.get('error', '未知错误')}")
+            print(f"  降级为 skill 模式，继续打印 Agent 指导")
 
     # ── 打印 Agent 操作指南 ──────────────────────────────────
     print(f"\n{'─'*60}")
@@ -535,9 +593,11 @@ def run_task(cmd: str, args: argparse.Namespace):
             print(f"    📄 {os.path.basename(val)}")
 
     print(f"\n  📋 Agent 任务说明：")
-    print(f"    {meta['agent_hint']}")
+    print(f"    🔹 请先阅读 5_agent_briefing.md，里面有完整的工作流程、数据结构说明和填写规范")
+    print(f"    🔹 读取各数据文件 → 补充搜索 → 按大纲组织内容 → 填写 5_agent_report_input.json")
+    print(f"    📌 {meta['agent_hint']}")
     print(f"\n  目标输出文件：")
-    print(f"    📝 {task_dir}\\07_agent_input.json")
+    print(f"    📝 {task_dir}\\5_agent_report_input.json")
     print(f"\n  ⚡ Agent 完成填充后，运行：")
     print(f"    python main.py generate --task-id {task_id}")
     print(f"\n{'─'*60}\n")
@@ -546,18 +606,18 @@ def run_task(cmd: str, args: argparse.Namespace):
 
 
 def run_generate(task_id: str, base_output: str = "output"):
-    """Phase 3：读取 07_agent_input.json，生成最终报告（HTML + PDF）"""
+    """Phase 3：读取 5_agent_report_input.json，生成最终报告（HTML + PDF）"""
     task_dir = os.path.join(PROJECT_ROOT, base_output, "tasks", task_id)
     if not os.path.exists(task_dir):
         print(f"❌ 找不到任务目录：{task_dir}")
         return
 
     meta = load_meta(task_dir)
-    agent_input_path = os.path.join(task_dir, "07_agent_input.json")
+    agent_input_path = os.path.join(task_dir, "5_agent_report_input.json")
 
     if not os.path.exists(agent_input_path):
         print(f"❌ 找不到 Agent 输入文件：{agent_input_path}")
-        print(f"   请先让 Agent 填充 07_agent_input.json 再运行 generate")
+        print(f"   请先让 Agent 填充 5_agent_report_input.json 再运行 generate")
         return
 
     banner(f"🦞 Phase 3：生成报告 ｜ 任务 {task_id}")
@@ -617,7 +677,7 @@ def cmd_list(base_output: str = "output"):
     print("─" * 70)
     for t in tasks[:20]:
         td = os.path.join(tasks_dir, t)
-        meta_path = os.path.join(td, "meta.json")
+        meta_path = os.path.join(td, "0_meta_task_info.json")
         if not os.path.exists(meta_path):
             continue
         try:
@@ -745,6 +805,16 @@ def cmd_smart(user_input: str, code: str = "", name: str = "", topic: str = "",
                         meta["steps"]["search"] = "done" if paths else "failed"
                         meta["files"]["search"] = paths
                         step_ok("search", f"搜索完成 {len(paths)} 个关键词")
+
+                elif step in RESERVED_STEPS:
+                    ok, path = runner.run_reserved_step(step)
+                    meta["steps"][step] = "done" if ok else "failed"
+                    if ok:
+                        meta["files"][step] = path
+                        step_ok(step, f"{os.path.basename(path)}（预留占位，待实现）")
+                    else:
+                        step_warn(step, f"{step} 生成占位文件失败")
+
             except Exception as e:
                 meta["steps"][step] = "failed"
                 step_fail(step, str(e))
@@ -775,7 +845,9 @@ def cmd_smart(user_input: str, code: str = "", name: str = "", topic: str = "",
         hint_key = f"{tier}_hint"
         agent_hint = domain.get(hint_key, "") if domain else ""
         output["agent_hint"] = agent_hint
-        output["prompt_template"] = prompt_template
+        # prompt_template 内容已全量嵌入 5_agent_briefing.md 和 5_agent_report_input.json，
+        # 不输出文件名给 Agent，避免误导 Agent 去读取这个 JSON 文件
+        output["prompt_embedded"] = True
 
         import argparse as ap
         args = ap.Namespace(
@@ -995,6 +1067,15 @@ def run_smart_task(domain: dict, tier: str, prompt_template: str, agent_hint: st
                     meta["files"]["search"] = paths
                     step_ok("search", f"搜索完成 {len(paths)} 个关键词")
 
+            elif step in RESERVED_STEPS:
+                ok, path = runner.run_reserved_step(step)
+                meta["steps"][step] = "done" if ok else "failed"
+                if ok:
+                    meta["files"][step] = path
+                    step_ok(step, f"{os.path.basename(path)}（预留占位，待实现）")
+                else:
+                    step_warn(step, f"{step} 生成占位文件失败")
+
         except Exception as e:
             meta["steps"][step] = "failed"
             step_fail(step, str(e))
@@ -1005,6 +1086,35 @@ def run_smart_task(domain: dict, tier: str, prompt_template: str, agent_hint: st
 
     # ── 生成 Agent 指引 ──
     runner.write_agent_briefing()
+
+    # ── Alone 模式检查 ──
+    run_mode = get_user_config("system.run_mode", "skill")
+    if run_mode == "alone":
+        from scripts.generate_alonemode import run_alone_mode
+        alone_result = run_alone_mode(task_dir, meta, PROJECT_ROOT)
+        if alone_result.get("success"):
+            meta["status"] = TaskState.DONE
+            if alone_result.get("html_path"):
+                meta["html_path"] = alone_result["html_path"]
+            if alone_result.get("pdf_path"):
+                meta["report_path"] = alone_result["pdf_path"]
+            save_meta(task_dir, meta)
+            print(f"\n{'─'*60}")
+            print(f"  ✅ Alone 模式完成")
+            print(f"{'─'*60}\n")
+            # 跳过 Agent 指导打印，只输出关键信息
+            print(f"\n  任务ID: {task_id}")
+            if alone_result.get("tool_called"):
+                print(f"  📝 报告数据: 5_agent_report_input.json")
+            if alone_result.get("html_path"):
+                print(f"  🌐 HTML: {alone_result['html_path']}")
+            if alone_result.get("pdf_path"):
+                print(f"  📄 PDF:  {alone_result['pdf_path']}")
+            print()
+            return task_id, task_dir, meta
+        else:
+            print(f"\n  ⚠️ Alone 模式失败: {alone_result.get('error', '未知错误')}")
+            print(f"  降级为 skill 模式，继续打印 Agent 指导")
 
     # ── 打印 Agent 操作指南 ──
     print(f"\n{'─'*60}")
@@ -1019,9 +1129,11 @@ def run_smart_task(domain: dict, tier: str, prompt_template: str, agent_hint: st
         elif val:
             print(f"    📄 {os.path.basename(val)}")
     print(f"\n  📋 Agent 任务说明：")
-    print(f"    {agent_hint}")
+    print(f"    🔹 请先阅读 5_agent_briefing.md，里面有完整的工作流程、数据结构说明和填写规范")
+    print(f"    🔹 读取各数据文件 → 补充搜索 → 按大纲组织内容 → 填写 5_agent_report_input.json")
+    print(f"    📌 {agent_hint}")
     print(f"\n  目标输出文件：")
-    print(f"    📝 {task_dir}\\07_agent_input.json")
+    print(f"    📝 {task_dir}\\5_agent_report_input.json")
     print(f"\n  ⚡ Agent 完成填充后，运行：")
     print(f"    python main.py generate --task-id {task_id}")
     print(f"\n{'─'*60}\n")

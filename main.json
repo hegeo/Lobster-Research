@@ -6,6 +6,18 @@
   "_changelog_v1.3": "精简 search_templates：4→2/3→2/2→1，合并重叠维度，收紧关键词减少噪声，总模板数 67→42（-37%），提速约 40%",
   "_changelog_v1.2": "收紧过度宽泛的领域关键词（市场/技术/推荐/关注/细分/公司/潮流等），差异化各 domain 的 search_templates 避免同质化",
 
+  "_reserved_steps_doc": "以下步骤已在 main.py 路由和 task_runner.py 中注册为预留占位。触发时自动创建空占位 JSON 文件，不会中断流程。待后续实现具体逻辑。",
+  "_reserved_steps": {
+    "news_market_flash":  "3_news_market_flash.json — 大盘专属行情快讯、盘面热点资讯",
+    "news_stock_flash":   "3_news_stock_flash.json — 单个股相关快讯、公告、题材消息",
+    "search_research":    "4_search_research_report.json — 研报专题批量搜索汇总结果",
+    "search_market_batch":"4_search_market_batch.json — 市场宏观专题批量搜索汇总结果",
+    "search_stock_batch": "4_search_stock_batch.json — 个股专题批量搜索汇总结果",
+    "emu_portfolio":      "6_emu_portfolio.json — 模拟盘当前持仓快照数据",
+    "emu_operation":      "6_emu_operation_log.json — 模拟盘买卖操作流水、委托记录",
+    "emu_reflection":     "6_emu_reflection_review.json — 模拟盘每日复盘、交易反思、策略迭代记录"
+  },
+
   "tier_tags": {
     "_doc": "输出类型关键词：决定生成什么格式的输出",
     "quick": ["快报", "日报", "速览", "今日推荐", "周报"],
@@ -17,16 +29,16 @@
       "id": "market",
       "label": "大盘行情",
       "keywords": ["大盘", "行情", "A股", "沪指", "上证", "创业板", "科创", "沪深", "指数"],
-      "steps": ["market_index", "market_state", "search"],
+      "steps": ["market_index", "market_state", "news_market_flash", "search_market_batch", "search"],
       "search_templates": [
         "A股 大盘 今日走势 板块热点 涨停 {date}",
         "沪深 北向资金 主力资金流向 {date}"
       ],
       "quick_template": "快报-今日行情.json",
       "deep_template":  "研报-大盘行情.json",
-      "quick_hint": "请读取大盘数据JSON，补充今日市场情绪、板块轮动、热点分析，填充 07_agent_input.json",
-      "deep_hint":  "请读取大盘数据JSON，补充宏观分析、资金流向、技术形态，填充 07_agent_input.json",
-      "news_hint":  "这是一条行情快讯请求。请读取 04_market.json 大盘数据，用 finance-data 补充实时行情，整理成 300-500 字的文字快讯直接回复用户，不需要生成 PDF。",
+      "quick_hint": "请读取大盘数据JSON，补充今日市场情绪、板块轮动、热点分析，填充 5_agent_report_input.json",
+      "deep_hint":  "请读取大盘数据JSON，补充宏观分析、资金流向、技术形态，填充 5_agent_report_input.json",
+      "news_hint":  "这是一条行情快讯请求。请读取 1_market_index_tick.json 大盘数据，用 finance-data 补充实时行情，整理成 300-500 字的文字快讯直接回复用户，不需要生成 PDF。",
       "cli_default_type": "dapan_ribao",
       "cli_prompt_template": "快报-今日行情.json"
     },
@@ -34,15 +46,15 @@
       "id": "stock",
       "label": "个股",
       "keywords": ["股票", "个股", "走势", "股价", "涨停", "跌停", "K线", "龙虎榜"],
-      "steps": ["quote", "kline", "master", "market_state", "search"],
+      "steps": ["quote", "kline", "master", "market_state", "news_stock_flash", "search_stock_batch", "search"],
       "search_templates": [
         "{name} {code} 最新消息 业绩 财报 {date}",
         "{name} 机构评级 目标价 券商研报 {date}"
       ],
       "quick_template": "快报-个股分析.json",
       "deep_template":  "研报-企业发展.json",
-      "quick_hint": "请读取JSON数据，分析个股行情和技术面，填充 07_agent_input.json",
-      "deep_hint":  "请读取以上JSON，补充搜索财务数据、机构观点、行业背景，填充 07_agent_input.json",
+      "quick_hint": "请读取JSON数据，分析个股行情和技术面，填充 5_agent_report_input.json",
+      "deep_hint":  "请读取以上JSON，补充搜索财务数据、机构观点、行业背景，填充 5_agent_report_input.json",
       "news_hint":  "这是一条个股快讯请求。请用 finance-data 工具查询该股票的实时行情，整理成简短文字快讯直接回复用户。",
       "cli_default_type": "gupiao_fenxi",
       "cli_prompt_template": "研报-企业发展.json"
@@ -51,14 +63,14 @@
       "id": "portfolio",
       "label": "持仓",
       "keywords": ["持仓", "仓位", "组合", "资产配置", "投资组合"],
-      "steps": ["portfolio", "market_index", "market_state", "search"],
+      "steps": ["portfolio", "market_index", "market_state", "emu_portfolio", "emu_operation", "emu_reflection", "search"],
       "search_templates": [
         "A股 大盘 市场情绪 板块轮动 {date}"
       ],
       "quick_template": "快报-持仓分析.json",
       "deep_template":  "研报-持仓诊断.json",
-      "quick_hint": "请读取持仓数据和市场数据，分析持仓结构，填充 07_agent_input.json",
-      "deep_hint":  "请读取持仓数据和市场数据，分析持仓结构、风险敞口、优化建议，填充 07_agent_input.json",
+      "quick_hint": "请读取持仓数据和市场数据，分析持仓结构，填充 5_agent_report_input.json",
+      "deep_hint":  "请读取持仓数据和市场数据，分析持仓结构、风险敞口、优化建议，填充 5_agent_report_input.json",
       "news_hint":  "这是一条持仓相关快讯。请读取相关数据，整理成简短文字快讯回复用户。",
       "cli_default_type": "chicang_zhenduan",
       "cli_prompt_template": "研报-持仓诊断.json"
@@ -67,15 +79,15 @@
       "id": "screener",
       "label": "选股",
       "keywords": ["选股", "买什么", "标的", "快速选股"],
-      "steps": ["market_index", "market_state", "search"],
+      "steps": ["market_index", "market_state","news_market_flash", "search_research", "search_stock_batch", "search"],
       "search_templates": [
         "A股 涨停复盘 连板梯队 龙头股 {date}",
         "龙虎榜 主力资金 游资动向 {date}"
       ],
       "quick_template": "快报-今日行情.json",
       "deep_template":  "研报-选股研究.json",
-      "quick_hint": "请读取数据，筛选热门标的，填充 07_agent_input.json",
-      "deep_hint":  "请读取搜索结果，筛选3-5只推荐标的，说明理由和风险，填充 07_agent_input.json",
+      "quick_hint": "请读取数据，筛选热门标的，填充 5_agent_report_input.json",
+      "deep_hint":  "请读取搜索结果，筛选3-5只推荐标的，说明理由和风险，填充 5_agent_report_input.json",
       "news_hint":  "这是一条选股快讯。请用 finance-data 查询热门板块和强势股，整理成文字快讯回复用户。",
       "cli_default_type": "kuaisu_xuangu",
       "cli_prompt_template": "研报-选股研究.json"
@@ -91,8 +103,8 @@
       ],
       "quick_template": "快报-短线机会.json",
       "deep_template":  "研报-选股研究.json",
-      "quick_hint": "请读取数据，分析短线情绪和机会，填充 07_agent_input.json",
-      "deep_hint":  "请读取数据，深度分析短线策略和风险，填充 07_agent_input.json",
+      "quick_hint": "请读取数据，分析短线情绪和机会，填充 5_agent_report_input.json",
+      "deep_hint":  "请读取数据，深度分析短线策略和风险，填充 5_agent_report_input.json",
       "news_hint":  "这是一条短线快讯。请查询涨停情绪和市场热点，整理成文字快讯回复用户。"
     },
     {
@@ -105,15 +117,15 @@
       ],
       "quick_template": "快报-ETF选择.json",
       "deep_template":  "研报-选股研究.json",
-      "quick_hint": "请读取搜索结果，分析ETF表现，填充 07_agent_input.json",
-      "deep_hint":  "请读取数据，深度分析ETF配置策略，填充 07_agent_input.json",
+      "quick_hint": "请读取搜索结果，分析ETF表现，填充 5_agent_report_input.json",
+      "deep_hint":  "请读取数据，深度分析ETF配置策略，填充 5_agent_report_input.json",
       "news_hint":  "这是一条ETF快讯。请查询ETF行情数据，整理成文字快讯回复用户。"
     },
     {
       "id": "industry",
       "label": "行业",
       "keywords": ["行业", "板块", "赛道", "产业链"],
-      "steps": ["search"],
+      "steps": ["search_research", "search"],
       "search_templates": [
         "{topic} 市场规模 竞争格局 头部企业 {date}",
         "{topic} 政策红利 投资机会 券商研报 {date}"
@@ -121,7 +133,7 @@
       "quick_template": null,
       "deep_template":  "研报-行业发展.json",
       "quick_hint": null,
-      "deep_hint":  "请读取搜索结果JSON，分析行业规模/竞争/政策/机会/风险，填充 07_agent_input.json",
+      "deep_hint":  "请读取搜索结果JSON，分析行业规模/竞争/政策/机会/风险，填充 5_agent_report_input.json",
       "news_hint":  "这是一条行业快讯。请查询相关行业动态，整理成文字快讯回复用户。",
       "cli_default_type": "hangye_baogao",
       "cli_prompt_template": "研报-行业发展.json"
@@ -130,15 +142,15 @@
       "id": "company",
       "label": "企业",
       "keywords": ["企业", "公司研报", "尽调", "商业模式", "财报", "年报"],
-      "steps": ["quote", "kline", "master", "search"],
+      "steps": ["quote", "kline", "master", "search_research", "search_stock_batch", "search"],
       "search_templates": [
         "{name} 年报 财报 营收 利润 业绩 {date}",
         "{name} 机构评级 估值 竞争优势 目标价 {date}"
       ],
       "quick_template": "快报-个股分析.json",
       "deep_template":  "研报-企业发展.json",
-      "quick_hint": "请读取JSON数据，分析企业概况和基本面，填充 07_agent_input.json",
-      "deep_hint":  "请读取以上JSON，补充财务分析、机构评级、估值数据，填充 07_agent_input.json",
+      "quick_hint": "请读取JSON数据，分析企业概况和基本面，填充 5_agent_report_input.json",
+      "deep_hint":  "请读取以上JSON，补充财务分析、机构评级、估值数据，填充 5_agent_report_input.json",
       "news_hint":  "这是一条企业快讯。请查询企业最新动态，整理成文字快讯回复用户。",
       "cli_default_type": "qiye_baogao",
       "cli_prompt_template": "研报-企业发展.json"
@@ -147,15 +159,15 @@
       "id": "tech",
       "label": "科技",
       "keywords": ["科技", "AI", "人工智能", "芯片", "半导体", "互联网", "软件", "大模型", "算力", "数据中心"],
-      "steps": ["search"],
+      "steps": ["search_research", "search"],
       "search_templates": [
         "{topic} 技术突破 趋势 {date}",
         "{topic} 融资 市场规模 {date}"
       ],
       "quick_template": "快报-科技风向.json",
       "deep_template":  "研报-科技风向.json",
-      "quick_hint": "请读取搜索结果，分析科技动态，填充 07_agent_input.json",
-      "deep_hint":  "请读取搜索结果，分析科技风向和产业趋势，填充 07_agent_input.json",
+      "quick_hint": "请读取搜索结果，分析科技动态，填充 5_agent_report_input.json",
+      "deep_hint":  "请读取搜索结果，分析科技风向和产业趋势，填充 5_agent_report_input.json",
       "news_hint":  "这是一条科技快讯。请查询最新科技动态，整理成文字快讯回复用户。"
     },
     {
@@ -169,15 +181,15 @@
       ],
       "quick_template": "快报-技术发展.json",
       "deep_template":  "研报-技术发展.json",
-      "quick_hint": "请读取搜索结果，分析前沿技术动态，填充 07_agent_input.json",
-      "deep_hint":  "请读取搜索结果，深度分析技术发展趋势，填充 07_agent_input.json",
+      "quick_hint": "请读取搜索结果，分析前沿技术动态，填充 5_agent_report_input.json",
+      "deep_hint":  "请读取搜索结果，深度分析技术发展趋势，填充 5_agent_report_input.json",
       "news_hint":  "这是一条前沿技术快讯。请查询最新技术突破，整理成文字快讯回复用户。"
     },
     {
       "id": "crossasset",
       "label": "跨资产",
       "keywords": ["黄金", "比特币", "美元", "BTC", "宏观", "外汇", "原油", "铜", "大宗", "通胀", "利率", "降息", "加息", "汇率"],
-      "steps": ["search"],
+      "steps": ["search_research", "search"],
       "search_templates": [
         "{topic} 最新行情 价格走势 {date}",
         "{topic} 宏观影响 投资策略 资产配置 {date}"
@@ -185,7 +197,7 @@
       "quick_template": null,
       "deep_template":  "研报-跨资产研究.json",
       "quick_hint": null,
-      "deep_hint":  "请读取搜索结果，分析跨资产联动和趋势，填充 07_agent_input.json",
+      "deep_hint":  "请读取搜索结果，分析跨资产联动和趋势，填充 5_agent_report_input.json",
       "news_hint":  "这是一条跨资产快讯。请查询最新行情数据，整理成文字快讯回复用户。"
     },
     {
@@ -199,7 +211,7 @@
       "quick_template": null,
       "deep_template":  "研报-期货方向.json",
       "quick_hint": null,
-      "deep_hint":  "请读取搜索结果，分析期货走势和策略，填充 07_agent_input.json",
+      "deep_hint":  "请读取搜索结果，分析期货走势和策略，填充 5_agent_report_input.json",
       "news_hint":  "这是一条期货快讯。请查询最新期货行情，整理成文字快讯回复用户。"
     },
     {
@@ -213,7 +225,7 @@
       "quick_template": null,
       "deep_template":  "研报-农业与食品.json",
       "quick_hint": null,
-      "deep_hint":  "请读取搜索结果，分析农业食品行业，填充 07_agent_input.json",
+      "deep_hint":  "请读取搜索结果，分析农业食品行业，填充 5_agent_report_input.json",
       "news_hint":  "这是一条农业食品快讯。请查询最新行业动态和价格数据，整理成文字快讯回复用户。"
     },
     {
@@ -228,7 +240,7 @@
       "quick_template": null,
       "deep_template":  "研报-资源与工业.json",
       "quick_hint": null,
-      "deep_hint":  "请读取搜索结果，分析资源工业行业，填充 07_agent_input.json",
+      "deep_hint":  "请读取搜索结果，分析资源工业行业，填充 5_agent_report_input.json",
       "news_hint":  "这是一条资源工业快讯。请查询最新行业动态，整理成文字快讯回复用户。"
     },
     {
@@ -243,7 +255,7 @@
       "quick_template": null,
       "deep_template":  "研报-通讯与物流航运.json",
       "quick_hint": null,
-      "deep_hint":  "请读取搜索结果，分析通讯物流行业，填充 07_agent_input.json",
+      "deep_hint":  "请读取搜索结果，分析通讯物流行业，填充 5_agent_report_input.json",
       "news_hint":  "这是一条通讯物流快讯。请查询最新行业动态，整理成文字快讯回复用户。"
     },
     {
@@ -258,7 +270,7 @@
       "quick_template": null,
       "deep_template":  "研报-消费与潮流.json",
       "quick_hint": null,
-      "deep_hint":  "请读取搜索结果，分析消费潮流趋势，填充 07_agent_input.json",
+      "deep_hint":  "请读取搜索结果，分析消费潮流趋势，填充 5_agent_report_input.json",
       "news_hint":  "这是一条消费潮流快讯。请查询最新消费动态，整理成文字快讯回复用户。"
     },
     {
@@ -273,14 +285,14 @@
       "quick_template": null,
       "deep_template":  "研报-游戏与娱乐.json",
       "quick_hint": null,
-      "deep_hint":  "请读取搜索结果，分析游戏娱乐行业，填充 07_agent_input.json",
+      "deep_hint":  "请读取搜索结果，分析游戏娱乐行业，填充 5_agent_report_input.json",
       "news_hint":  "这是一条游戏娱乐快讯。请查询最新行业动态，整理成文字快讯回复用户。"
     },
     {
       "id": "biomedical",
       "label": "生物医疗",
       "keywords": ["生物", "医疗", "医药", "创新药", "医疗器械", "CRO", "CXO", "疫苗", "中药"],
-      "steps": ["search"],
+      "steps": ["search_research", "search"],
       "search_templates": [
         "{topic} 研发管线 审批 集采 医保 {date}",
         "{topic} 出海 License-out 竞争格局 {date}"
@@ -288,7 +300,7 @@
       "quick_template": null,
       "deep_template":  "研报-生物与医疗.json",
       "quick_hint": null,
-      "deep_hint":  "请读取搜索结果，分析生物医药行业，填充 07_agent_input.json",
+      "deep_hint":  "请读取搜索结果，分析生物医药行业，填充 5_agent_report_input.json",
       "news_hint":  "这是一条生物医药快讯。请查询最新行业动态，整理成文字快讯回复用户。"
     },
     {
@@ -303,7 +315,7 @@
       "quick_template": null,
       "deep_template":  "研报-文化与艺术.json",
       "quick_hint": null,
-      "deep_hint":  "请读取搜索结果，分析文化艺术领域，填充 07_agent_input.json",
+      "deep_hint":  "请读取搜索结果，分析文化艺术领域，填充 5_agent_report_input.json",
       "news_hint":  "这是一条文化艺术快讯。请查询最新动态，整理成文字快讯回复用户。"
     },
     {
@@ -317,7 +329,7 @@
       "quick_template": null,
       "deep_template":  "研报-政治与影响力.json",
       "quick_hint": null,
-      "deep_hint":  "请读取搜索结果，分析政治地缘影响，填充 07_agent_input.json",
+      "deep_hint":  "请读取搜索结果，分析政治地缘影响，填充 5_agent_report_input.json",
       "news_hint":  "这是一条政治快讯。请查询最新国际动态，整理成文字快讯回复用户。"
     },
     {
@@ -331,7 +343,7 @@
       "quick_template": null,
       "deep_template":  "研报-战争与军事.json",
       "quick_hint": null,
-      "deep_hint":  "请读取搜索结果，分析军事安全形势，填充 07_agent_input.json",
+      "deep_hint":  "请读取搜索结果，分析军事安全形势，填充 5_agent_report_input.json",
       "news_hint":  "这是一条军事快讯。请查询最新军事动态，整理成文字快讯回复用户。"
     },
     {
@@ -345,7 +357,7 @@
       "quick_template": null,
       "deep_template":  "研报-宇宙与地理前沿研究.json",
       "quick_hint": null,
-      "deep_hint":  "请读取搜索结果，分析宇宙地理前沿，填充 07_agent_input.json",
+      "deep_hint":  "请读取搜索结果，分析宇宙地理前沿，填充 5_agent_report_input.json",
       "news_hint":  "这是一条宇宙地理快讯。请查询最新发现和动态，整理成文字快讯回复用户。"
     },
     {
@@ -359,7 +371,7 @@
       "quick_template": null,
       "deep_template":  "研报-社会发展.json",
       "quick_hint": null,
-      "deep_hint":  "请读取搜索结果，分析社会发展趋势，填充 07_agent_input.json",
+      "deep_hint":  "请读取搜索结果，分析社会发展趋势，填充 5_agent_report_input.json",
       "news_hint":  "这是一条社会快讯。请查询最新社会动态，整理成文字快讯回复用户。"
     },
     {
@@ -374,7 +386,7 @@
       "quick_template": null,
       "deep_template":  "研报-社会金融.json",
       "quick_hint": null,
-      "deep_hint":  "请读取搜索结果，分析社会金融趋势，填充 07_agent_input.json",
+      "deep_hint":  "请读取搜索结果，分析社会金融趋势，填充 5_agent_report_input.json",
       "news_hint":  "这是一条金融快讯。请查询最新金融动态，整理成文字快讯回复用户。"
     }
   ],

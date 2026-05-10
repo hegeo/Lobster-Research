@@ -6,20 +6,20 @@
 Agent 不参与此阶段，只在 Phase 2（整合补充）时读取这些 JSON。
 
 JSON 文件命名规范（按数据类型分层）：
-  00_portfolio_image.json  持仓图片解析结果（用户上传图片时）
-  01_quote.json            实时行情
-  02_kline.json            K线 + 技术指标
-  03_master.json           个股详细资料（证券之星）
-  04_market.json           大盘指数（ticktime）
-  04_market_state.json     大盘整体状况（Playwright 爬取新浪行情页）
-  04_news.json             当日新闻快讯（财经/科技/社会等频道）
-  05_search_0.json         搜索结果（第1个关键词）
-  05_search_1.json         搜索结果（第2个关键词）...
-  05_search_batch.json     批量搜索汇总结果
-  06_akshare.json          AKShare 结构化数据（个股新闻/北向资金/融资融券）
-  06_portfolio.json        持仓数据（刷新行情后）
-  AGENT_BRIEFING.md        给 Agent 的工作说明
-  07_agent_input.json      ← Agent 填写，最终报告数据
+  0_portfolio_img__parse.json     持仓图片解析结果（用户上传图片时）
+  2_stock_quote_realtime.json     实时行情
+  2_stock_kline_indicator.json    K线 + 技术指标
+  2_stock_info_detail.json        个股详细资料（证券之星）
+  1_market_index_tick.json        大盘指数（ticktime）
+  1_market_status_sina.json       大盘整体状况（Playwright 爬取新浪行情页）
+  3_news_daily_all.json           当日新闻快讯（财经/科技/社会等频道）
+  4_search_keyword_01.json        搜索结果（第1个关键词）
+  4_search_keyword_02.json        搜索结果（第2个关键词）...
+  4_search_batch_summary.json     批量搜索汇总结果
+  1_market_akshare_macro.json     AKShare 结构化数据（个股新闻/北向资金/融资融券）
+  0_portfolio_fresh.json          持仓数据（刷新行情后）
+  5_agent_briefing.md             给 Agent 的工作说明
+  5_agent_report_input.json       ← Agent 填写，最终报告数据
 """
 
 import sys
@@ -89,7 +89,7 @@ class TaskRunner:
 
     def run_quote(self, stock_code: str) -> Tuple[bool, str]:
         """
-        采集个股实时行情，写入 01_quote.json
+        采集个股实时行情，写入 2_stock_quote_realtime.json
         使用 ticktime.StockDataAPI
         """
         try:
@@ -125,7 +125,7 @@ class TaskRunner:
                         "time":         raw.get("时间", ""),
                     }
                 }
-                path = self._write_json("01_quote.json", data)
+                path = self._write_json("2_stock_quote_realtime.json", data)
                 return True, path
             else:
                 # 写入空占位文件
@@ -133,12 +133,12 @@ class TaskRunner:
                     "_meta": {"step": "quote", "stock_code": stock_code, "status": "failed"},
                     "quote": {}
                 }
-                path = self._write_json("01_quote.json", data)
+                path = self._write_json("2_stock_quote_realtime.json", data)
                 return False, path
 
         except Exception as e:
             data = {"_meta": {"step": "quote", "error": str(e)}, "quote": {}}
-            path = self._write_json("01_quote.json", data)
+            path = self._write_json("2_stock_quote_realtime.json", data)
             return False, path
 
     # ─────────────────────────────────────────────────────────
@@ -147,7 +147,7 @@ class TaskRunner:
 
     def run_kline(self, stock_code: str, days: int = 90) -> Tuple[bool, str]:
         """
-        采集历史K线并计算技术指标，写入 02_kline.json
+        采集历史K线并计算技术指标，写入 2_stock_kline_indicator.json
         """
         try:
             from scripts.stock_data_collector import (
@@ -174,12 +174,12 @@ class TaskRunner:
                 "technical": tech,
                 "kline_recent_30": kline_summary,
             }
-            path = self._write_json("02_kline.json", data)
+            path = self._write_json("2_stock_kline_indicator.json", data)
             return True, path
 
         except Exception as e:
             data = {"_meta": {"step": "kline", "error": str(e)}, "technical": {}, "kline_recent_30": []}
-            path = self._write_json("02_kline.json", data)
+            path = self._write_json("2_stock_kline_indicator.json", data)
             return False, path
 
     # ─────────────────────────────────────────────────────────
@@ -226,14 +226,14 @@ class TaskRunner:
                     "run_success": ok,
                 },
                 "raw_text": combined_text[:20000],  # 限制 20k 字符
-                "agent_note": "请从 raw_text 中提取：公司简介、主营业务、财务数据、股东信息等关键内容，填入 07_agent_input.json",
+                "agent_note": "请从 raw_text 中提取：公司简介、主营业务、财务数据、股东信息等关键内容，填入 5_agent_report_input.json",
             }
-            path = self._write_json("03_master.json", data)
+            path = self._write_json("2_stock_info_detail.json", data)
             return bool(combined_text), path
 
         except Exception as e:
             data = {"_meta": {"step": "master", "error": str(e)}, "raw_text": ""}
-            path = self._write_json("03_master.json", data)
+            path = self._write_json("2_stock_info_detail.json", data)
             return False, path
 
     # ─────────────────────────────────────────────────────────
@@ -241,7 +241,7 @@ class TaskRunner:
     # ─────────────────────────────────────────────────────────
 
     def run_market_index(self) -> Tuple[bool, str]:
-        """采集实时大盘指数，写入 04_market.json"""
+        """采集实时大盘指数，写入 1_market_index_tick.json"""
         try:
             from scripts.ticktime import StockDataAPI
             api = StockDataAPI()
@@ -255,12 +255,12 @@ class TaskRunner:
                 "indices": result if result else {},
                 "agent_note": "请基于此大盘数据分析今日市场情绪、趋势、操作建议",
             }
-            path = self._write_json("04_market.json", data)
+            path = self._write_json("1_market_index_tick.json", data)
             return bool(result), path
 
         except Exception as e:
             data = {"_meta": {"step": "market_index", "error": str(e)}, "indices": {}}
-            path = self._write_json("04_market.json", data)
+            path = self._write_json("1_market_index_tick.json", data)
             return False, path
 
     # ─────────────────────────────────────────────────────────
@@ -269,7 +269,7 @@ class TaskRunner:
 
     def run_search(self, queries: List[str]) -> List[str]:
         """
-        兼容旧模式：对每个关键词调用 websearch_pro.py，结果写入 05_search_N.json
+        兼容旧模式：对每个关键词调用 websearch_pro.py，结果写入 4_search_keyword_N.json
         返回生成的文件路径列表
         """
         paths = []
@@ -290,7 +290,7 @@ class TaskRunner:
                     "raw_output": stdout[:8000] if stdout else "",
                     "agent_note": f"请从此搜索结果中提取与报告相关的关键信息（关键词：{query}）",
                 }
-                path = self._write_json(f"05_search_{i}.json", data)
+                path = self._write_json(f"4_search_keyword_{i+1:02d}.json", data)
                 paths.append(path)
 
             except Exception as e:
@@ -298,7 +298,7 @@ class TaskRunner:
                     "_meta": {"step": "search", "query": query, "error": str(e)},
                     "raw_output": "",
                 }
-                path = self._write_json(f"05_search_{i}.json", data)
+                path = self._write_json(f"4_search_keyword_{i+1:02d}.json", data)
                 paths.append(path)
 
         return paths
@@ -306,7 +306,7 @@ class TaskRunner:
     def run_batch_search(self, keyword_groups: List[dict]) -> List[str]:
         """
         批量搜索模式：关键词组 × 数据源组，循环搜索后汇总。
-        结果写入 05_search_batch.json
+        结果写入 4_search_batch_summary.json
 
         参数:
             keyword_groups: 传给 websearch_pro.run_batch_search 的参数
@@ -359,9 +359,9 @@ class TaskRunner:
                 data["groups"].append(group_entry)
 
             # 生成文本版输出（方便 Agent 快速浏览）
-            # 已移除 raw_output 和 05_search_batch.txt，减少冗余
+            # 已移除 raw_output 和 4_search_batch_summary.txt，减少冗余
 
-            path = self._write_json("05_search_batch.json", data)
+            path = self._write_json("4_search_batch_summary.json", data)
 
             return [path]
 
@@ -376,7 +376,7 @@ class TaskRunner:
                 },
                 "agent_note": f"批量搜索失败: {str(e)}",
             }
-            path = self._write_json("05_search_batch.json", data)
+            path = self._write_json("4_search_batch_summary.json", data)
             return [path]
 
 
@@ -387,7 +387,7 @@ class TaskRunner:
     def run_portfolio(self, portfolio_file: str = None) -> Tuple[bool, str]:
         """
         从 config/portfolio.json 或用户指定的 portfolio_file 读取持仓
-        → 刷新最新价 → 计算盈亏 → 写入 06_portfolio.json
+        → 刷新最新价 → 计算盈亏 → 写入 0_portfolio_fresh.json
         → 对每个持仓股执行行情/K线搜索（按 domain steps）
 
         持仓诊断任务的核心入口方法。
@@ -433,10 +433,10 @@ class TaskRunner:
                 "agent_note": (
                     "这是用户的最新持仓快照（已刷新实时行情）。"
                     "请基于此数据分析：持仓结构、风险敞口、盈亏分布、行业分布，"
-                    "给出优化建议。最终分析填入 07_agent_input.json。"
+                    "给出优化建议。最终分析填入 5_agent_report_input.json。"
                 ),
             }
-            path = self._write_json("06_portfolio.json", data)
+            path = self._write_json("0_portfolio_fresh.json", data)
 
             # ── Step 3: 对每个持仓股采集行情数据 ──
             stock_steps = []
@@ -464,7 +464,7 @@ class TaskRunner:
 
             data["_meta"]["stock_steps"] = stock_steps
             # 重新写入（加了 stock_steps）
-            self._write_json("06_portfolio.json", data)
+            self._write_json("0_portfolio_fresh.json", data)
 
             # 更新 meta
             self.meta.setdefault("steps", {})
@@ -482,7 +482,7 @@ class TaskRunner:
 
     def write_agent_briefing(self):
         """
-        生成 AGENT_BRIEFING.md：
+        生成 5_agent_briefing.md：
         告诉 Agent：任务是什么、有哪些数据文件、需要填写什么、输出格式是什么
         如果有 prompt_template，会注入 dataRequirements 和 promptBody
         """
@@ -553,8 +553,8 @@ class TaskRunner:
         # 数据检查的占位文本
         data_check_text = data_check_section if data_check_section else "请先读取所有数据文件，确认数据是否完整。"
 
-        # 模板来源行
-        template_line = ('**模板来源**: ' + tpl_name) if tpl_name else ''
+        # 模板来源行（已全量嵌入 briefing 和 schema 中，不输出文件名避免误导 Agent）
+        template_line = ''
 
         # ── 用户画像（从 user_prefs 构建） ──
         user_prefs = meta.get("user_prefs", {})
@@ -619,18 +619,18 @@ class TaskRunner:
 {data_check_text}
 
 ### 第二步：补充搜索
-以下关键词搜索结果已在 05_search_*.json 中，**但你仍可自行补充搜索**
+以下关键词搜索结果已在 4_search_keyword_*.json 中，**但你仍可自行补充搜索**
 来获取更新、更深入的信息：
 {search_list}
 {core_idea_section}
 
-### 第三步：填写 07_agent_input.json
-按下方 JSON 结构，把分析内容填入 `07_agent_input.json`。
+### 第三步：填写 5_agent_report_input.json
+按大纲结构，把分析内容填入 `5_agent_report_input.json`。
 **填写质量决定报告质量。**
 {structure_section}
 ---
 
-## 07_agent_input.json 填写模板
+## 5_agent_report_input.json 填写模板
 
 ```json
 {schema_str}
@@ -649,19 +649,19 @@ python main.py generate --task-id {meta['task_id']}
 
 **提示**：{meta['agent_hint']}
 """
-        briefing_path = os.path.join(self.task_dir, "AGENT_BRIEFING.md")
+        briefing_path = os.path.join(self.task_dir, "5_agent_briefing.md")
         with open(briefing_path, "w", encoding="utf-8") as f:
             f.write(content)
 
-        # 同时写入空的 07_agent_input.json 占位
-        schema_path = os.path.join(self.task_dir, "07_agent_input.json")
+        # 同时写入空的 5_agent_report_input.json 占位
+        schema_path = os.path.join(self.task_dir, "5_agent_report_input.json")
         if not os.path.exists(schema_path):
             with open(schema_path, "w", encoding="utf-8") as f:
                 json.dump(schema, f, ensure_ascii=False, indent=2)
 
     def _get_agent_input_schema(self, meta: dict) -> dict:
         """
-        返回 07_agent_input.json 的结构模板（带注释字段）
+        返回 5_agent_report_input.json 的结构模板（带注释字段）
         根据报告类型给出对应结构。
         如果 meta 中有 prompt_template，会把 promptBody 作为参考注入。
         """
@@ -691,8 +691,8 @@ python main.py generate --task-id {meta['task_id']}
         if report_type in ("gupiao_fenxi", "qiye_baogao"):
             base.update({
                 "metrics": [
-                    {"label": "当前股价", "value": "_从01_quote.json提取", "change": "_涨跌幅"},
-                    {"label": "技术评分", "value": "_从02_kline.json提取", "change": "_评级"},
+                    {"label": "当前股价", "value": "_从2_stock_quote_realtime.json提取", "change": "_涨跌幅"},
+                    {"label": "技术评分", "value": "_从2_stock_kline_indicator.json提取", "change": "_评级"},
                     {"label": "市盈率PE", "value": "_从搜索结果提取", "change": ""},
                     {"label": "52周区间", "value": "_高/低", "change": ""},
                 ],
@@ -712,7 +712,7 @@ python main.py generate --task-id {meta['task_id']}
                         "subsections": [
                             {
                                 "title": "近期表现",
-                                "content": "_基于01_quote.json和02_kline.json的技术分析，200-300字",
+                                "content": "_基于2_stock_quote_realtime.json和2_stock_kline_indicator.json的技术分析，200-300字",
                             },
                             {
                                 "title": "机构观点与投资建议",
@@ -723,7 +723,7 @@ python main.py generate --task-id {meta['task_id']}
                     {
                         "title": "一、公司概况",
                         "subsections": [
-                            {"title": "基本信息与主营业务", "content": "_从03_master.json和搜索提取，300字"},
+                            {"title": "基本信息与主营业务", "content": "_从2_stock_info_detail.json和搜索提取，300字"},
                             {"title": "核心竞争力与护城河", "content": "_分析竞争优势，200字"},
                         ]
                     },
@@ -788,7 +788,7 @@ python main.py generate --task-id {meta['task_id']}
                     {
                         "title": "🦞 大盘概况",
                         "subsections": [
-                            {"title": "今日行情",      "content": "_基于04_market.json，200字"},
+                            {"title": "今日行情",      "content": "_基于1_market_index_tick.json，200字"},
                             {"title": "市场情绪信号",   "content": "_涨跌停、情绪指标，200字"},
                         ]
                     },
@@ -974,7 +974,7 @@ python main.py generate --task-id {meta['task_id']}
 
     def generate_report(self, agent_input_path: str) -> Tuple[bool, dict]:
         """
-        读取 07_agent_input.json，调用 generate_report 生成 HTML + PDF
+        读取 5_agent_report_input.json，调用 generate_report 生成 HTML + PDF
 
         返回:
             (ok, result_dict) 其中 result_dict 包含:
@@ -1036,7 +1036,7 @@ python main.py generate --task-id {meta['task_id']}
 
     def run_baidu_news(self, channels: List[str] = None, limit: int = 10) -> Tuple[bool, str]:
         """
-        从百度新闻 RSS 采集快讯，写入 04_news.json
+        从百度新闻 RSS 采集快讯，写入 04_daily_news.json
 
         channels: 频道关键词列表，如 ["财经", "科技", "社会"]
                   None 时默认采集 财经+科技+社会 三个频道
@@ -1112,7 +1112,7 @@ python main.py generate --task-id {meta['task_id']}
             "news": all_news,
             "agent_note": "请从以上新闻中提取与报告主题相关的重要资讯，整合进报告的新闻动态章节",
         }
-        path = self._write_json("04_news.json", data)
+        path = self._write_json("3_news_daily_all.json", data)
         return bool(all_news), path
 
     # ─────────────────────────────────────────────────────────
@@ -1121,7 +1121,7 @@ python main.py generate --task-id {meta['task_id']}
 
     def run_akshare_data(self, stock_code: str = "") -> Tuple[bool, str]:
         """
-        采集 AKShare 结构化金融数据，写入 06_akshare.json
+        采集 AKShare 结构化金融数据，写入 1_market_akshare_macro.json
         包含：个股新闻、北向资金、今日资金流排名
         stock_code: 有值时额外采集个股新闻（如 "000063"）
         """
@@ -1169,7 +1169,7 @@ python main.py generate --task-id {meta['task_id']}
             except Exception as e:
                 result["margin_summary"] = [{"error": str(e)}]
 
-            path = self._write_json("06_akshare.json", result)
+            path = self._write_json("1_market_akshare_macro.json", result)
             return True, path
 
         except Exception as e:
@@ -1177,7 +1177,7 @@ python main.py generate --task-id {meta['task_id']}
                 "_meta": {"step": "akshare", "error": str(e)},
                 "agent_note": f"AKShare 数据采集失败: {e}",
             }
-            path = self._write_json("06_akshare.json", data)
+            path = self._write_json("1_market_akshare_macro.json", data)
             return False, path
 
     # ─────────────────────────────────────────────────────────
@@ -1187,9 +1187,9 @@ python main.py generate --task-id {meta['task_id']}
     def run_market_state(self) -> Tuple[bool, str]:
         """
         通过 market_state.py 爬取新浪行情页，获取大盘整体状况
-        使用 --output 直接写入 04_market_state.json（不再解析 stdout）
+        使用 --output 直接写入 1_market_status_sina.json（不再解析 stdout）
         """
-        out_path = os.path.join(self.task_dir, "04_market_state.json")
+        out_path = os.path.join(self.task_dir, "1_market_status_sina.json")
         try:
             ok, stdout = self._run_script(
                 ["scripts/market_state.py", "--output", out_path, "--format", "rawtext"],
@@ -1207,7 +1207,7 @@ python main.py generate --task-id {meta['task_id']}
                 "raw_text": stdout[:5000] if stdout else "",
                 "agent_note": f"大盘状况采集失败: {stdout[:200]}" if stdout else "大盘状况采集失败",
             }
-            path = self._write_json("04_market_state.json", data)
+            path = self._write_json("1_market_status_sina.json", data)
             return False, path
         except Exception as e:
             data = {
@@ -1216,7 +1216,7 @@ python main.py generate --task-id {meta['task_id']}
                 "raw_text": "",
                 "agent_note": f"大盘状况采集失败: {e}",
             }
-            path = self._write_json("04_market_state.json", data)
+            path = self._write_json("1_market_status_sina.json", data)
             return False, path
 
     # ─────────────────────────────────────────────────────────
@@ -1225,10 +1225,10 @@ python main.py generate --task-id {meta['task_id']}
 
     def run_parse_image(self, image_path: str) -> Tuple[bool, str]:
         """
-        调用 parse_image.py 解析持仓截图，写入 00_portfolio_image.json
+        调用 parse_image.py 解析持仓截图，写入 0_portfolio_img__parse.json
         image_path: 用户上传的图片绝对路径
         """
-        out_path = os.path.join(self.task_dir, "00_portfolio_image.json")
+        out_path = os.path.join(self.task_dir, "0_portfolio_img__parse.json")
         try:
             ok, stdout = self._run_script(
                 ["scripts/parse_image.py", image_path, out_path],
@@ -1281,6 +1281,48 @@ python main.py generate --task-id {meta['task_id']}
             with open(out_path, "w", encoding="utf-8") as f:
                 json.dump(data, f, ensure_ascii=False, indent=2)
             return False, out_path
+
+    # ═══════════════════════════════════════════════════════════
+    # 预留步骤：注册路由但尚未实现，创建占位 JSON 文件
+    # ═══════════════════════════════════════════════════════════
+    # 3_ — 快讯类
+    #   news_market_flash  → 3_news_market_flash.json
+    #   news_stock_flash   → 3_news_stock_flash.json
+    # 4_ — 搜索类
+    #   search_research    → 4_search_research_report.json
+    #   search_market_batch→ 4_search_market_batch.json
+    #   search_stock_batch → 4_search_stock_batch.json
+    # 6_ — 模拟盘类
+    #   emu_portfolio      → 6_emu_portfolio.json
+    #   emu_operation      → 6_emu_operation_log.json
+    #   emu_reflection     → 6_emu_reflection_review.json
+
+    _RESERVED_STEP_FILES = {
+        "news_market_flash":   "3_news_market_flash.json",
+        "news_stock_flash":    "3_news_stock_flash.json",
+        "search_research":     "4_search_research_report.json",
+        "search_market_batch": "4_search_market_batch.json",
+        "search_stock_batch":  "4_search_stock_batch.json",
+        "emu_portfolio":       "6_emu_portfolio.json",
+        "emu_operation":       "6_emu_operation_log.json",
+        "emu_reflection":      "6_emu_reflection_review.json",
+    }
+
+    def run_reserved_step(self, step: str) -> Tuple[bool, str]:
+        """预留步骤 stub：创建占位 JSON，不执行实际数据采集"""
+        filename = self._RESERVED_STEP_FILES.get(step, f"{step}.json")
+        data = {
+            "_meta": {
+                "step": step,
+                "status": "reserved_placeholder",
+                "note": "此步骤尚未实现具体逻辑，当前为占位文件",
+                "fetched_at": datetime.now().isoformat(),
+            },
+            "data": {},
+            "agent_note": f"🟡 步骤「{step}」({filename}) 尚未实现。请手动补充所需数据后继续。",
+        }
+        path = self._write_json(filename, data)
+        return True, path
 
     def _clean_schema_comments(self, obj: Any) -> Any:
         """递归删除 JSON 中所有以 _ 开头的注释字段"""
