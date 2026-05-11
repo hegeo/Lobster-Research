@@ -13,6 +13,8 @@ from __future__ import annotations
 import os, sys, io
 from datetime import datetime
 from typing import Optional
+
+from scripts.validate_quality import normalize_table, check_report_input, format_quality_report
 # UTF-8 stdout：仅当当前 stdout 不是 UTF-8 编码时才重定向，避免二次包装
 if getattr(sys.stdout, 'encoding', None) != 'utf-8':
     try:
@@ -118,6 +120,9 @@ def _build_section(s: dict) -> str:
             sub_html += f'<div class="highlight-box">{highlight}</div>'
 
         if table:
+            # 容错：自动转换数组格式 → {headers, rows}
+            table = normalize_table(table, s.get("title", ""), sub.get("title", ""))
+        if table:
             headers = [_escape_html(h) for h in table.get("headers", [])]
             t_headers = "".join(f"<th>{h}</th>" for h in headers)
             t_rows = ""
@@ -211,6 +216,20 @@ def _build_html(data: dict, report_type_label: str = "龙虾研报", css: str = 
 
 
 # ═══════════════════════════════════════════════════════════
+#  工具函数
+# ═══════════════════════════════════════════════════════════
+
+def _get_prompt_template(data: dict) -> Optional[dict]:
+    """从 data 中提取 prompt_template（存在 _prompt_body 时创建影子对象）"""
+    pt = data.get("prompt_template")
+    if pt:
+        return pt
+    if data.get("_prompt_body"):
+        return {"promptBody": data["_prompt_body"]}
+    return None
+
+
+# ═══════════════════════════════════════════════════════════
 #  统一入口
 # ═══════════════════════════════════════════════════════════
 
@@ -277,11 +296,17 @@ def generate_report(
         if fmt == "html":
             with open(output_path, "w", encoding="utf-8") as f:
                 f.write(html_content)
+
+            # 质量快报
+            quality = check_report_input(data, _get_prompt_template(data))
+            print(f"  {format_quality_report(quality)}")
+
             return {
                 "success": True,
                 "format": "html",
                 "path": output_path,
                 "content": html_content[:500],
+                "quality": quality,
             }
         else:
             # PDF 格式：保存 HTML → Chrome headless 打印
@@ -312,12 +337,17 @@ def generate_report(
                 try:
                     result = subprocess.run(cmd, capture_output=True, timeout=30)
                     if os.path.exists(output_path):
+                        # 质量快报
+                        quality = check_report_input(data, _get_prompt_template(data))
+                        print(f"  {format_quality_report(quality)}")
+
                         return {
                             "success": True,
                             "format": "pdf",
                             "path": output_path,
                             "html_path": html_path,
                             "content": f"[PDF] {output_path}",
+                            "quality": quality,
                         }
                     else:
                         print(f"⚠️ Chrome headless 未生成 PDF，stdout: {result.stdout.decode('utf-8', errors='ignore')[:200]}, stderr: {result.stderr.decode('utf-8', errors='ignore')[:200]}")
@@ -325,6 +355,8 @@ def generate_report(
                     print(f"⚠️ Chrome headless 异常: {chrome_err}")
 
             # 降级：返回 HTML 路径（由调用方自行打印）
+            quality = check_report_input(data, _get_prompt_template(data))
+            print(f"  {format_quality_report(quality)}")
             return {
                 "success": True,
                 "format": "html",

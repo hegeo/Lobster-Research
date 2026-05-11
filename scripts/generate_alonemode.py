@@ -20,6 +20,9 @@ from typing import Optional
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from config.config import get_settings, get
 
+# 质量校验
+from scripts.validate_quality import check_report_input, format_quality_report
+
 
 # ─────────────────────────────────────────────────────────
 # API 提供商配置
@@ -359,12 +362,54 @@ def run_alone_mode(task_dir: str, meta: dict, project_root: str) -> dict:
         print("  💡 降级为 skill 模式，等待 Agent 手动处理")
         return result
 
-    # Step 3: 调用 LLM
-    api_result = call_llm(api_cfg, briefing, task_dir)
+    # Step 3: 调用 LLM（带质量校验重试）
+    max_retries = alone_cfg.get("quality_max_retries", 2)
+    retry_feedback = ""
+    api_result = None
 
-    if not api_result["success"]:
-        result["error"] = api_result.get("error", "API 调用失败")
-        return result
+    for attempt in range(1, max_retries + 2):  # 首次 + N 次重试
+        if retry_feedback:
+            print(f"\n  🔄 重试第 {attempt-1} 次（质量不达标）...")
+            # 动态注入反馈到 system prompt
+            _briefing = copy.deepcopy(briefing)
+            _briefing["briefing_text"] += f"\n\n## 上一版质量问题\n{retry_feedback}\n\n请针对以上问题改进报告内容，特别是篇幅和数据丰富度。"
+        else:
+            _briefing = briefing
+
+        api_result = call_llm(api_cfg, _briefing, task_dir)
+        if not api_result["success"]:
+            result["error"] = api_result.get("error", "API 调用失败")
+            return result
+
+        # 仅当工具调用成功时进行质量校验
+        if api_result.get("tool_called"):
+            input_path = os.path.join(task_dir, "5_agent_report_input.json")
+            try:
+                with open(input_path, encoding="utf-8") as f:
+                    report_data = json.load(f)
+                quality = check_report_input(report_data, meta.get("prompt_template"))
+                print(f"  {format_quality_report(quality)}")
+
+                if quality["ok"] and not quality["warnings"]:
+                    print(f"  ✅ 质量校验通过（第 {attempt} 次）")
+                    break  # 合格，退出重试循环
+                else:
+                    # 构造反馈
+                    retry_feedback = "\n".join(quality["warnings"][:5])
+                    if attempt <= max_retries:
+                        print(f"  ⚠️ 质量不合格，剩余重试 {max_retries - attempt + 1} 次")
+                        # 重置 api_result 使循环继续
+                        continue
+                    else:
+                        print(f"  ⚠️ 已达最大重试次数，使用当前结果")
+            except (json.JSONDecodeError, FileNotFoundError) as e:
+                retry_feedback = f"JSON 文件问题: {e}"
+                if attempt <= max_retries:
+                    print(f"  ⚠️ JSON 读取失败，剩余重试 {max_retries - attempt + 1} 次")
+                    continue
+        else:
+            # 无工具调用，无法校验
+            break
 
     result["success"] = True
     result["tool_called"] = api_result["tool_called"]

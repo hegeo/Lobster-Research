@@ -8,14 +8,15 @@
     "_prosearch_doc": "ProSearch 需要本地网关运行，手动设为 true 启用",
     "apis": {
       "_doc": "有 key 的引擎优先尝试，无 key 的自动跳过",
-      "serpbase_api_key": "",
+      "serpbase_api_key": "sk-414628452ae2bd03895ed3524440123b1d624b5c139f91af",
       "serpbase_base_url": "https://api.serpbase.dev",
       "bing_api_key": "",
       "bing_api_base": "https://api.bing.microsoft.com/v7.0/search",
-      "tavily_api_key": "",
+      "tavily_api_key": "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",
       "tavily_api_base": "https://api.tavily.com/search",
       "auth_gateway_port": "19000",
       "auth_gateway_base": "http://localhost:19000/proxy/prosearch/search"
+
     },
     "engines": {
       "_doc": "primary=主引擎, secondary=备引擎, primary=all 则启用全部有key的引擎; 均为空则报错",
