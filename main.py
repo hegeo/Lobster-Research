@@ -305,6 +305,9 @@ def create_task(cmd: str, args: argparse.Namespace) -> dict:
     # 加载 prompt 模板
     prompt_tpl = load_prompt_template(cfg.get("prompt_template", ""))
 
+    # 加载用户配置（含投资画像）
+    user_prefs = _load_user_config()
+
     # 填充搜索关键词模板（命令自带的）
     tpl_vars = {
         "name":  getattr(args, "name", ""),
@@ -401,6 +404,7 @@ def create_task(cmd: str, args: argparse.Namespace) -> dict:
         "prompt_template": prompt_tpl,
         "report_path": "",
         "error": "",
+        "user_prefs": user_prefs,       # 注入用户画像
     }
     return meta, task_id
 

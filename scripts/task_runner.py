@@ -556,40 +556,43 @@ class TaskRunner:
         # 模板来源行（已全量嵌入 briefing 和 schema 中，不输出文件名避免误导 Agent）
         template_line = ''
 
-        # ── 用户画像（从 user_prefs 构建） ──
+        # ── 用户画像（从 user_prefs 构建，使用 config.json labels 映射） ──
         user_prefs = meta.get("user_prefs", {})
         user_section = ""
         if user_prefs:
             u = user_prefs.get("user", {})
             m = user_prefs.get("market", {})
+            labels = user_prefs.get("labels", {})
 
-            style_map = {"conservative": "保守", "balanced": "平衡", "aggressive": "积极"}
-            risk_map  = {"low": "低风险", "medium": "中风险", "high": "高风险"}
-            freq_map  = {"short": "短期(1-3天)", "medium": "中期(3-15天)", "long": "长期(>15天)"}
-            asset_map = {"below_10w": "10万以下", "10w_to_50w": "10-50万", "50w_to_100w": "50-100万", "above_100w": "100万以上"}
+            # 从 labels 读取映射表，不再使用硬编码
+            def label(map_key, raw_key):
+                return labels.get(map_key, {}).get(raw_key, raw_key if raw_key else "未设置")
 
-            style     = style_map.get(u.get("investment_style", ""), u.get("investment_style", "未设置"))
-            risk      = risk_map.get(u.get("risk_level", ""), u.get("risk_level", "未设置"))
-            freq      = freq_map.get(u.get("operation_freq", ""), u.get("operation_freq", "未设置"))
-            assets    = asset_map.get(u.get("total_assets_range", ""), u.get("total_assets_range", "未设置"))
-            focus     = ", ".join(m.get("focus_news_types", [])) or "未设置"
-            focus_stk = ", ".join(m.get("focus_stocks", [])) or "未设置"
+            style      = label("investment_style", u.get("investment_style", ""))
+            risk       = label("risk_level", u.get("risk_level", ""))
+            freq       = label("operation_freq", u.get("operation_freq", ""))
+            assets     = label("total_assets_range", u.get("total_assets_range", ""))
+            exp_level  = label("experience_level", u.get("experience_level", ""))
+            focus      = ", ".join(m.get("focus_news_types", [])) or "未设置"
+            focus_stk  = ", ".join(m.get("focus_stocks", [])) or "未设置"
 
             user_section = f"""
 ## 用户画像（必须据此调整报告风格）
 
-**投资风格**: {style}
-**风险偏好**: {risk}
-**操作周期**: {freq}
-**资产规模**: {assets}
-**关注领域**: {focus}
-**关注标的**: {focus_stk}
+**主观投资风格**: {style}
+**风险承受能力**: {risk}
+**决策操作周期**: {freq}
+**总资产规模**: {assets}
+**投资经验等级**: {exp_level}
+**兴趣与关注领域**: {focus}
+**关注市场或标的**: {focus_stk}
 
 ⚠️ **铁律：你必须根据以上用户画像调整报告内容！**
 - 保守型/低风险用户：侧重低估值、高股息、防御性标的，仓位控制更严格，止损更窄
 - 积极型/高风险用户：可覆盖追涨、打板、连板接力等激进策略
 - 平衡型用户：确定性仓位为主，博弈性仓位为辅
 - 报告中的仓位配比、止损幅度、持股周期、选股风格必须与用户画像一致
+- 相关资金比例、仓位比例、操作建议应适配用户实际投资经验水平，提供具体操作说明
 - 不同用户收到的报告内容应有实质性差异，禁止写万能模板
 """
 

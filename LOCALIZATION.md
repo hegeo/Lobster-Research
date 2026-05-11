@@ -474,7 +474,7 @@ python main.py smart --input "Tesla in-depth research" 2>&1
 
 | Check | Command | Expected Result |
 |:---|:---|:---|
-| ✅ Quotes work | `python main.py smart --input "AAPL stock"` | 01_quote.json created with data |
+| ✅ Quotes work | `python main.py stock --code 00700 --name 腾讯控股` | `2_stock_quote_realtime.json` created with data |
 | ✅ Search works | Check 05_search_*.json | Results in your language/market |
 | ✅ Report generates | `python main.py generate --task-id ...` | PDF created successfully |
 | ✅ Text is translated | Open PDF | All content in target language |

@@ -38,24 +38,22 @@ lobster-research/
 
 ---
 
-## 任务文件夹结构
+## 任务文件夹结构（文件名以实际生成为准，此处为示意）
 
 ```
 output/tasks/<task_id>/
-├── meta.json              任务元信息 + 状态机
-├── AGENT_BRIEFING.md      给你的工作说明（Phase 1 自动生成）
-├── 01_quote.json          实时行情数据
-├── 02_kline.json          K线 + 技术指标
-├── 03_master.json         个股详细资料
-├── 04_market.json         大盘指数
-├── 04_market_state.json   大盘整体状况
-├── 04_news_batch.json     百度新闻快讯
-├── 05_search_0.json       搜索结果
-├── 06_akshare.json        AKShare 结构化数据
-├── 06_portfolio.json      持仓快照（持仓诊断专用）
-├── 07_agent_input.json    ← 你填写的最终报告数据
-├── report_<task_id>.html  最终报告 HTML
-└── report_<task_id>.pdf   最终报告 PDF
+├── 0_meta_task_info.json     任务元信息 + 状态机
+├── 5_agent_briefing.md       给你的工作说明（Phase 1 自动生成）
+├── 2_stock_quote_realtime.json  实时行情数据
+├── 2_stock_kline_indicator.json  K线 + 技术指标
+├── 2_stock_info_detail.json     个股详细资料
+├── 1_market_*.json            大盘指数/整体状况
+├── 3_news_*.json              新闻快讯
+├── 4_search_*.json            搜索结果
+├── 0_portfolio_fresh.json     持仓快照（持仓诊断专用）
+├── 5_agent_report_input.json  ← 你填写的最终报告数据
+├── report_<task_id>.html      最终报告 HTML
+└── report_<task_id>.pdf       最终报告 PDF
 ```
 
 ---

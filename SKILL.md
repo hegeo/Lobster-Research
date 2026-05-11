@@ -10,14 +10,14 @@ description: |
 
   核心约束：
   ① 你只做 Phase 2：读取 JSON → 补充搜索 → 填写 5_agent_report_input.json
-  ② 数据采集由 main.py smart 命令完成，禁止跳过 main.py 自行采集
+  ② 数据采集由 main.py 精确命令（stock/company/market/industry/...）完成，禁止跳过 main.py 自行采集
   ③ 报告生成由 python main.py generate 完成，禁止直接调用 generate_report()
   ④ 专家模式需 4000-7000 字，5_agent_report_input.json 中 sections 的内容必须充实
   ⑤ 报告生成后必须用 deliver_attachments 交付
   ⑥ 必须正确识别当前时间 —— 使用系统提供的 current_time
 
   三段式架构：
-  【Phase 1 - 代码】main.py smart 采集数据 → 任务文件夹 JSON
+  【Phase 1 - 代码】main.py 命令采集数据 → 任务文件夹 JSON
   【Phase 2 - Agent】读 JSON + 补充搜索 → 填写 5_agent_report_input.json
   【Phase 3 - 代码】main.py generate → 生成 HTML/PDF 报告
 
@@ -59,47 +59,33 @@ description: |
 
 ---
 
-## 【输入路由】smart 命令自动匹配
+## 【输入路由】由你自行判断匹配
 
-```
-python main.py smart --input "用户说的话"
-```
+**main.py 有多个子命令，Agent 根据用户意图匹配（见下方速查表）：**
 
-**匹配逻辑由 main.json 定义，你不需要手动判断：**
+- 个股/公司分析 → 提取股票名+代码，执行 `stock`/`company` 命令
+- 大盘日报 → 执行 `market` 命令
+- 行业研报 → 提取主题，执行 `industry` 命令
+- 快速选股 → 提取主题，执行 `screener` 命令
+- 持仓诊断 → 执行 `portfolio --file <json>` 或 `smart --input "分析持仓"`
+- 新闻速览/模糊请求 → 执行 `smart --input "<原话>"` 由 main.json 自动路由
 
-```
-用户输入
-  │
-  ├─ 纯新闻词（新闻/快讯/热点/消息...）→ 快讯（采集+文字回复）
-  │
-  ├─ 命中领域关键词（股票/猪肉/战争/游戏...）
-  │    ├─ 同时包含 快报/日报/速览 关键词 → 快报（生成 PDF）
-  │    │   ※ 该领域需要有快报模板，否则降级为快讯
-  │    ├─ 同时包含 研报/深度/研究/分析 关键词 → 研报（生成 PDF）
-  │    └─ 都没包含 → 快讯（采集+文字回复）
-  │
-  └─ 没有命中任何领域 → 不支持，告诉用户
-```
+**关键原则：**
+- 能明确判断意图 → **优先用精确命令**传参（数据质量更高）
+- 模糊/混合/不确定 → fallback 到 `smart`
+- 使用 `stock`/`company` 时，Agent 需自行确定股票代码（web 搜索或常识）
 
-**你只需要：**
-
-1. 把用户的原话直接传给 `python main.py smart --input "..."`
-2. 读取输出的 JSON，根据 `tier` 和 `action` 字段决定下一步
-3. `news` → 读数据文件，直接文字回复
-4. `quick` / `deep` → 读数据文件，填 5_agent_report_input.json，然后 generate
-
-**涵盖 23 个领域，完整配置见 `main.json`。**
+**执行后：**
+- 精确命令 → 直接走 Phase 1 采集 → Phase 2 读 JSON → Phase 3 generate
+- `smart` → 输出 JSON，根据 `tier`/`action` 决定 news（文字回复）或 quick/deep（出报告）
 
 ---
 
 ## 【架构总览】三段式流程
 
 ```
-用户请求
-   │
-   ▼
 Phase 1 ── 代码驱动（无 Agent 介入）
-  python main.py smart --input "..."
+  python main.py <命令> <参数>         ← 见速查表
   │
   ├── 采集行情/K线/个股资料/大盘/搜索结果
   │
@@ -107,7 +93,7 @@ Phase 1 ── 代码驱动（无 Agent 介入）
          内含所有 JSON + 5_agent_briefing.md
 
 Phase 2 ── Agent 整合（你的职责）
-  读取5_agent_briefing.md  
+ 读取5_agent_briefing.md  
   读取任务文件夹内所有 JSON
   补充搜索（可选）
   填写 output/tasks/<task_id>/5_agent_report_input.json
@@ -137,9 +123,16 @@ Phase 3 ── 代码驱动（无 Agent 介入）
 ❌ 禁止：跳过 main.py 自己编写整套采集+报告代码
 
 ✅ 正确：
-  Phase 1 → python main.py smart --input "..."
+  Phase 1 → python main.py <精确命令> <参数>  ← 见速查表
   Phase 2 → 你读 JSON，补充搜索，填写 5_agent_report_input.json
   Phase 3 → python main.py generate --task-id <task_id>
+
+✅ 使用 stock/company 时，Agent 必须自行确定股票代码：
+  用户说"分析中联重科" → 搜索得知 A股代码 000157
+  → python main.py stock --code 000157 --name 中联重科
+
+❌ 错误（code/name 丢失）：
+  python main.py smart --input "分析中联重科"  ← 数据采集失败
 ```
 
 ---
@@ -186,10 +179,10 @@ sections 中的每个 content 字段：
 ```powershell
 # ✅ 运行时必须加编码设置
 $env:PYTHONIOENCODING = "utf-8"
-python main.py smart --input "..." 2>&1
+python main.py stock --code 000157 --name 中联重科 2>&1
 
 # ✅ 禁止并行，按顺序执行
-python main.py smart --input "..."   # 等 Phase 1 完成
+python main.py stock --code 000157 --name 中联重科  # Phase 1
 # 读取 JSON，填写 5_agent_report_input.json
 python main.py generate --task-id <task_id>  # Phase 3
 ```
@@ -198,7 +191,7 @@ python main.py generate --task-id <task_id>  # Phase 3
 
 ---
 
-### 🔴 铁律 5：报告交付必须用 deliver_attachments + preview_url
+### 🔴 铁律 5：报告交付规范 + 禁止写长回复
 
 ```
 Phase 3 完成后，必须按以下顺序执行（不可省略任何一步）：
@@ -208,7 +201,7 @@ Phase 3 完成后，必须按以下顺序执行（不可省略任何一步）：
 3. 只写一句话回复，例如："✅ 报告已生成，HTML 已在右侧预览，PDF/HTML 已作为附件发送。"
 
 ❌ 禁止：open_result_view(target_file=pdf_path)
-❌ 禁止：Phase 3 后写报告摘要、章节回顾、数据总结 —— 这些都在报告本身里
+❌ 禁止：写报告摘要、章节回顾、数据总结 —— 这些都在报告本身里
 ❌ 禁止：Phase 3 后输出超过 1 行回复 —— 交付文件本身就是结果
 
 【原理】Phase 3 后过长回复会浪费 token 且导致截断，少说话多办事。
@@ -226,25 +219,7 @@ Phase 3 完成后，必须按以下顺序执行（不可省略任何一步）：
 
 ---
 
-### 🔴 铁律 7：Phase 3 交付后禁止写长回复
-
-```
-Phase 3 generate 完成后，你只做以下 3 件事：
-  1. preview_url（HTML 预览）
-  2. deliver_attachments（PDF + HTML）
-  3. 一句话确认
-
-❌ 禁止：写报告摘要（报告本身就是摘要）
-❌ 禁止：章节回顾（报告内已有）
-❌ 禁止：数据总结（报告内已有）
-❌ 禁止：风险提示（报告内已有）
-
-交付文件 = 最终输出，不需要额外文字包装。
-```
-
----
-
-### 🔴 铁律 8：必须根据用户画像调整报告内容
+### 🔴 铁律 6：必须根据用户画像调整报告内容
 
 ```
 5_agent_briefing.md 中有「用户画像」章节，0_meta_task_info.json 中有 user_prefs 字段，
@@ -267,37 +242,34 @@ Phase 3 generate 完成后，你只做以下 3 件事：
 
 ---
 
-## 【标准流程】smart 命令四步走
+## 【标准流程】快速参考
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│ Step 1: 传递用户输入                                     │
-│ python main.py smart --input "用户说的话" 2>&1          │
-│ main.py 自动匹配领域+输出类型，执行 Phase 1 采集         │
+│ Step 1: 选命令 → 执行 Phase 1（代码驱动）                │
+│ 根据速查表选择命令：python main.py <命令> <参数> 2>&1   │
+│ 系统自动采集数据到 output/tasks/<task_id>/               │
 └─────────────────────────────────────────────────────────┘
                           ↓
 ┌─────────────────────────────────────────────────────────┐
-│ Step 2: 读取匹配结果 JSON                                │
-│ tier=news       → 直接读数据文件，文字回复               │
-│ tier=quick/deep → 读数据文件 + 填 5_agent_report_input.json   │
+│ Step 2: 读 Phase 1 输出 → 确定模式                       │
+│ 精确命令 → 直接输出任务文件夹，找到 task_id               │
+│ smart     → 输出 JSON，tier=news→文字回复，              │
+│             tier=quick/deep→进入 Step 3                   │
 └─────────────────────────────────────────────────────────┘
                           ↓
 ┌─────────────────────────────────────────────────────────┐
-│ Step 3: Phase 2 — Agent 整合（仅 quick/deep 需要）      │
-│ a. 读取 5_agent_briefing.md                               │
-│ b. 逐一读取所有数据文件                                  │
-│ c. 持仓任务：读 0_portfolio_fresh.json（实时价格+各持仓股）   │
-│ d. 用联网搜索补充缺失信息                                │
-│ e. 将分析内容填入 5_agent_report_input.json                    │
+│ Step 3: Phase 2 — Agent 整合                             │
+│ a. 读 5_agent_briefing.md 了解用户画像+数据文件清单       │
+│ b. 逐一读取所有 JSON 数据文件                             │
+│ c. 补充联网搜索                                           │
+│ d. 填写 5_agent_report_input.json（遵循铁律2+3+5）        │
 └─────────────────────────────────────────────────────────┘
                           ↓
 ┌─────────────────────────────────────────────────────────┐
-│ Step 4: Phase 3 — 生成报告（仅 quick/deep）              │
+│ Step 4: Phase 3 — 生成报告（遵循铁律5）                  │
 │ python main.py generate --task-id <task_id> 2>&1        │
-│ → preview_url(url=html_path)        # HTML 右侧预览      │
-│ → deliver_attachments([pdf, html])  # 发送附件            │
-│ → 只写一句话："✅ 报告已生成"                              │
-│ ⚠️ 禁止写摘要/总结/回顾                                    │
+│ → preview_url + deliver_attachments + 一句话确认          │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -319,7 +291,7 @@ Phase 3 generate 完成后，你只做以下 3 件事：
 | 重新生成报告  | `generate --task-id XX`                             | —                |
 | 列出所有任务  | `list`                                              | —                |
 
-**自然语言请求一律走 `smart` 命令，由 main.py 自动路由。**
+**由 Agent 根据意图选择命令，见速查表。**
 
 ---
 
