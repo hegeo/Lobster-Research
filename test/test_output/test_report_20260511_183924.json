@@ -1,0 +1,131 @@
+{
+  "test_time": "2026-05-11T18:39:24.551758",
+  "duration_s": 0.0,
+  "mode": "dry-run",
+  "categories": [
+    "cli",
+    "collection",
+    "style",
+    "generate",
+    "api"
+  ],
+  "summary": {
+    "total": 16,
+    "passed": 16,
+    "failed": 0
+  },
+  "results": [
+    {
+      "name": "stock-help",
+      "category": "cli",
+      "passed": true,
+      "duration_s": 0.0,
+      "error": ""
+    },
+    {
+      "name": "market-help",
+      "category": "cli",
+      "passed": true,
+      "duration_s": 0.0,
+      "error": ""
+    },
+    {
+      "name": "industry-help",
+      "category": "cli",
+      "passed": true,
+      "duration_s": 0.0,
+      "error": ""
+    },
+    {
+      "name": "smart-help",
+      "category": "cli",
+      "passed": true,
+      "duration_s": 0.0,
+      "error": ""
+    },
+    {
+      "name": "generate-help",
+      "category": "cli",
+      "passed": true,
+      "duration_s": 0.0,
+      "error": ""
+    },
+    {
+      "name": "list-cmd",
+      "category": "cli",
+      "passed": true,
+      "duration_s": 0.0,
+      "error": ""
+    },
+    {
+      "name": "stock-basic",
+      "category": "cli",
+      "passed": true,
+      "duration_s": 0.0,
+      "error": ""
+    },
+    {
+      "name": "company-basic",
+      "category": "cli",
+      "passed": true,
+      "duration_s": 0.0,
+      "error": ""
+    },
+    {
+      "name": "market-basic",
+      "category": "cli",
+      "passed": true,
+      "duration_s": 0.0,
+      "error": ""
+    },
+    {
+      "name": "smart-basic",
+      "category": "cli",
+      "passed": true,
+      "duration_s": 0.0,
+      "error": ""
+    },
+    {
+      "name": "style_matrix",
+      "category": "style",
+      "passed": true,
+      "duration_s": 0.0,
+      "error": ""
+    },
+    {
+      "name": "采集-中兴通讯",
+      "category": "collection",
+      "passed": true,
+      "duration_s": 0.0,
+      "error": ""
+    },
+    {
+      "name": "采集-中联重科",
+      "category": "collection",
+      "passed": true,
+      "duration_s": 0.0,
+      "error": ""
+    },
+    {
+      "name": "stock-gen-purple",
+      "category": "generate",
+      "passed": true,
+      "duration_s": 0.0,
+      "error": ""
+    },
+    {
+      "name": "company-gen-blue",
+      "category": "generate",
+      "passed": true,
+      "duration_s": 0.0,
+      "error": ""
+    },
+    {
+      "name": "core_api",
+      "category": "api",
+      "passed": true,
+      "duration_s": 0.0,
+      "error": ""
+    }
+  ]
+}

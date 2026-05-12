@@ -1,0 +1,9 @@
+{
+  "_schema": "1.0",
+  "domain": "finance",
+  "label": "社会金融",
+  "search_groups": [
+    {"label": "金融政策", "sources": ["gov.cn", "cls.cn", "finance.sina.com.cn", "stcn.com"], "keywords": ["{topic} 央行 货币政策 利率 存款准备金 {date}", "{topic} 监管 金融稳定 系统性风险"]},
+    {"label": "行业动态", "sources": ["eastmoney.com", "cls.cn", "stcn.com"], "keywords": ["{topic} 银行 保险 券商 业绩 {date}", "{topic} 数字化转型 金融科技 竞争格局 {date}"]}
+  ]
+}

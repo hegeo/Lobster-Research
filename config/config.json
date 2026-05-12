@@ -1,10 +1,10 @@
 {
-  "_version": "3.0",
-  "_updated": "2026-04-26T15:46:20.950700",
+  "_version": "2.2",
+  "_updated": "2026-05-11T19:43:05.600676",
   "user": {
     "country": "CN",
     "language": "zh-CN",
-    "investment_style": "value",
+    "investment_style": "growth",
     "total_assets_range": "below_10w",
     "operation_freq": "short",
     "experience_level": "entry",
@@ -14,7 +14,9 @@
   "output": {
     "mode": "expert",
     "format": "markdown",
-    "report_style": "ios_liquid",
+    "report_style": "purple",
+    "color_type": "liquid",
+    "layout": "square",
     "default_dir": "output"
   },
   "market": {
@@ -44,65 +46,20 @@
       "Accept": "application/json"
     }
   },
-  "cross_assets": {
-    "symbols": [
-      {
-        "code": "GC=F",
-        "name": "黄金 XAU/USD"
-      },
-      {
-        "code": "DX=F",
-        "name": "美元指数 DXY"
-      },
-      {
-        "code": "BTC-USD",
-        "name": "比特币 BTC/USD"
-      },
-      {
-        "code": "SI=F",
-        "name": "白银 XAG/USD"
-      },
-      {
-        "code": "ETH-USD",
-        "name": "以太坊 ETH/USD"
-      }
-    ],
-    "fx": [
-      {
-        "code": "CNY=X",
-        "name": "美元/人民币 USD/CNY"
-      },
-      {
-        "code": "EUR=X",
-        "name": "EUR/USD"
-      },
-      {
-        "code": "JPY=X",
-        "name": "USD/JPY"
-      }
-    ],
-    "fred": [
-      {
-        "code": "DGS10",
-        "name": "10Y名义利率(%)"
-      },
-      {
-        "code": "DFII10",
-        "name": "10Y通胀保值债券(TIPS)"
-      },
-      {
-        "code": "DGS2",
-        "name": "2Y名义利率(%)"
-      },
-      {
-        "code": "DTB3",
-        "name": "3M LIBOR(%)"
-      }
-    ]
-  },
   "system": {
     "encoding": "utf-8",
     "win_encoding": "gbk"
+  },
+  "emu": {
+    "enabled": true,
+    "follow_user_prefs": true,
+    "independent_capital": 100000,
+    "independent_freq": "short",
+    "independent_style": "value",
+    "independent_risk": "steady",
+    "evolution": {
+      "enabled": true
+    }
   },
   "labels": {
     "investment_style": {
@@ -143,12 +100,6 @@
       "message": "消息",
       "markdown": "结构化文档",
       "pdf": "PDF文档"
-    },
-    "report_style": {
-      "liquid": "液态简约(白底靛蓝渐变，大圆角柔阴影)",
-      "orange": "经典橙色(暖橙渐变，橙色边框高亮)",
-      "blue": "经典蓝色(蓝色渐变，蓝色边框高亮)",
-      "ios_liquid": "液态简约(白底靛蓝渐变，大圆角柔阴影)"
     }
   }
 }

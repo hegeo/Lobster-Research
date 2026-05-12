@@ -1,0 +1,33 @@
+{
+  "_meta": {
+    "version": "1.0"
+  },
+  "operations": [
+    {
+      "id": "OP-INIT-000063",
+      "date": "2026-04-26",
+      "type": "buy",
+      "code": "000063",
+      "name": "中兴通讯",
+      "price": 32.5,
+      "shares": 500,
+      "amount": 16250.0,
+      "pl": 0,
+      "reason": "初始建仓（模拟验证，基于用户偏好配置）",
+      "task_id": "init_sync"
+    },
+    {
+      "id": "OP-INIT-300750",
+      "date": "2026-02-20",
+      "type": "buy",
+      "code": "300750",
+      "name": "宁德时代",
+      "price": 210.0,
+      "shares": 100,
+      "amount": 21000.0,
+      "pl": 0,
+      "reason": "初始建仓（模拟验证，基于用户偏好配置）",
+      "task_id": "init_sync"
+    }
+  ]
+}

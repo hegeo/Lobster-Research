@@ -1,0 +1,226 @@
+{
+  "_meta": {
+    "step": "search_batch",
+    "keyword_groups": [
+      {
+        "keywords": [
+          "涨停复盘 连板 龙头股 2026-05-11",
+          "高科技 高成长 新兴 景气赛道 涨停 热门 强势股 2026-05-11"
+        ],
+        "sources": [
+          "eastmoney.com",
+          "10jqka.com.cn",
+          "data.eastmoney.com"
+        ],
+        "group_label": "快速选股_涨停复盘"
+      },
+      {
+        "keywords": [
+          "龙虎榜 游资 机构席位 2026-05-11",
+          "主力资金 净流入 板块排名 2026-05-11"
+        ],
+        "sources": [
+          "eastmoney.com",
+          "10jqka.com.cn",
+          "data.eastmoney.com"
+        ],
+        "group_label": "快速选股_资金动向"
+      },
+      {
+        "keywords": [
+          "高科技 高成长 新兴 景气赛道 概念 题材 龙头 2026-05-11",
+          "A股 热点 主题投资 消息面 2026-05-11"
+        ],
+        "sources": [
+          "eastmoney.com",
+          "cls.cn",
+          "finance.sina.com.cn"
+        ],
+        "group_label": "快速选股_题材热点"
+      }
+    ],
+    "fetched_at": "2026-05-11T23:28:00.252889",
+    "success": true
+  },
+  "summary": {
+    "total_results": 9,
+    "groups_searched": 3,
+    "keywords_searched": 6
+  },
+  "groups": [
+    {
+      "label": "快速选股_涨停复盘",
+      "keywords": [
+        "涨停复盘 连板 龙头股 2026-05-11",
+        "高科技 高成长 新兴 景气赛道 涨停 热门 强势股 2026-05-11"
+      ],
+      "sources": [
+        "eastmoney.com",
+        "10jqka.com.cn",
+        "data.eastmoney.com"
+      ],
+      "result_count": 3,
+      "results": [
+        {
+          "title": "一周透市:A股7天6位董事长被查,政策暖意引爆地产股,央国企价值获...",
+          "url": "http://www.baidu.com/link?url=9jWmeULYmYtynjUKEopfS1K5STjd1P7FjnWd8TRyTSYvhXZk4LHZKu4Ix9skYZvD1mFiM1zOHBEv8rjVsJOuLK",
+          "snippet": "一周透市:A股7天6位董事长被查,政策暖意引爆地产股,央国企价值获... 2022年11月25日中字头国资股表现抢眼,中国科传、中成股份双双五连板,累涨逾43%,中铁装配在周二、周三连续两日“20CM”涨停,周涨41.57%,深圳国资控股的深城交本周涨近3成;控股股东将变更为华统集团的高乐股份5天4板;通润装备因正泰电器拟10.2亿元收购29.99%股份而大涨33.19%;永和智控周一涨停后停牌,",
+          "date": "2022-11-25",
+          "source": "Baidu"
+        },
+        {
+          "title": "> 圣龙股份个股数据",
+          "url": "http://www.baidu.com/link?url=XfVfs9Tn2XjPU-Ni18sS6dZcVAc7dsQ3pvzyaShGIhz7GUdLwqZtQKG2u-6yiPrUnjTEsyaRmZmOSj4_ekn_Dq",
+          "snippet": "> 圣龙股份个股数据 6天前2026-05-069018.40万1.965403.07万5735.61万-332.54万3.90万0.200.100.000.109022.30万9014.50万 点击查看更多 圣龙股份龙虎榜单 更多 交易时间 相关 收盘价(元) 涨跌幅(%) 后1日涨跌幅(%) 后5日涨跌幅(%) 后10日涨跌幅(%) 上榜营业部买入合计(万) 上榜营业部卖出合计(万) 上榜营业",
+          "date": "2026-05-06",
+          "source": "Baidu"
+        },
+        {
+          "title": "大家还在搜龙头股连续56个涨停的股票突破拉升型涨停板哪种首板容易连板涨停龙头股是什么意思意思有重组预期的小盘股重组后复牌18个涨停42个涨停板的股票涨停每天涨停板复盘",
+          "url": "/s?wd=%E9%BE%99%E5%A4%B4%E8%82%A1&usm=1&ie=utf-8&rsv_pq=fd211daf0000e0f1&oq=%E6%B6%A8%E5%81%9C%E5%A4%8D%E7%9B%98%20%E8%BF%9E%E6%9D%BF%20%E9%BE%99%E5%A4%B4%E8%82%A1%202026-05-11%20site%3Adata.eastmoney.com&rsv_t=e112a39e4M1Jt7xYHMFvm2zRwgbN3%2Bn0nW2pYbJczovaqRWFpXdUZ3zt7qI&rsf=101631202&rsv_dl=0_prs_28608_1",
+          "snippet": "大家还在搜龙头股连续56个涨停的股票突破拉升型涨停板哪种首板容易连板涨停龙头股是什么意思意思有重组预期的小盘股重组后复牌18个涨停42个涨停板的股票涨停每天涨停板复盘",
+          "date": "2026-05-11",
+          "source": "Baidu"
+        }
+      ]
+    },
+    {
+      "label": "快速选股_资金动向",
+      "keywords": [
+        "龙虎榜 游资 机构席位 2026-05-11",
+        "主力资金 净流入 板块排名 2026-05-11"
+      ],
+      "sources": [
+        "eastmoney.com",
+        "10jqka.com.cn",
+        "data.eastmoney.com"
+      ],
+      "result_count": 3,
+      "results": [
+        {
+          "title": "量化私募交易行为识别:龙虎榜营业部的新视角-金融界",
+          "url": "http://www.baidu.com/link?url=ICZJsrfmtopEq_V_PAZUqjhkZbOMkLXmQZtij_0I00Nb-Z_j3eXshcLhMWC8yHvFf443RWuLcdizKu3l_zm2Ua",
+          "snippet": "量化私募交易行为识别:龙虎榜营业部的新视角-金融界 2021年11月11日对于量化私募J1,在8次上榜样本中,其排名靠前的席位为机构专用(6次)。 可以发现,中国中金财富证券北京宋庄路、华泰证券股份有限公司总部、中国国际金融上海黄浦区湖滨路、招商证券深圳深南东路这4个营业部值得关注。我们进一步匹配其对应的前十大流通股东信息与龙虎榜买入情况,通过交叉比对其持股情况以及买入金额,最终认定上述4个营业部",
+          "date": "2021-11-11",
+          "source": "Baidu"
+        },
+        {
+          "title": "龙虎榜 游资 机构席位 2026-05-11 site:eastmoney.com - 百度图片",
+          "url": "https://image.baidu.com/search/index?tn=baiduimage&ct=201326592&lm=-1&cl=2&ie=utf8&sa=vs_ala_img&fr=ala&ala=1&alatpl=normal&pos=3&dyTabStr=MCwzLDEsMiwxMyw3LDYsNSwxMiw5&word=%E9%BE%99%E8%99%8E%E6%A6%9C%20%E6%B8%B8%E8%B5%84%20%E6%9C%BA%E6%9E%84%E5%B8%AD%E4%BD%8D%202026-05-11%20site%3Aeastmoney.com&lid=bdb586eb00002c00&topic=%E9%BE%99%E8%99%8E%E6%A6%9C%20%E6%B8%B8%E8%B5%84%20%E6%9C%BA%E6%9E%84%E5%B8%AD%E4%BD%8D%202026-05-11%20site%3Aeastmoney.com",
+          "snippet": "龙虎榜 游资 机构席位 2026-05-11 site:eastmoney.com - 百度图片 变清晰 4 变清晰 7 变清晰 9 变清晰 变清晰 变清晰 13 变清晰 3 变清晰 变清晰 变清晰 变清晰",
+          "date": "2026-05-11",
+          "source": "Baidu"
+        },
+        {
+          "title": "龙虎榜数据 _ 数据中心 _ 东方财富网",
+          "url": "http://www.baidu.com/link?url=9JVJa08ZhSCxP7zqn58tRkMGGBcOP8GDG8wJjuN9jufQdjLY6DyfXKrkBmWyyCPuJt2imDEejSBjeSez6ovWK0H7XDSZ8o4PWBDX_6c-t1y",
+          "snippet": "龙虎榜数据 _ 数据中心 _ 东方财富网 4天前2026-05-08 3563371.27 3603651.26 -40279.99 严重异常期间日收盘价格涨... - - - - - - - 4 300068 st南都 明细 股吧 2026-05-07 301166.11 236299.61 64866.50 严重异常期间日收盘价格跌... -4.03% - - - - - - 5 688280",
+          "date": "2026-05-08",
+          "source": "Baidu"
+        }
+      ]
+    },
+    {
+      "label": "快速选股_题材热点",
+      "keywords": [
+        "高科技 高成长 新兴 景气赛道 概念 题材 龙头 2026-05-11",
+        "A股 热点 主题投资 消息面 2026-05-11"
+      ],
+      "sources": [
+        "eastmoney.com",
+        "cls.cn",
+        "finance.sina.com.cn"
+      ],
+      "result_count": 3,
+      "results": [
+        {
+          "title": "财经首页 - 东方财富网",
+          "url": "http://www.baidu.com/link?url=R99Ox_rMa0kYHZQWKQDyC9RkovP898zEAQ2tWtHp9VoF-8A7gjbdgoo9j_OXCX7gOVGZnTES6y_8xlR7zLuNt_",
+          "snippet": "财经首页 - 东方财富网 华泰证券A股策略:波段操作应对宏观事件密集期 光大保德信基金姚石:政策支持与基本面修复共振 北证50迎来布局窗口 泉果基金杜凡: 本轮科技革命量级或十倍于互联网 掘金“非一致预期”机会 三重因素推动A股公司主动接受市场监督 股市日历2026年05月11日 星期一 更多 新股发行:新股申购0家中签缴款1家 停复牌:今日新停牌 10 东方财富网",
+          "date": "2026-05-11",
+          "source": "Baidu"
+        },
+        {
+          "title": "大家还在搜热点话题A股市场喜迎大涨领涨热点题材领涨龙头股股市下一个热点板块时政热点A股重要投资信息a股下一个风口下一个股票热点题材a股重大利好消息股市未来热点",
+          "url": "/s?wd=%E7%83%AD%E7%82%B9%E8%AF%9D%E9%A2%98&usm=1&ie=utf-8&rsv_pq=bcbf5472000249c4&oq=A%E8%82%A1%20%E7%83%AD%E7%82%B9%20%E4%B8%BB%E9%A2%98%E6%8A%95%E8%B5%84%20%E6%B6%88%E6%81%AF%E9%9D%A2%202026-05-11%20site%3Aeastmoney.com&rsv_t=a769nFYyEjvsMiNaCws%2BXpN4VNQDpUjpV25LHyHM0R5WfFfXs9nkFOeCvAU&rsf=101631202&rsv_dl=0_prs_28608_1",
+          "snippet": "大家还在搜热点话题A股市场喜迎大涨领涨热点题材领涨龙头股股市下一个热点板块时政热点A股重要投资信息a股下一个风口下一个股票热点题材a股重大利好消息股市未来热点",
+          "date": "2026-05-11",
+          "source": "Baidu"
+        },
+        {
+          "title": "中信建投:2026年全球股市、经济、债市、全产业链投资策略展望合集 | 上...",
+          "url": "http://www.baidu.com/link?url=ufpcvD1SRN93CmQOw4sfdulkOmNq0X5ogPSYnH0J4ZIrkDtcDvREGDHlsHis3Nn9F_sFEDHh45fS2hw00bqe6no4I5NOYFIMIzzmwHa0LAmX2heDfi5gpvC70tXKaCp8",
+          "snippet": "中信建投:2026年全球股市、经济、债市、全产业链投资策略展望合集 | 上... 2025年11月14日中信建投证券2026年资本市场峰会暨中国-沙特投资合作论坛于2025年11月11日至13日在北京召开,全方位展望2026年全球宏观经济政策形势与资本市场投资策略。 中信建投证券2026年全球资本市场、国内外宏观经济与政策、A股及海外市场、债券市场、资产配置以及各大产业链投资策略展望观点发布。 中",
+          "date": "2025-11-14",
+          "source": "Baidu"
+        }
+      ]
+    }
+  ],
+  "all_results": [
+    {
+      "title": "一周透市:A股7天6位董事长被查,政策暖意引爆地产股,央国企价值获...",
+      "url": "http://www.baidu.com/link?url=9jWmeULYmYtynjUKEopfS1K5STjd1P7FjnWd8TRyTSYvhXZk4LHZKu4Ix9skYZvD1mFiM1zOHBEv8rjVsJOuLK",
+      "snippet": "一周透市:A股7天6位董事长被查,政策暖意引爆地产股,央国企价值获... 2022年11月25日中字头国资股表现抢眼,中国科传、中成股份双双五连板,累涨逾43%,中铁装配在周二、周三连续两日“20CM”涨停,周涨41.57%,深圳国资控股的深城交本周涨近3成;控股股东将变更为华统集团的高乐股份5天4板;通润装备因正泰电器拟10.2亿元收购29.99%股份而大涨33.19%;永和智控周一涨停后停牌,",
+      "date": "2022-11-25",
+      "source": "Baidu"
+    },
+    {
+      "title": "> 圣龙股份个股数据",
+      "url": "http://www.baidu.com/link?url=XfVfs9Tn2XjPU-Ni18sS6dZcVAc7dsQ3pvzyaShGIhz7GUdLwqZtQKG2u-6yiPrUnjTEsyaRmZmOSj4_ekn_Dq",
+      "snippet": "> 圣龙股份个股数据 6天前2026-05-069018.40万1.965403.07万5735.61万-332.54万3.90万0.200.100.000.109022.30万9014.50万 点击查看更多 圣龙股份龙虎榜单 更多 交易时间 相关 收盘价(元) 涨跌幅(%) 后1日涨跌幅(%) 后5日涨跌幅(%) 后10日涨跌幅(%) 上榜营业部买入合计(万) 上榜营业部卖出合计(万) 上榜营业",
+      "date": "2026-05-06",
+      "source": "Baidu"
+    },
+    {
+      "title": "大家还在搜龙头股连续56个涨停的股票突破拉升型涨停板哪种首板容易连板涨停龙头股是什么意思意思有重组预期的小盘股重组后复牌18个涨停42个涨停板的股票涨停每天涨停板复盘",
+      "url": "/s?wd=%E9%BE%99%E5%A4%B4%E8%82%A1&usm=1&ie=utf-8&rsv_pq=fd211daf0000e0f1&oq=%E6%B6%A8%E5%81%9C%E5%A4%8D%E7%9B%98%20%E8%BF%9E%E6%9D%BF%20%E9%BE%99%E5%A4%B4%E8%82%A1%202026-05-11%20site%3Adata.eastmoney.com&rsv_t=e112a39e4M1Jt7xYHMFvm2zRwgbN3%2Bn0nW2pYbJczovaqRWFpXdUZ3zt7qI&rsf=101631202&rsv_dl=0_prs_28608_1",
+      "snippet": "大家还在搜龙头股连续56个涨停的股票突破拉升型涨停板哪种首板容易连板涨停龙头股是什么意思意思有重组预期的小盘股重组后复牌18个涨停42个涨停板的股票涨停每天涨停板复盘",
+      "date": "2026-05-11",
+      "source": "Baidu"
+    },
+    {
+      "title": "量化私募交易行为识别:龙虎榜营业部的新视角-金融界",
+      "url": "http://www.baidu.com/link?url=ICZJsrfmtopEq_V_PAZUqjhkZbOMkLXmQZtij_0I00Nb-Z_j3eXshcLhMWC8yHvFf443RWuLcdizKu3l_zm2Ua",
+      "snippet": "量化私募交易行为识别:龙虎榜营业部的新视角-金融界 2021年11月11日对于量化私募J1,在8次上榜样本中,其排名靠前的席位为机构专用(6次)。 可以发现,中国中金财富证券北京宋庄路、华泰证券股份有限公司总部、中国国际金融上海黄浦区湖滨路、招商证券深圳深南东路这4个营业部值得关注。我们进一步匹配其对应的前十大流通股东信息与龙虎榜买入情况,通过交叉比对其持股情况以及买入金额,最终认定上述4个营业部",
+      "date": "2021-11-11",
+      "source": "Baidu"
+    },
+    {
+      "title": "龙虎榜 游资 机构席位 2026-05-11 site:eastmoney.com - 百度图片",
+      "url": "https://image.baidu.com/search/index?tn=baiduimage&ct=201326592&lm=-1&cl=2&ie=utf8&sa=vs_ala_img&fr=ala&ala=1&alatpl=normal&pos=3&dyTabStr=MCwzLDEsMiwxMyw3LDYsNSwxMiw5&word=%E9%BE%99%E8%99%8E%E6%A6%9C%20%E6%B8%B8%E8%B5%84%20%E6%9C%BA%E6%9E%84%E5%B8%AD%E4%BD%8D%202026-05-11%20site%3Aeastmoney.com&lid=bdb586eb00002c00&topic=%E9%BE%99%E8%99%8E%E6%A6%9C%20%E6%B8%B8%E8%B5%84%20%E6%9C%BA%E6%9E%84%E5%B8%AD%E4%BD%8D%202026-05-11%20site%3Aeastmoney.com",
+      "snippet": "龙虎榜 游资 机构席位 2026-05-11 site:eastmoney.com - 百度图片 变清晰 4 变清晰 7 变清晰 9 变清晰 变清晰 变清晰 13 变清晰 3 变清晰 变清晰 变清晰 变清晰",
+      "date": "2026-05-11",
+      "source": "Baidu"
+    },
+    {
+      "title": "龙虎榜数据 _ 数据中心 _ 东方财富网",
+      "url": "http://www.baidu.com/link?url=9JVJa08ZhSCxP7zqn58tRkMGGBcOP8GDG8wJjuN9jufQdjLY6DyfXKrkBmWyyCPuJt2imDEejSBjeSez6ovWK0H7XDSZ8o4PWBDX_6c-t1y",
+      "snippet": "龙虎榜数据 _ 数据中心 _ 东方财富网 4天前2026-05-08 3563371.27 3603651.26 -40279.99 严重异常期间日收盘价格涨... - - - - - - - 4 300068 st南都 明细 股吧 2026-05-07 301166.11 236299.61 64866.50 严重异常期间日收盘价格跌... -4.03% - - - - - - 5 688280",
+      "date": "2026-05-08",
+      "source": "Baidu"
+    },
+    {
+      "title": "财经首页 - 东方财富网",
+      "url": "http://www.baidu.com/link?url=R99Ox_rMa0kYHZQWKQDyC9RkovP898zEAQ2tWtHp9VoF-8A7gjbdgoo9j_OXCX7gOVGZnTES6y_8xlR7zLuNt_",
+      "snippet": "财经首页 - 东方财富网 华泰证券A股策略:波段操作应对宏观事件密集期 光大保德信基金姚石:政策支持与基本面修复共振 北证50迎来布局窗口 泉果基金杜凡: 本轮科技革命量级或十倍于互联网 掘金“非一致预期”机会 三重因素推动A股公司主动接受市场监督 股市日历2026年05月11日 星期一 更多 新股发行:新股申购0家中签缴款1家 停复牌:今日新停牌 10 东方财富网",
+      "date": "2026-05-11",
+      "source": "Baidu"
+    },
+    {
+      "title": "大家还在搜热点话题A股市场喜迎大涨领涨热点题材领涨龙头股股市下一个热点板块时政热点A股重要投资信息a股下一个风口下一个股票热点题材a股重大利好消息股市未来热点",
+      "url": "/s?wd=%E7%83%AD%E7%82%B9%E8%AF%9D%E9%A2%98&usm=1&ie=utf-8&rsv_pq=bcbf5472000249c4&oq=A%E8%82%A1%20%E7%83%AD%E7%82%B9%20%E4%B8%BB%E9%A2%98%E6%8A%95%E8%B5%84%20%E6%B6%88%E6%81%AF%E9%9D%A2%202026-05-11%20site%3Aeastmoney.com&rsv_t=a769nFYyEjvsMiNaCws%2BXpN4VNQDpUjpV25LHyHM0R5WfFfXs9nkFOeCvAU&rsf=101631202&rsv_dl=0_prs_28608_1",
+      "snippet": "大家还在搜热点话题A股市场喜迎大涨领涨热点题材领涨龙头股股市下一个热点板块时政热点A股重要投资信息a股下一个风口下一个股票热点题材a股重大利好消息股市未来热点",
+      "date": "2026-05-11",
+      "source": "Baidu"
+    },
+    {
+      "title": "中信建投:2026年全球股市、经济、债市、全产业链投资策略展望合集 | 上...",
+      "url": "http://www.baidu.com/link?url=ufpcvD1SRN93CmQOw4sfdulkOmNq0X5ogPSYnH0J4ZIrkDtcDvREGDHlsHis3Nn9F_sFEDHh45fS2hw00bqe6no4I5NOYFIMIzzmwHa0LAmX2heDfi5gpvC70tXKaCp8",
+      "snippet": "中信建投:2026年全球股市、经济、债市、全产业链投资策略展望合集 | 上... 2025年11月14日中信建投证券2026年资本市场峰会暨中国-沙特投资合作论坛于2025年11月11日至13日在北京召开,全方位展望2026年全球宏观经济政策形势与资本市场投资策略。 中信建投证券2026年全球资本市场、国内外宏观经济与政策、A股及海外市场、债券市场、资产配置以及各大产业链投资策略展望观点发布。 中",
+      "date": "2025-11-14",
+      "source": "Baidu"
+    }
+  ],
+  "agent_note": "这是批量搜索结果，包含多个关键词组的数据。all_results 是全局去重汇总，groups 是按组分组的原始结果。请综合所有结果提取与报告相关的关键信息。"
+}

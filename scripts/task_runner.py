@@ -31,6 +31,7 @@ from datetime import datetime
 from typing import Dict, List, Tuple, Optional, Any
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from modules.logger import get_logger
 
 
 class TaskRunner:
@@ -39,6 +40,49 @@ class TaskRunner:
         self.meta        = meta
         self.project_root = project_root
         self.python      = sys.executable  # 使用当前 Python
+        self._log        = get_logger("task-runner")
+        task_id = meta.get("task_id", "?")
+        self._log.info(f"📋 TaskRunner 初始化 | 任务 {task_id} | 类型 {meta.get('cmd','?')} | 目录 {task_dir}")
+
+    # ─────────────────────────────────────────────────────────
+    # 关键词模板加载（keywords/ 目录）
+    # ─────────────────────────────────────────────────────────
+
+    def _load_keywords(self, domain_id: str = None) -> dict:
+        """
+        从 keywords/ 目录加载领域专用搜索词模板。
+        返回该领域的 search_groups 列表，若无则返回空 dict。
+        """
+        domain = domain_id or self.meta.get("cmd", "")
+
+        # 优先用 domain_id (smart 路由), 其次 cmd (CLI)
+        kw_path = os.path.join(self.project_root, "keywords", f"{domain}.json")
+        if os.path.exists(kw_path):
+            with open(kw_path, "r", encoding="utf-8") as f:
+                return json.load(f)
+
+        # 尝试用 report_type 映射
+        type_map = {
+            "gupiao_fenxi": "stock", "qiye_baogao": "company",
+            "dapan_ribao": "market", "hangye_baogao": "industry",
+            "chicang_zhenduan": "portfolio", "kuaisu_xuangu": "screener",
+        }
+        report_type = self.meta.get("report_type", "")
+        mapped = type_map.get(report_type, "")
+        if mapped and mapped != domain:
+            kw_path2 = os.path.join(self.project_root, "keywords", f"{mapped}.json")
+            if os.path.exists(kw_path2):
+                with open(kw_path2, "r", encoding="utf-8") as f:
+                    return json.load(f)
+
+        # Smart 模式兜底：report_type 本身就是 domain ID，直接试
+        if domain == "smart" and report_type:
+            kw_path3 = os.path.join(self.project_root, "keywords", f"{report_type}.json")
+            if os.path.exists(kw_path3):
+                with open(kw_path3, "r", encoding="utf-8") as f:
+                    return json.load(f)
+
+        return {}
 
     # ─────────────────────────────────────────────────────────
     # 工具方法
@@ -56,6 +100,8 @@ class TaskRunner:
         运行脚本，返回 (成功?, stdout文本)
         script_args 示例: ["scripts/ticktime.py", "--code", "000063"]
         """
+        script_label = script_args[0] if script_args else "?"
+        self._log.info(f"  ▶ 执行脚本: {script_label}")
         cmd = [self.python] + script_args
         try:
             env = os.environ.copy()
@@ -75,12 +121,17 @@ class TaskRunner:
                 env=env,
             )
             if result.returncode == 0:
+                self._log.info(f"  ✅ {script_label} → 成功 ({len(result.stdout)} bytes)")
                 return True, result.stdout
             else:
-                return False, result.stderr or result.stdout
+                err = result.stderr or result.stdout
+                self._log.warn(f"  ❌ {script_label} → 失败: {err[:200]}")
+                return False, err
         except subprocess.TimeoutExpired:
+            self._log.warn(f"  ⏰ {script_label} → 超时（{timeout}s）")
             return False, f"超时（{timeout}s）"
         except Exception as e:
+            self._log.error(f"  💥 {script_label} → 异常: {e}")
             return False, str(e)
 
     # ─────────────────────────────────────────────────────────
@@ -92,6 +143,7 @@ class TaskRunner:
         采集个股实时行情，写入 2_stock_quote_realtime.json
         使用 ticktime.StockDataAPI
         """
+        self._log.info(f"  开始采集实时行情: {stock_code}")
         try:
             from scripts.ticktime import StockDataAPI
             api = StockDataAPI()
@@ -149,6 +201,7 @@ class TaskRunner:
         """
         采集历史K线并计算技术指标，写入 2_stock_kline_indicator.json
         """
+        self._log.info(f"  开始采集K线+技术指标: {stock_code} (days={days})")
         try:
             from scripts.stock_data_collector import (
                 get_history_kline,
@@ -192,10 +245,11 @@ class TaskRunner:
         由于 stock_master.py 是面向文件输出的，
         我们先运行它，再读取生成的 txt 文件，写入 JSON
         """
+        self._log.info(f"  开始采集个股详细资料: {stock_code}")
         try:
             # stock_master.py 将结果写入 stock_data/<code>/ 目录
             ok, stdout = self._run_script(
-                ["scripts/stock_master.py", stock_code],
+                ["scripts/stock_master.py", "-code", stock_code],
                 timeout=120,
             )
             # 查找生成的 txt 文件
@@ -242,6 +296,7 @@ class TaskRunner:
 
     def run_market_index(self) -> Tuple[bool, str]:
         """采集实时大盘指数，写入 1_market_index_tick.json"""
+        self._log.info("  开始采集大盘指数")
         try:
             from scripts.ticktime import StockDataAPI
             api = StockDataAPI()
@@ -272,6 +327,7 @@ class TaskRunner:
         兼容旧模式：对每个关键词调用 websearch_pro.py，结果写入 4_search_keyword_N.json
         返回生成的文件路径列表
         """
+        self._log.info(f"  开始关键词搜索: {len(queries)} 个关键词")
         paths = []
         for i, query in enumerate(queries):
             try:
@@ -306,10 +362,11 @@ class TaskRunner:
     def run_batch_search(self, keyword_groups: List[dict]) -> List[str]:
         """
         批量搜索模式：关键词组 × 数据源组，循环搜索后汇总。
+        优先从 keywords/{domain}.json 加载搜索词模板，无则用传入的 keyword_groups。
         结果写入 4_search_batch_summary.json
 
         参数:
-            keyword_groups: 传给 websearch_pro.run_batch_search 的参数
+            keyword_groups: 传给 websearch_pro.run_batch_search 的参数（fallback）
                 [{
                     "keywords": ["关键词1", "关键词2"],
                     "sources": ["eastmoney", "cninfo.com.cn"],  # 可选
@@ -319,6 +376,32 @@ class TaskRunner:
                 }]
         返回生成的文件路径列表
         """
+        # 优先从 keywords/ 目录加载专用搜索词模板
+        kw_data = self._load_keywords()
+        if kw_data and kw_data.get("search_groups"):
+            search_groups = kw_data["search_groups"]
+            # 渲染占位符
+            args = self.meta.get("args", {})
+            tpl_vars = {
+                "name":  args.get("name", ""),
+                "code":  args.get("code", ""),
+                "topic": args.get("topic", ""),
+                "date":  self.meta.get("date", ""),
+            }
+            keyword_groups = []
+            for sg in search_groups:
+                rendered_kws = []
+                for kw in sg.get("keywords", []):
+                    rendered_kws.append(kw.format(**tpl_vars))
+                keyword_groups.append({
+                    "keywords": rendered_kws,
+                    "sources": sg.get("sources", []),
+                    "group_label": f"{kw_data.get('label','')}_{sg.get('label','')}",
+                })
+            from modules.logger import get_logger
+            log = get_logger("search")
+            log.info(f"📂 从 keywords/{self.meta.get('cmd','?')}.json 加载 {len(search_groups)} 组搜索词")
+
         try:
             # 使用 websearch_pro 的 API 模式（不通过命令行子进程）
             sys.path.insert(0, os.path.join(self.project_root, "scripts"))
@@ -381,6 +464,59 @@ class TaskRunner:
 
 
     # ─────────────────────────────────────────────────────────
+    # Step 8: 个股新闻快讯（源自 akshare）
+    # ─────────────────────────────────────────────────────────
+
+    def run_news_stock_flash(self, stock_code: str) -> Tuple[bool, str]:
+        """
+        采集个股最新新闻快讯，写入 3_news_stock_flash.json
+        使用 ak.stock_news_em(symbol=stock_code) 从东方财富获取
+        """
+        self._log.info(f"  开始采集个股新闻快讯: {stock_code}")
+        try:
+            import akshare as ak
+            import pandas as pd
+
+            df = ak.stock_news_em(symbol=stock_code)
+            if df is None or df.empty:
+                raise ValueError("新闻数据为空")
+
+            # 转换为 JSON 兼容格式
+            records = df.to_dict(orient="records")
+            # 限制数量，只保留最新 20 条
+            news_list = records[:20]
+
+            data = {
+                "_meta": {
+                    "step": "news_stock_flash",
+                    "stock_code": stock_code,
+                    "source": "东方财富(EastMoney)",
+                    "fetched_at": datetime.now().isoformat(),
+                    "total_count": len(records),
+                },
+                "news": news_list,
+                "agent_note": "请从 news 中提取个股最新新闻、公告、舆情信息，用于报告分析",
+            }
+            path = self._write_json("3_news_stock_flash.json", data)
+            return True, path
+
+        except Exception as e:
+            # 写入失败占位
+            data = {
+                "_meta": {
+                    "step": "news_stock_flash",
+                    "stock_code": stock_code,
+                    "status": "failed",
+                    "error": str(e),
+                    "fetched_at": datetime.now().isoformat(),
+                },
+                "news": [],
+                "agent_note": f"🟡 个股新闻获取失败: {e}，请手动补充。",
+            }
+            path = self._write_json("3_news_stock_flash.json", data)
+            return False, path
+
+    # ─────────────────────────────────────────────────────────
     # Step 10: 持仓诊断
     # ─────────────────────────────────────────────────────────
 
@@ -392,6 +528,7 @@ class TaskRunner:
 
         持仓诊断任务的核心入口方法。
         """
+        self._log.info(f"  开始持仓诊断: {portfolio_file or '默认持仓'}")
         import sys as _sys
         _sys.path.insert(0, os.path.join(self.project_root, "config"))
         from config import refresh_portfolio_live, get_portfolio, save_portfolio, _PORTFOLIO_JSON
@@ -482,10 +619,9 @@ class TaskRunner:
 
     def write_agent_briefing(self):
         """
-        生成 5_agent_briefing.md：
-        告诉 Agent：任务是什么、有哪些数据文件、需要填写什么、输出格式是什么
-        如果有 prompt_template，会注入 dataRequirements 和 promptBody
+        生成 5_agent_briefing.md
         """
+        self._log.info("  生成 Agent 简报: 5_agent_briefing.md")
         meta = self.meta
         files_list = ""
         for key, val in meta.get("files", {}).items():
@@ -612,6 +748,7 @@ class TaskRunner:
 以下文件已由程序自动生成，供你参考：
 
 {files_list}
+> ⚡ 标记为「预留占位」的文件无实际数据，**请直接跳过**，无需读取。
 每个文件都有 `agent_note` 字段说明你需要从中提取什么。
 {sources_section}
 ---
@@ -631,6 +768,25 @@ class TaskRunner:
 按大纲结构，把分析内容填入 `5_agent_report_input.json`。
 **填写质量决定报告质量。**
 {structure_section}
+
+### 📖 Emoji 速查表（报告中统一使用）
+
+**一、涨跌行情符号**
+🔴📈 上涨 / 大涨 | 🟢📉 下跌 / 大跌 | 🟡➖ 横盘持平
+
+**二、趋势热度**
+🚀 强势拉升、主升浪 | 📊 震荡整理 | 🧊 持续走弱、降温
+🔥 题材爆热 | 💧 情绪退潮 | ⚡ 突发异动 | 🔁 反复轮动
+
+**三、信号灯评级**
+🟩 极强 / 利好 / 低风险 | 🟨 中性 / 观望 / 需跟踪
+🟥 偏弱 / 利空 / 高风险 | ⚫ 弱势阴跌、无人关注
+
+**四、专属附加 emoji**
+📌 核心要点 | 💡 关键结论 | 🔍 重点关注 | 📝 数据备注
+💰 资金流入 | 💸 资金流出 | 🏦 机构动向 | 🤝 抱团企稳
+🎯 压力位 | 📏 估值区间
+
 ---
 
 ## 5_agent_report_input.json 填写模板
@@ -668,7 +824,15 @@ python main.py generate --task-id {meta['task_id']}
         根据报告类型给出对应结构。
         如果 meta 中有 prompt_template，会把 promptBody 作为参考注入。
         """
-        report_type = meta.get("report_type", "gupiao_fenxi")
+        report_type = meta.get("report_type") or "gupiao_fenxi"  # null → 默认个股分析
+        # Smart 路由用 domain.id（如 "stock"）而 CLI 用 cli_default_type（如 "gupiao_fenxi"）
+        # 映射统一两者，确保 _get_agent_input_schema 分支判断正确
+        _DOMAIN_TO_SCHEMA_KEY = {
+            "stock": "gupiao_fenxi", "company": "qiye_baogao",
+            "market": "dapan_ribao", "industry": "hangye_baogao",
+            "portfolio": "chicang_zhenduan", "screener": "kuaisu_xuangu",
+        }
+        report_type = _DOMAIN_TO_SCHEMA_KEY.get(report_type) or report_type
         stock_name = meta["args"].get("name", "")
         stock_code = meta["args"].get("code", "")
         today      = meta.get("date", datetime.now().strftime("%Y-%m-%d"))
@@ -690,7 +854,8 @@ python main.py generate --task-id {meta['task_id']}
             "disclaimer": "免责声明：本报告由AI生成，数据来源于公开网络，仅供参考，不构成投资建议。",
         }
 
-        # 按报告类型添加特定字段
+        # 按报告类型添加特定字段（仅 metrics/overview_table，sections 从模板读取或 fallback）
+        # ── 个股分析/企业研报：共用股价类指标和总览表 ──
         if report_type in ("gupiao_fenxi", "qiye_baogao"):
             base.update({
                 "metrics": [
@@ -709,76 +874,9 @@ python main.py generate --task-id {meta['task_id']}
                         ["短期建议", "_操作建议", "_", "_目标价"],
                     ]
                 },
-                "sections": [
-                    {
-                        "title": "🦞 行情指标与投资导航",
-                        "subsections": [
-                            {
-                                "title": "近期表现",
-                                "content": "_基于2_stock_quote_realtime.json和2_stock_kline_indicator.json的技术分析，200-300字",
-                            },
-                            {
-                                "title": "机构观点与投资建议",
-                                "content": "_基于搜索结果整理，≥3家券商评级，300字",
-                            }
-                        ]
-                    },
-                    {
-                        "title": "一、公司概况",
-                        "subsections": [
-                            {"title": "基本信息与主营业务", "content": "_从2_stock_info_detail.json和搜索提取，300字"},
-                            {"title": "核心竞争力与护城河", "content": "_分析竞争优势，200字"},
-                        ]
-                    },
-                    {
-                        "title": "二、财务分析",
-                        "subsections": [
-                            {
-                                "title": "核心财务指标",
-                                "content": "_营收/利润/毛利率/ROE近3年数据，300字",
-                                "table": {
-                                    "headers": ["指标", "2023", "2024", "2025E", "趋势"],
-                                    "rows": [
-                                        ["营收(亿元)", "_", "_", "_", "_"],
-                                        ["净利润(亿元)", "_", "_", "_", "_"],
-                                        ["毛利率", "_", "_", "_", "_"],
-                                        ["ROE", "_", "_", "_", "_"],
-                                    ]
-                                }
-                            },
-                        ]
-                    },
-                    {
-                        "title": "三、行业与竞争",
-                        "subsections": [
-                            {"title": "行业发展趋势", "content": "_行业规模、增速、政策，200字"},
-                            {"title": "竞争格局", "content": "_主要竞争对手、市场份额，200字"},
-                        ]
-                    },
-                    {
-                        "title": "四、投资亮点与风险",
-                        "subsections": [
-                            {"title": "核心投资亮点", "content": "_3-5个亮点，每个2-3句话"},
-                            {
-                                "title": "主要风险因素",
-                                "content": "_3-5个风险，每个2-3句话",
-                                "table": {
-                                    "headers": ["风险类别", "描述", "影响", "概率", "应对"],
-                                    "rows": [["_", "_", "_", "_", "_"]]
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        "title": "五、估值与投资建议",
-                        "subsections": [
-                            {"title": "估值分析", "content": "_PE/PB/目标价分析，200字"},
-                            {"title": "综合投资建议", "content": "_短期/中期/长期建议，200字"},
-                        ]
-                    }
-                ]
             })
 
+        # ── 大盘日报：指数类指标 ──
         elif report_type == "dapan_ribao":
             base.update({
                 "metrics": [
@@ -787,94 +885,97 @@ python main.py generate --task-id {meta['task_id']}
                     {"label": "创业板",   "value": "_点位", "change": "_涨跌幅"},
                     {"label": "北向资金", "value": "_亿元", "change": ""},
                 ],
-                "sections": [
-                    {
-                        "title": "🦞 大盘概况",
-                        "subsections": [
-                            {"title": "今日行情",      "content": "_基于1_market_index_tick.json，200字"},
-                            {"title": "市场情绪信号",   "content": "_涨跌停、情绪指标，200字"},
-                        ]
-                    },
-                    {
-                        "title": "一、板块动态",
-                        "subsections": [
-                            {"title": "强势板块",  "content": "_今日领涨板块，200字"},
-                            {"title": "弱势板块",  "content": "_调整板块，100字"},
-                        ]
-                    },
-                    {
-                        "title": "二、资金面",
-                        "subsections": [
-                            {"title": "北向资金", "content": "_动向分析，150字"},
-                            {"title": "融资融券", "content": "_余额变化，100字"},
-                        ]
-                    },
-                    {
-                        "title": "🦞 龙虾总结",
-                        "subsections": [
-                            {"title": "操作建议", "content": "_明日策略建议，200字",
-                             "highlight": "_核心判断一句话"},
-                        ]
-                    }
-                ]
             })
 
-        elif report_type == "hangye_baogao":
-            topic = meta["args"].get("topic", "")
-            base.update({
-                "sections": [
-                    {
-                        "title": "🦞 行业核心速览",
-                        "subsections": [
-                            {"title": "行业概况", "content": "_市场规模、增速，200字"},
-                            {"title": "投资评级", "content": "_机构整体评级，150字"},
-                        ]
-                    },
-                    {"title": "一、行业全景",
-                     "subsections": [
-                         {"title": "市场规模与增速", "content": "_数据+图示，300字"},
-                         {"title": "产业链结构",    "content": "_上中下游，200字"},
-                     ]},
-                    {"title": "二、竞争格局",
-                     "subsections": [
-                         {"title": "龙头企业分析", "content": "_3-5家核心企业，300字",
-                          "table": {"headers": ["企业", "市占率", "核心优势", "评级"],
-                                    "rows": [["_","_","_","_"]]}},
-                     ]},
-                    {"title": "三、政策与催化剂",
-                     "subsections": [
-                         {"title": "政策支持", "content": "_近期政策梳理，200字"},
-                         {"title": "技术催化", "content": "_技术突破点，200字"},
-                     ]},
-                    {"title": "四、投资机会与风险",
-                     "subsections": [
-                         {"title": "核心投资机会", "content": "_3个机会，每个100字"},
-                         {"title": "主要风险",     "content": "_3个风险，每个100字"},
-                     ]},
-                    {"title": "🦞 龙虾总结",
-                     "subsections": [
-                         {"title": "配置建议", "content": "_超配/标配/低配及理由，200字",
-                          "highlight": "_核心判断"},
-                     ]},
-                ]
-            })
+        # ── 行业研报 / 持仓诊断 / 选股研究 / 通用：无默认 metrics ──
+        #   （tpl 的 sections 将在此后注入）
 
-        else:
-            # 通用结构
+        # ─────────────────────────────────────────────────────
+        # sections：优先从 prompt 模板读取，无模板则 fallback 硬编码
+        # ─────────────────────────────────────────────────────
+        tpl_sections = tpl.get("sections") if tpl else None
+        if tpl_sections:
+            base["sections"] = tpl_sections
+        elif report_type == "dapan_ribao":
             base["sections"] = [
                 {
-                    "title": "一、核心概况",
-                    "subsections": [{"title": "概览", "content": "_综合所有数据文件，300字"}]
+                    "title": "🦞 大盘概况",
+                    "subsections": [
+                        {"title": "今日行情",      "content": "_基于1_market_index_tick.json，200字"},
+                        {"title": "市场情绪信号",   "content": "_涨跌停、情绪指标，200字"},
+                    ]
                 },
                 {
-                    "title": "二、详细分析",
-                    "subsections": [{"title": "分析", "content": "_深入分析，500字"}]
+                    "title": "一、板块动态",
+                    "subsections": [
+                        {"title": "强势板块",  "content": "_今日领涨板块，200字"},
+                        {"title": "弱势板块",  "content": "_调整板块，100字"},
+                    ]
+                },
+                {
+                    "title": "二、资金面",
+                    "subsections": [
+                        {"title": "北向资金", "content": "_动向分析，150字"},
+                        {"title": "融资融券", "content": "_余额变化，100字"},
+                    ]
                 },
                 {
                     "title": "🦞 龙虾总结",
-                    "subsections": [{"title": "结论与建议", "content": "_结论，200字",
-                                     "highlight": "_一句话判断"}]
+                    "subsections": [
+                        {"title": "操作建议", "content": "_明日策略建议，200字",
+                         "highlight": "_核心判断一句话"},
+                    ]
                 }
+            ]
+        elif report_type == "hangye_baogao":
+            base["sections"] = [
+                {
+                    "title": "🦞 行业核心速览",
+                    "subsections": [
+                        {"title": "行业概况", "content": "_市场规模、增速，200字"},
+                        {"title": "投资评级", "content": "_机构整体评级，150字"},
+                    ]
+                },
+                {"title": "一、行业全景",
+                 "subsections": [
+                     {"title": "市场规模与增速", "content": "_数据+图示，300字"},
+                     {"title": "产业链结构",    "content": "_上中下游，200字"},
+                 ]},
+                {"title": "二、竞争格局",
+                 "subsections": [
+                     {"title": "龙头企业分析", "content": "_3-5家核心企业，300字",
+                      "table": {"headers": ["企业", "市占率", "核心优势", "评级"],
+                                "rows": [["_","_","_","_"]]}},
+                 ]},
+                {"title": "三、政策与催化剂",
+                 "subsections": [
+                     {"title": "政策支持", "content": "_近期政策梳理，200字"},
+                     {"title": "技术催化", "content": "_技术突破点，200字"},
+                 ]},
+                {"title": "四、投资机会与风险",
+                 "subsections": [
+                     {"title": "核心投资机会", "content": "_3个机会，每个100字"},
+                     {"title": "主要风险",     "content": "_3个风险，每个100字"},
+                 ]},
+                {"title": "🦞 龙虾总结",
+                 "subsections": [
+                     {"title": "配置建议", "content": "_超配/标配/低配及理由，200字",
+                      "highlight": "_核心判断"},
+                 ]},
+            ]
+        elif report_type in ("chicang_zhenduan", "kuaisu_xuangu"):
+            # 持仓诊断/选股研究 — 暂无专属硬编码 sections，用通用结构
+            base["sections"] = [
+                {"title": "一、核心概况", "subsections": [{"title": "概览", "content": "_综合所有数据文件，300字"}]},
+                {"title": "二、详细分析", "subsections": [{"title": "分析", "content": "_深入分析，500字"}]},
+                {"title": "🦞 龙虾总结", "subsections": [{"title": "结论与建议", "content": "_结论，200字", "highlight": "_一句话判断"}]}
+            ]
+        else:
+            # 通用结构
+            base["sections"] = [
+                {"title": "一、核心概况", "subsections": [{"title": "概览", "content": "_综合所有数据文件，300字"}]},
+                {"title": "二、详细分析", "subsections": [{"title": "分析", "content": "_深入分析，500字"}]},
+                {"title": "🦞 龙虾总结", "subsections": [{"title": "结论与建议", "content": "_结论，200字", "highlight": "_一句话判断"}]}
             ]
 
         # 注入 prompt 模板的参考信息（以下划线开头，会被清理）
@@ -978,13 +1079,8 @@ python main.py generate --task-id {meta['task_id']}
     def generate_report(self, agent_input_path: str) -> Tuple[bool, dict]:
         """
         读取 5_agent_report_input.json，调用 generate_report 生成 HTML + PDF
-
-        返回:
-            (ok, result_dict) 其中 result_dict 包含:
-                - pdf_path: PDF 文件路径
-                - html_path: HTML 文件路径
-                - error: 失败时的错误信息
         """
+        self._log.info(f"  开始生成报告: {agent_input_path}")
         try:
             with open(agent_input_path, encoding="utf-8") as f:
                 raw_text = f.read()
@@ -1005,6 +1101,8 @@ python main.py generate --task-id {meta['task_id']}
 
             report_type = self.meta.get("report_type", "gupiao_fenxi")
             style       = self.meta["args"].get("style", "blue")
+            color_type  = self.meta["args"].get("color_type", "liquid")
+            layout      = self.meta["args"].get("layout", "rounded")
             task_id     = self.meta["task_id"]
 
             from scripts.generate_report import generate_report
@@ -1015,6 +1113,8 @@ python main.py generate --task-id {meta['task_id']}
                 output_format="pdf",
                 output_path=os.path.join(self.task_dir, f"report_{task_id}.pdf"),
                 style=style,
+                color_type=color_type,
+                layout=layout,
             )
 
             if result.get("success"):
@@ -1026,6 +1126,26 @@ python main.py generate --task-id {meta['task_id']}
                 # 确保 html_path 存在（有些情况 PDF 生成失败会降级）
                 if pdf_path.endswith(".html"):
                     html_path = pdf_path
+
+                # ── 模拟持仓：持仓诊断 / 个股分析 / 企业研报后触发 ──
+                emu_types = ("chicang_zhenduan", "gupiao_fenxi", "qiye_baogao")
+                if report_type in emu_types:
+                    try:
+                        from scripts.emu_manager import run_full_cycle
+                        # 模拟盘周期
+                        emu_result = run_full_cycle(report_data, self.meta)
+                        executed = emu_result.get("executed", 0)
+                        decisions = emu_result.get("decisions", 0)
+                        if decisions > 0:
+                            self._log.info(f"  模拟盘: 执行 {executed}/{decisions} 笔交易")
+                            print(f"\n  🦞 [模拟盘] 执行 {executed}/{decisions} 笔交易 "
+                                  f"(激进因子: {emu_result.get('aggressiveness',1.0):.2f})")
+                        else:
+                            self._log.info(f"  模拟盘: 无需交易 (decisions=0)")
+                    except Exception as e:
+                        self._log.warn(f"  模拟盘异常: {e}")
+                        print(f"  ⚠️  模拟盘异常: {e}")
+
                 return True, {"pdf_path": pdf_path, "html_path": html_path}
             else:
                 return False, {"error": result.get("error", "未知错误")}
@@ -1045,6 +1165,7 @@ python main.py generate --task-id {meta['task_id']}
                   None 时默认采集 财经+科技+社会 三个频道
         limit:    每个频道最多条数
         """
+        self._log.info(f"  开始采集百度新闻: {channels or '默认频道'} (每频道{limit}条)")
         BAIDU_CHANNELS = {
             "国际焦点": "http://news.baidu.com/n?cmd=1&class=internews&tn=rss",
             "军事焦点": "http://news.baidu.com/n?cmd=1&class=mil&tn=rss",
@@ -1128,6 +1249,7 @@ python main.py generate --task-id {meta['task_id']}
         包含：个股新闻、北向资金、今日资金流排名
         stock_code: 有值时额外采集个股新闻（如 "000063"）
         """
+        self._log.info(f"  开始采集 AKShare 数据: {stock_code or '全局'}")
         try:
             import akshare as ak
             import pandas as pd
@@ -1192,6 +1314,7 @@ python main.py generate --task-id {meta['task_id']}
         通过 market_state.py 爬取新浪行情页，获取大盘整体状况
         使用 --output 直接写入 1_market_status_sina.json（不再解析 stdout）
         """
+        self._log.info("  开始采集大盘整体状况: market_state")
         out_path = os.path.join(self.task_dir, "1_market_status_sina.json")
         try:
             ok, stdout = self._run_script(
@@ -1231,6 +1354,7 @@ python main.py generate --task-id {meta['task_id']}
         调用 parse_image.py 解析持仓截图，写入 0_portfolio_img__parse.json
         image_path: 用户上传的图片绝对路径
         """
+        self._log.info(f"  开始解析持仓图片: {image_path}")
         out_path = os.path.join(self.task_dir, "0_portfolio_img__parse.json")
         try:
             ok, stdout = self._run_script(
@@ -1312,17 +1436,18 @@ python main.py generate --task-id {meta['task_id']}
     }
 
     def run_reserved_step(self, step: str) -> Tuple[bool, str]:
-        """预留步骤 stub：创建占位 JSON，不执行实际数据采集"""
+        """预留步骤 stub：创建占位 JSON，标记 Agent 跳过，不执行实际数据采集"""
+        self._log.info(f"  预留步骤占位: {step} → {self._RESERVED_STEP_FILES.get(step, f'{step}.json')}")
         filename = self._RESERVED_STEP_FILES.get(step, f"{step}.json")
         data = {
             "_meta": {
                 "step": step,
                 "status": "reserved_placeholder",
-                "note": "此步骤尚未实现具体逻辑，当前为占位文件",
+                "note": "此步骤尚未实现具体逻辑，当前为占位文件 — Agent 请跳过此文件，无需读取",
                 "fetched_at": datetime.now().isoformat(),
             },
             "data": {},
-            "agent_note": f"🟡 步骤「{step}」({filename}) 尚未实现。请手动补充所需数据后继续。",
+            "agent_note": f"🟡 跳过：步骤「{step}」({filename}) 尚未实现，无数据可读。请继续使用其他 JSON 文件。",
         }
         path = self._write_json(filename, data)
         return True, path

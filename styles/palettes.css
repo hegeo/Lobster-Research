@@ -1,0 +1,286 @@
+/* =============================================================
+   palettes.css — 龙虾研报调色板（纯 CSS 自定义属性）
+   直接编辑下方颜色值即可自定义配色
+   
+   HTML 用法：在容器上设置 data-palette="blue" 即可切换
+   ============================================================= */
+
+/* ── blue ──────────────────────────────────────── */
+[data-palette="blue"] {
+  --primary:          #007AFF;
+  --primary-bg:       #E8F1FF;
+  --primary-text:     #0040DD;
+  --secondary:        #5856D6;
+  --secondary-bg:     #F2F2FF;
+  --page-bg:          #F5F7FA;
+  --body-bg:          #FFFFFF;
+  --text-primary:     #1C1C1E;
+  --text-secondary:   #3A3A3C;
+  --text-muted:       #8E8E93;
+  --text-on-primary:  #FFFFFF;
+  --border-light:     #E2E8F0;
+  --border-medium:    #F1F5F9;
+  --table-header-bg:  #F5F7FA;
+  --table-header-text:#6B7280;
+  --table-stripe:     #FAFBFD;
+  --cover-grad-1:     #FFFFFF;
+  --cover-grad-2:     #007AFF;
+  --summary-grad-1:   #E0E8FF;
+  --summary-grad-2:   #F0F4FF;
+  --quote-grad:       #007AFF;
+  --highlight-bg:     #E8F1FF;
+  --highlight-text:   #0040DD;
+  --metric-value:     #007AFF;
+}
+
+/* ── purple ────────────────────────────────────── */
+[data-palette="purple"] {
+  --primary:          #AF52DE;
+  --primary-bg:       #F5E8FF;
+  --primary-text:     #7B2FBE;
+  --secondary:        #C86EDF;
+  --secondary-bg:     #F8F0FF;
+  --page-bg:          #F8F5FC;
+  --body-bg:          #FFFFFF;
+  --text-primary:     #1C1C1E;
+  --text-secondary:   #3A3A3C;
+  --text-muted:       #8E8E93;
+  --text-on-primary:  #FFFFFF;
+  --border-light:     #E8DDF5;
+  --border-medium:    #F1EBF8;
+  --table-header-bg:  #F8F5FC;
+  --table-header-text:#7C6F8E;
+  --table-stripe:     #FCFAFF;
+  --cover-grad-1:     #FFFFFF;
+  --cover-grad-2:     #AF52DE;
+  --summary-grad-1:   #F0E0FF;
+  --summary-grad-2:   #F8F0FF;
+  --quote-grad:       #AF52DE;
+  --highlight-bg:     #F5E8FF;
+  --highlight-text:   #7B2FBE;
+  --metric-value:     #AF52DE;
+}
+
+/* ── green ─────────────────────────────────────── */
+[data-palette="green"] {
+  --primary:          #34C759;
+  --primary-bg:       #E8F8EC;
+  --primary-text:     #1D8B3A;
+  --secondary:        #30D158;
+  --secondary-bg:     #F0FBF2;
+  --page-bg:          #F5FAF6;
+  --body-bg:          #FFFFFF;
+  --text-primary:     #1C1C1E;
+  --text-secondary:   #3A3A3C;
+  --text-muted:       #8E8E93;
+  --text-on-primary:  #FFFFFF;
+  --border-light:     #DCF0E2;
+  --border-medium:    #EBF5EE;
+  --table-header-bg:  #F5FAF6;
+  --table-header-text:#5B8A6A;
+  --table-stripe:     #F8FDFA;
+  --cover-grad-1:     #FFFFFF;
+  --cover-grad-2:     #34C759;
+  --summary-grad-1:   #E0F5E5;
+  --summary-grad-2:   #F0FAF2;
+  --quote-grad:       #34C759;
+  --highlight-bg:     #E8F8EC;
+  --highlight-text:   #1D8B3A;
+  --metric-value:     #34C759;
+}
+
+/* ── indigo ────────────────────────────────────── */
+[data-palette="indigo"] {
+  --primary:          #5856D6;
+  --primary-bg:       #EDECFA;
+  --primary-text:     #3634A3;
+  --secondary:        #6C6AE0;
+  --secondary-bg:     #F4F3FF;
+  --page-bg:          #F6F5FC;
+  --body-bg:          #FFFFFF;
+  --text-primary:     #1C1C1E;
+  --text-secondary:   #3A3A3C;
+  --text-muted:       #8E8E93;
+  --text-on-primary:  #FFFFFF;
+  --border-light:     #DCDBEF;
+  --border-medium:    #EBEBF7;
+  --table-header-bg:  #F6F5FC;
+  --table-header-text:#6B6899;
+  --table-stripe:     #FBFAFF;
+  --cover-grad-1:     #FFFFFF;
+  --cover-grad-2:     #5856D6;
+  --summary-grad-1:   #E4E3F7;
+  --summary-grad-2:   #F2F1FF;
+  --quote-grad:       #5856D6;
+  --highlight-bg:     #EDECFA;
+  --highlight-text:   #3634A3;
+  --metric-value:     #5856D6;
+}
+
+/* ── orange ────────────────────────────────────── */
+[data-palette="orange"] {
+  --primary:          #FF9500;
+  --primary-bg:       #FFF3E0;
+  --primary-text:     #C76C00;
+  --secondary:        #FFA83A;
+  --secondary-bg:     #FFF8F0;
+  --page-bg:          #FFF9F2;
+  --body-bg:          #FFFFFF;
+  --text-primary:     #1C1C1E;
+  --text-secondary:   #3A3A3C;
+  --text-muted:       #8E8E93;
+  --text-on-primary:  #FFFFFF;
+  --border-light:     #FFE4C0;
+  --border-medium:    #FFF0E0;
+  --table-header-bg:  #FFF9F2;
+  --table-header-text:#997350;
+  --table-stripe:     #FFFCF8;
+  --cover-grad-1:     #FFFFFF;
+  --cover-grad-2:     #FF9500;
+  --summary-grad-1:   #FFE8C0;
+  --summary-grad-2:   #FFF3E0;
+  --quote-grad:       #FF9500;
+  --highlight-bg:     #FFF3E0;
+  --highlight-text:   #C76C00;
+  --metric-value:     #FF9500;
+}
+
+/* ── pink ──────────────────────────────────────── */
+[data-palette="pink"] {
+  --primary:          #FF2D55;
+  --primary-bg:       #FFE8ED;
+  --primary-text:     #CC0030;
+  --secondary:        #FF3B5C;
+  --secondary-bg:     #FFF0F3;
+  --page-bg:          #FFF5F7;
+  --body-bg:          #FFFFFF;
+  --text-primary:     #1C1C1E;
+  --text-secondary:   #3A3A3C;
+  --text-muted:       #8E8E93;
+  --text-on-primary:  #FFFFFF;
+  --border-light:     #FFD0D9;
+  --border-medium:    #FFE5EB;
+  --table-header-bg:  #FFF5F7;
+  --table-header-text:#996070;
+  --table-stripe:     #FFFAFB;
+  --cover-grad-1:     #FFFFFF;
+  --cover-grad-2:     #FF2D55;
+  --summary-grad-1:   #FFD8E0;
+  --summary-grad-2:   #FFE8ED;
+  --quote-grad:       #FF2D55;
+  --highlight-bg:     #FFE8ED;
+  --highlight-text:   #CC0030;
+  --metric-value:     #FF2D55;
+}
+
+/* ── red ───────────────────────────────────────── */
+[data-palette="red"] {
+  --primary:          #FF3B30;
+  --primary-bg:       #FFE8E6;
+  --primary-text:     #CC1A15;
+  --secondary:        #FF453A;
+  --secondary-bg:     #FFF0EF;
+  --page-bg:          #FFF6F5;
+  --body-bg:          #FFFFFF;
+  --text-primary:     #1C1C1E;
+  --text-secondary:   #3A3A3C;
+  --text-muted:       #8E8E93;
+  --text-on-primary:  #FFFFFF;
+  --border-light:     #FFD0CD;
+  --border-medium:    #FFE5E3;
+  --table-header-bg:  #FFF6F5;
+  --table-header-text:#99605D;
+  --table-stripe:     #FFFBFA;
+  --cover-grad-1:     #FFFFFF;
+  --cover-grad-2:     #FF3B30;
+  --summary-grad-1:   #FFD8D5;
+  --summary-grad-2:   #FFE8E6;
+  --quote-grad:       #FF3B30;
+  --highlight-bg:     #FFE8E6;
+  --highlight-text:   #CC1A15;
+  --metric-value:     #FF3B30;
+}
+
+/* ── yellow ────────────────────────────────────── */
+[data-palette="yellow"] {
+  --primary:          #FFCC00;
+  --primary-bg:       #FFF8D0;
+  --primary-text:     #B89200;
+  --secondary:        #FFD60A;
+  --secondary-bg:     #FFFBE8;
+  --page-bg:          #FFFCF0;
+  --body-bg:          #FFFFFF;
+  --text-primary:     #1C1C1E;
+  --text-secondary:   #3A3A3C;
+  --text-muted:       #8E8E93;
+  --text-on-primary:  #1C1C1E;
+  --border-light:     #FFED98;
+  --border-medium:    #FFF5CC;
+  --table-header-bg:  #FFFCF0;
+  --table-header-text:#998A60;
+  --table-stripe:     #FFFEF8;
+  --cover-grad-1:     #FFFFFF;
+  --cover-grad-2:     #FFCC00;
+  --summary-grad-1:   #FFF0B0;
+  --summary-grad-2:   #FFF8D0;
+  --quote-grad:       #FFCC00;
+  --highlight-bg:     #FFF8D0;
+  --highlight-text:   #B89200;
+  --metric-value:     #FFCC00;
+}
+
+/* ── cyan ──────────────────────────────────────── */
+[data-palette="cyan"] {
+  --primary:          #55BEF0;
+  --primary-bg:       #E4F4FD;
+  --primary-text:     #2A8AB8;
+  --secondary:        #64D2FF;
+  --secondary-bg:     #EFF8FF;
+  --page-bg:          #F5FAFD;
+  --body-bg:          #FFFFFF;
+  --text-primary:     #1C1C1E;
+  --text-secondary:   #3A3A3C;
+  --text-muted:       #8E8E93;
+  --text-on-primary:  #FFFFFF;
+  --border-light:     #C8E6F5;
+  --border-medium:    #E0F0FA;
+  --table-header-bg:  #F5FAFD;
+  --table-header-text:#608090;
+  --table-stripe:     #FAFDFF;
+  --cover-grad-1:     #FFFFFF;
+  --cover-grad-2:     #55BEF0;
+  --summary-grad-1:   #D0ECF8;
+  --summary-grad-2:   #E4F4FD;
+  --quote-grad:       #55BEF0;
+  --highlight-bg:     #E4F4FD;
+  --highlight-text:   #2A8AB8;
+  --metric-value:     #55BEF0;
+}
+
+/* ── brown ─────────────────────────────────────── */
+[data-palette="brown"] {
+  --primary:          #A2845E;
+  --primary-bg:       #F0ECE4;
+  --primary-text:     #7A623E;
+  --secondary:        #B89A72;
+  --secondary-bg:     #F5F2EC;
+  --page-bg:          #F8F6F2;
+  --body-bg:          #FFFFFF;
+  --text-primary:     #1C1C1E;
+  --text-secondary:   #3A3A3C;
+  --text-muted:       #8E8E93;
+  --text-on-primary:  #FFFFFF;
+  --border-light:     #DCD4C8;
+  --border-medium:    #EBE5DC;
+  --table-header-bg:  #F8F6F2;
+  --table-header-text:#8A7E70;
+  --table-stripe:     #FCFAF8;
+  --cover-grad-1:     #FFFFFF;
+  --cover-grad-2:     #A2845E;
+  --summary-grad-1:   #E0D8CC;
+  --summary-grad-2:   #F0ECE4;
+  --quote-grad:       #A2845E;
+  --highlight-bg:     #F0ECE4;
+  --highlight-text:   #7A623E;
+  --metric-value:     #A2845E;
+}

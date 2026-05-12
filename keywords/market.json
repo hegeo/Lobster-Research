@@ -1,0 +1,48 @@
+{
+  "_schema": "1.0",
+  "domain": "market",
+  "label": "大盘行情",
+  "description": "大盘/市场行情搜索词模板 — 指数/板块/资金/情绪多维度",
+  "search_groups": [
+    {
+      "label": "指数行情",
+      "sources": ["quote.eastmoney.com", "finance.sina.com.cn", "stock.10jqka.com.cn"],
+      "keywords": [
+        "上证指数 深证成指 创业板 今日行情 {date}",
+        "A股 三大指数 涨跌 成交额 {date}"
+      ]
+    },
+    {
+      "label": "板块轮动",
+      "sources": ["quote.eastmoney.com", "data.eastmoney.com", "finance.sina.com.cn"],
+      "keywords": [
+        "A股 板块涨跌 热点板块 领涨 {date}",
+        "板块轮动 资金流向 行业板块排名 {date}"
+      ]
+    },
+    {
+      "label": "资金流向",
+      "sources": ["data.eastmoney.com", "eastmoney.com", "10jqka.com.cn"],
+      "keywords": [
+        "北向资金 主力资金 净流入 流出 {date}",
+        "融资融券 两融余额 沪深港通 {date}"
+      ]
+    },
+    {
+      "label": "市场情绪",
+      "sources": ["eastmoney.com", "10jqka.com.cn", "finance.sina.com.cn"],
+      "keywords": [
+        "涨停 跌停 连板 情绪指标 {date}",
+        "A股 市场情绪 恐慌指数 赚钱效应 {date}"
+      ]
+    },
+    {
+      "label": "宏观政策",
+      "sources": ["gov.cn", "cls.cn", "finance.sina.com.cn", "stcn.com"],
+      "keywords": [
+        "央行 货币政策 降准 降息 LPR {date}",
+        "A股 政策利好 监管 资本市场改革 {date}"
+      ]
+    }
+  ]
+}

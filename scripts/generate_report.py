@@ -26,13 +26,25 @@ sys.path.insert(0, _SKILL_ROOT)
 
 from modules.extend import REPORT_TYPES, match_report_type, get_template, LOBSTER_QUOTES
 from config.config import get
-REPORT_STYLE = get("output.report_style", "ios_liquid")
+REPORT_STYLE = get("output.report_style", "liquid")
+REPORT_COLOR_TYPE = get("output.color_type", "liquid")
 import styles as _styles_lib
 
 
-def _load_css(style: Optional[str] = None) -> str:
-    """从 styles/ 目录加载样式 CSS，优先用传入值，否则读 config"""
-    return _styles_lib.load_style(style if style else REPORT_STYLE)
+def _load_css(style: Optional[str] = None, color_type: Optional[str] = None, layout: str = "rounded") -> dict:
+    """加载样式 CSS + HTML 属性，优先用传入值，否则读 config
+    
+    Returns:
+        dict { "css": str, "attrs": str }
+        attrs 例如 'data-palette="blue" data-color-type="liquid" data-layout="rounded"'
+    """
+    s = style if style else REPORT_STYLE
+    ct = color_type if color_type is not None else REPORT_COLOR_TYPE
+    lo = layout
+
+    css = _styles_lib.load_style(s, color_type=ct, layout=lo)
+    attrs = f'data-palette="{s}" data-color-type="{ct}" data-layout="{lo}"'
+    return {"css": css, "attrs": attrs}
 
 
 def _build_overview_table(data: dict) -> str:
@@ -139,7 +151,7 @@ def _build_section(s: dict) -> str:
     return f'<div class="section"><div class="section-title">{title}</div>{subs_html}</div>'
 
 
-def _build_html(data: dict, report_type_label: str = "龙虾研报", css: str = "") -> str:
+def _build_html(data: dict, report_type_label: str = "龙虾研报", css: str = "", body_attrs: str = "") -> str:
     """构建完整 HTML 报告"""
     title = _escape_html(data.get("title", report_type_label))
     subtitle = _escape_html(data.get("subtitle", ""))
@@ -172,7 +184,7 @@ def _build_html(data: dict, report_type_label: str = "龙虾研报", css: str = 
 <title>{title}</title>
 <style>{css}</style>
 </head>
-<body>
+<body {body_attrs}>
 <div class="page-frame">
 
 <!-- 封面 -->
@@ -202,7 +214,7 @@ def _build_html(data: dict, report_type_label: str = "龙虾研报", css: str = 
 {trends_html}
 
 <!-- 摘要 -->
-{'<div class="summary-box"><div class="summary-label">📌 核心摘要</div><div class="summary-text">' + summary + '</div></div>' if summary else ''}
+{'<div class="summary-box"><div class="summary-label">📌 写在最后</div><div class="summary-text">' + summary + '</div></div>' if summary else ''}
 
 <!-- 龙虾寄语 -->
 {'<div class="quote-box">' + quote + '</div>' if quote else ''}
@@ -241,6 +253,8 @@ def generate_report(
     output_path: Optional[str] = None,
     config_output_format: Optional[str] = None,
     style: Optional[str] = None,
+    color_type: Optional[str] = None,
+    layout: str = "rounded",
 ) -> dict:
     """
     统一报告生成入口
@@ -252,7 +266,9 @@ def generate_report(
         output_format:    输出格式 override（"html" | "pdf"）
         output_path:      输出文件路径
         config_output_format: 从 config 读取的默认格式
-        style:            样式名称（覆盖 config.REPORT_STYLE），如 "orange"、"ios_liquid"
+        style:            颜色主题（覆盖 config.REPORT_STYLE），如 "blue"、"purple"、"green"
+        color_type:       渲染类型："solid"（纯色）| "gradient"（渐变）| "liquid"（液态）
+        layout:           布局风格："rounded"（圆角）| "square"（方正）| "minimal"（极简）
 
     Returns:
         dict { success, format, path, content }
@@ -278,11 +294,13 @@ def generate_report(
     data.setdefault("date", now.strftime("%Y年%m月%d日"))
     data.setdefault("author", "龙虾财经研究院")
 
-    # 从样式文件加载 CSS
-    css = _load_css(style)
+    # 从样式文件加载 CSS（3D 参数）— 返回 {css, attrs}
+    style_info = _load_css(style, color_type, layout)
+    css = style_info["css"]
+    body_attrs = style_info["attrs"]
 
     # 生成 HTML
-    html_content = _build_html(data, report_label, css)
+    html_content = _build_html(data, report_label, css, body_attrs)
 
     # 输出路径
     if not output_path:

@@ -1,0 +1,10 @@
+{
+  "_schema": "1.0",
+  "domain": "culture",
+  "label": "文化与艺术",
+  "search_groups": [
+    {"label": "市场数据", "sources": ["eastmoney.com", "cls.cn", "36kr.com"], "keywords": ["{topic} 市场规模 消费数据 增速 {date}", "{topic} 票房 演出 文旅 收入"]},
+    {"label": "政策扶持", "sources": ["gov.cn", "cls.cn", "stcn.com"], "keywords": ["{topic} 文化政策 扶持 补贴 {date}", "{topic} 知识产权 版权 保护"]},
+    {"label": "数字化", "sources": ["36kr.com", "huxiu.com", "eastmoney.com"], "keywords": ["{topic} 数字化 IP运营 元宇宙 {date}", "{topic} 文旅融合 沉浸式 体验"]}
+  ]
+}

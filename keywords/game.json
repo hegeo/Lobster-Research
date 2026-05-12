@@ -1,0 +1,10 @@
+{
+  "_schema": "1.0",
+  "domain": "game",
+  "label": "游戏与娱乐",
+  "search_groups": [
+    {"label": "行业数据", "sources": ["eastmoney.com", "36kr.com", "cls.cn"], "keywords": ["{topic} 用户规模 收入 市场规模 {date}", "{topic} 爆款 流水 下载量 {date}"]},
+    {"label": "政策版号", "sources": ["eastmoney.com", "cls.cn", "stcn.com"], "keywords": ["{topic} 版号 审批 监管政策 {date}", "{topic} 出海 海外收入 全球化 {date}"]},
+    {"label": "AI赋能", "sources": ["36kr.com", "huxiu.com", "jiqizhixin.com"], "keywords": ["{topic} AI 人工智能 游戏开发 {date}", "{topic} AI赋能 降本增效 创新"]}
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "_schema": "1.0",
+  "domain": "fallback",
+  "label": "通用兜底",
+  "description": "没有匹配到专门关键词模板时的通用兜底",
+  "search_groups": [
+    {"label": "综合搜索", "sources": ["baidu.com"], "keywords": ["{topic} {date}"]}
+  ]
+}

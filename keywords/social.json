@@ -1,0 +1,9 @@
+{
+  "_schema": "1.0",
+  "domain": "social",
+  "label": "社会发展",
+  "search_groups": [
+    {"label": "人口就业", "sources": ["stats.gov.cn", "gov.cn", "cls.cn"], "keywords": ["{topic} 人口 就业 社保 最新数据 {date}", "{topic} 政策 变化 趋势 分析"]},
+    {"label": "民生数据", "sources": ["stats.gov.cn", "gov.cn", "eastmoney.com"], "keywords": ["{topic} CPI 居民收入 消费支出 {date}", "{topic} 房价 教育 医疗 社保改革"]}
+  ]
+}

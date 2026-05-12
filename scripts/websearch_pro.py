@@ -627,10 +627,13 @@ def run_engine(engine_name: str, keyword: str, days, fetch_limit=None) -> list:
 _dead_engines: set = set()
 
 
-def run_with_fallback(keyword: str, days, fetch_limit=None) -> list:
+def run_with_fallback(keyword: str, days, fetch_limit=None, primary_only: bool = False) -> list:
     """
     按优先级依次尝试引擎（primary → secondary → 其余），第一个成功即停。
     只有引擎函数抛异常（连接错误）才熔断，返回空列表不算失败。
+    
+    当 primary_only=True 时，只尝试 primary 引擎，不 fallback。
+    用于 site: 数据源限定搜索（百度/Bing 不支持 site: 精确匹配）。
     """
     for name, fn, has_key, _ in ENGINE_REGISTRY:
         if not has_key() or name in _dead_engines:
@@ -641,6 +644,9 @@ def run_with_fallback(keyword: str, days, fetch_limit=None) -> list:
                 return results
         except Exception:
             _dead_engines.add(name)
+        if primary_only:
+            # 仅尝试 primary 引擎，不再 fallback
+            break
     return []
 
 
@@ -760,9 +766,9 @@ def run_batch_search(
             if sources:
                 for src_domain in sources:
                     site_query = f"{kw} site:{src_domain}"
-                    tasks.append((site_query, per_engine))
+                    tasks.append((site_query, per_engine, True))  # primary_only=True
             else:
-                tasks.append((kw, per_engine))
+                tasks.append((kw, per_engine, False))
 
         # 初始化 group 结果槽位
         group_results.append({
@@ -775,8 +781,8 @@ def run_batch_search(
     with ThreadPoolExecutor(max_workers=max_workers) as pool:
         futures = {}
         for gi, gr in enumerate(group_results):
-            for query, per_engine in gr.pop("_tasks", []):
-                f = pool.submit(run_with_fallback, query, days, per_engine)
+            for query, per_engine, primary_only in gr.pop("_tasks", []):
+                f = pool.submit(run_with_fallback, query, days, per_engine, primary_only)
                 futures[f] = gi
 
         for f in as_completed(futures):

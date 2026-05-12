@@ -1,0 +1,10 @@
+{
+  "_meta": {
+    "step": "news_market_flash",
+    "status": "reserved_placeholder",
+    "note": "此步骤尚未实现具体逻辑，当前为占位文件 — Agent 请跳过此文件，无需读取",
+    "fetched_at": "2026-05-11T23:27:58.008163"
+  },
+  "data": {},
+  "agent_note": "🟡 跳过：步骤「news_market_flash」(3_news_market_flash.json) 尚未实现，无数据可读。请继续使用其他 JSON 文件。"
+}

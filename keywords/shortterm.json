@@ -1,0 +1,9 @@
+{
+  "_schema": "1.0",
+  "domain": "shortterm",
+  "label": "短线",
+  "search_groups": [
+    {"label": "情绪指标", "sources": ["eastmoney.com", "10jqka.com.cn"], "keywords": ["A股 涨停 连板梯队 短线情绪 {date}", "炸板率 封单 连板高度 {date}"]},
+    {"label": "资金博弈", "sources": ["eastmoney.com", "10jqka.com.cn"], "keywords": ["龙虎榜 游资 打板 席位 {date}", "主力资金 净流入 短线热门 {date}"]}
+  ]
+}

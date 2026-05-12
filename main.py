@@ -13,14 +13,14 @@
   # 大盘日报
   python main.py market
 
-  # 行业研报
-  python main.py industry --topic AI芯片 --name "AI芯片行业"
+  # 行业研报（使用 smart 自动匹配领域模板）
+  python main.py smart --input "AI芯片行业研报"
 
   # 持仓诊断（输入持仓数据文件）
   python main.py portfolio --file portfolio.json
 
   # 快速选股
-  python main.py screener --topic 机器人
+  python main.py screener
 
   # 查看任务状态
   python main.py status --task-id <task_id>
@@ -59,6 +59,10 @@ from typing import Optional
 
 from config.config import get as get_user_config
 
+# 龙虾日志
+from modules.logger import get_logger as _get_logger_main
+_log = _get_logger_main("main")
+
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
@@ -71,7 +75,7 @@ from scripts.task_runner import TaskRunner
 # ═══════════════════════════════════════════════════════════
 # 配置加载 — 从 main.json 统一读取（Smart 路由 + CLI 子命令）
 # ═══════════════════════════════════════════════════════════
-# CLI 子命令（stock/company/market/industry/portfolio/screener）
+# CLI 子命令（stock/company/market/portfolio/screener）
 # 与 smart 路由共用同一份 main.json，通过 domain id 索引。
 # CLI 专属字段（在 domain 条目中）：
 #   cli_default_type     → 任务 report_type 默认值
@@ -108,6 +112,17 @@ def _load_user_config() -> dict:
         return {}
 
 
+def _style_from_config(user_prefs: dict, key: str, fallback: str) -> str:
+    """
+    从 config.json output 节读取样式值。
+    优先级：config.json > fallback
+    """
+    try:
+        return user_prefs.get("output", {}).get(key, fallback) or fallback
+    except Exception:
+        return fallback
+
+
 # CLI 子命令对应的 domain id 映射（"命令名" → "domain id"）
 # company 和 stock 都对应 main.json 中各自的 domain，
 # 但 company 有更详细的 search_templates（参见 company domain 配置）
@@ -115,7 +130,6 @@ _CLI_DOMAIN_MAP = {
     "stock":     "stock",
     "company":   "company",
     "market":    "market",
-    "industry":  "industry",
     "portfolio": "portfolio",
     "screener":  "screener",
 }
@@ -153,7 +167,6 @@ REPORT_TYPES = _build_report_types()
 # 触发时自动创建占位文件，不会中断流程
 RESERVED_STEPS = frozenset({
     "news_market_flash",
-    "news_stock_flash",
     "search_research",
     "search_market_batch",
     "search_stock_batch",
@@ -167,20 +180,15 @@ def smart_match(user_input: str, code: str = "", name: str = "", topic: str = ""
     """
     双层关键词匹配路由。
 
-    匹配流程：
-      1. 检查 news_defaults 纯新闻词 → 直接 news
-      2. 匹配 domain（领域）→ 长词优先
-      3. 匹配 tier_tag（输出类型）:
-         - quick 关键词 → 快报（需有 quick_template）
+    匹配流程（重要：领域优先于纯新闻词）：
+      1. 匹配 domain（领域）→ 长词优先，无领域匹配时才退到 news_defaults
+      2. 匹配 tier_tag（输出类型）:
          - deep 关键词  → 研报（需有 deep_template）
-         - 都没命中     → 默认 news 快讯
-      4. domain 也没命中 → reject
-
-    返回 dict:
-      tier: "news" / "quick" / "deep" / "reject"
-      domain: 匹配到的 domain 条目（或 None）
-      matched_domain_keyword: 命中的领域关键词
-      matched_tier_tag: 命中的输出类型关键词（或 None）
+         - quick 关键词 → 快报（需有 quick_template）
+         - "报告" 无修饰 → quick 优先（比 deep 轻量）
+      3. domain 命中的默认 → news 快讯
+      4. domain 未命中 + news_defaults 命中 → news 纯快讯
+      5. 都没命中 → reject
     """
     result = {
         "tier": "reject",
@@ -202,17 +210,7 @@ def smart_match(user_input: str, code: str = "", name: str = "", topic: str = ""
     if code_match and not code:
         result["code"] = code_match.group(1)
 
-    # ── Step 1: 纯新闻词直接走快讯 ──
-    news_defaults = SMART_CONFIG.get("news_defaults", {})
-    news_keywords = news_defaults.get("keywords", [])
-    for kw in news_keywords:
-        if kw.lower() in text:
-            result["tier"] = "news"
-            result["news_hint"] = news_defaults.get("hint", "")
-            result["topic"] = topic or user_input.strip()
-            return result
-
-    # ── Step 2: 匹配 domain（长词优先）──
+    # ── Step 1: 匹配 domain（长词优先）──
     domains = SMART_CONFIG.get("domains", [])
     tier_tags = SMART_CONFIG.get("tier_tags", {})
     quick_tags = [t.lower() for t in tier_tags.get("quick", [])]
@@ -222,43 +220,132 @@ def smart_match(user_input: str, code: str = "", name: str = "", topic: str = ""
     best_domain_score = 0
     best_domain_kw = None
 
+    # 先统计每domain在输入中的关键词命中总数
+    hits_per_domain = {}
     for domain in domains:
+        did = domain["id"]
+        hits_per_domain[did] = 0
         for kw in domain.get("keywords", []):
-            if kw.lower() in text and len(kw) > best_domain_score:
-                best_domain = domain
-                best_domain_score = len(kw)
-                best_domain_kw = kw
+            if kw.lower() in text:
+                hits_per_domain[did] += 1
 
-    if not best_domain:
-        # 没有匹配任何领域 → reject
-        return result
+    # 再遍历决胜：长词优先，同长按域内命中数
+    for domain in domains:
+        did = domain["id"]
+        for kw in domain.get("keywords", []):
+            if kw.lower() in text:
+                if len(kw) > best_domain_score:
+                    best_domain = domain
+                    best_domain_score = len(kw)
+                    best_domain_kw = kw
+                elif len(kw) == best_domain_score and best_domain:
+                    if hits_per_domain.get(did, 0) > hits_per_domain.get(best_domain["id"], 0):
+                        best_domain = domain
+                        best_domain_kw = kw
 
-    result["domain"] = best_domain
-    result["matched_domain_keyword"] = best_domain_kw
-    result["topic"] = topic or user_input.strip()
+    if best_domain:
+        # domain 命中 → 在领域内判断 tier
+        result["domain"] = best_domain
+        result["matched_domain_keyword"] = best_domain_kw
+        result["topic"] = topic or user_input.strip()
 
-    # ── Step 3: 匹配 tier_tag ──
-    # quick 关键词优先（比 deep 更具体）
-    for tag in quick_tags:
-        if tag in text:
+        # 先查 deep（更深度的关键词优先）
+        for tag in deep_tags:
+            if tag in text:
+                if best_domain.get("deep_template"):
+                    result["tier"] = "deep"
+                    result["matched_tier_tag"] = tag
+                    return result
+                break
+
+        # 再查 quick
+        for tag in quick_tags:
+            if tag in text:
+                if best_domain.get("quick_template"):
+                    result["tier"] = "quick"
+                    result["matched_tier_tag"] = tag
+                    return result
+                break
+
+        # "报告" 单独处理：无配套的 deep/quick 修饰词时默认 quick
+        if "报告" in text:
             if best_domain.get("quick_template"):
                 result["tier"] = "quick"
-                result["matched_tier_tag"] = tag
+                result["matched_tier_tag"] = "报告"
                 return result
-            # 有 quick 关键词但无模板 → 降级为 news
-            break
+            elif best_domain.get("deep_template"):
+                result["tier"] = "deep"
+                return result
 
-    for tag in deep_tags:
-        if tag in text:
+        # 领域特定启发式：company domain + "分析" → deep
+        if best_domain["id"] == "company" and "分析" in text:
             if best_domain.get("deep_template"):
                 result["tier"] = "deep"
-                result["matched_tier_tag"] = tag
+                result["matched_tier_tag"] = "分析"
                 return result
-            # 有 deep 关键词但无模板 → 降级为 news
-            break
 
-    # ── Step 4: domain 命中但 tier_tag 未命中 → 默认 news ──
-    result["tier"] = "news"
+        # 领域命中但无 tier 关键词 → 默认 news
+        result["tier"] = "news"
+        return result
+
+    # ── Step 2: domain 未命中 → 检查 news_defaults（纯新闻词）──
+    news_defaults = SMART_CONFIG.get("news_defaults", {})
+    news_keywords = news_defaults.get("keywords", [])
+    for kw in news_keywords:
+        if kw.lower() in text:
+            result["tier"] = "news"
+            result["news_hint"] = news_defaults.get("hint", "")
+            result["topic"] = topic or user_input.strip()
+            return result
+
+    # ── Step 2.5: 有股票代码但无 domain 匹配 → 退到 stock domain ──
+    if result.get("code"):
+        stock_domain = next((d for d in domains if d["id"] == "stock"), None)
+        if stock_domain:
+            result["domain"] = stock_domain
+            result["matched_domain_keyword"] = "code:" + result["code"]
+            result["topic"] = topic or user_input.strip()
+            # 在 stock domain 下重新判断 tier
+            for tag in deep_tags:
+                if tag in text:
+                    result["tier"] = "deep"
+                    result["matched_tier_tag"] = tag
+                    return result
+            for tag in quick_tags:
+                if tag in text:
+                    result["tier"] = "quick"
+                    result["matched_tier_tag"] = tag
+                    return result
+            if "报告" in text:
+                result["tier"] = "quick"
+                result["matched_tier_tag"] = "报告"
+                return result
+            result["tier"] = "news"
+            return result
+
+    # ── Step 2.75: 无代码无domain但有tier关键词→默认stock domain──
+    # 处理"中联重科研报""给我一份中联重科的报告"等无领域关键词但有意图的输入
+    stock_domain = next((d for d in domains if d["id"] == "stock"), None)
+    all_tier_words = quick_tags + deep_tags + ["报告"]
+    if stock_domain:
+        for tw in all_tier_words:
+            if tw in text:
+                result["domain"] = stock_domain
+                result["matched_domain_keyword"] = "tier:" + tw
+                result["topic"] = topic or user_input.strip()
+                # 重新判断tier
+                if tw in deep_tags and stock_domain.get("deep_template"):
+                    result["tier"] = "deep"
+                elif tw in quick_tags and stock_domain.get("quick_template"):
+                    result["tier"] = "quick"
+                elif tw == "报告":
+                    result["tier"] = "quick" if stock_domain.get("quick_template") else "news"
+                else:
+                    result["tier"] = "news"
+                result["matched_tier_tag"] = tw
+                return result
+
+    # ── Step 3: 都没命中 → reject ──
     return result
 
 
@@ -315,6 +402,20 @@ def create_task(cmd: str, args: argparse.Namespace) -> dict:
         "topic": getattr(args, "topic", getattr(args, "name", "")),
         "date":  today,
     }
+
+    # screener 未指定 topic 时，根据投资风格自动派生选股方向
+    if cmd == "screener" and not tpl_vars["topic"]:
+        style = user_prefs.get("user", {}).get("investment_style", "")
+        style_topic_map = {
+            "value":  "蓝筹 低估值 高股息 白马股",
+            "growth": "高科技 高成长 新兴 景气赛道",
+            "band":   "活跃 波段 资金轮动 箱体",
+            "trend":  "趋势 上升通道 资金流入",
+        }
+        derived = style_topic_map.get(style, "低估值蓝筹")
+        tpl_vars["topic"] = derived
+        _log.info(f"   🎯 投资风格《{style}》→ 自动派生选股主题: {derived}")
+
     search_queries = [q.format(**tpl_vars) for q in cfg["search_templates"]]
 
     # 从 prompt 模板追加 recommendedKeywords（智能去重）
@@ -379,10 +480,18 @@ def create_task(cmd: str, args: argparse.Namespace) -> dict:
         "group_label": f"{cfg['label']}_通用搜索",
     })
 
+    is_quick = getattr(args, "type", None) == "quick"
+    steps_list = cfg.get("quick_steps", cfg["steps"]) if is_quick else cfg["steps"]
+
+    # 从 config.json 读取输出样式（统一优先级：CLI参数 > config.json > 模板默认 > 代码默认）
+    cfg_style      = _style_from_config(user_prefs, "report_style", prompt_tpl.get("style", "blue"))
+    cfg_color_type = _style_from_config(user_prefs, "color_type", prompt_tpl.get("color_type", "liquid"))
+    cfg_layout     = _style_from_config(user_prefs, "layout", prompt_tpl.get("layout", "rounded"))
+
     meta = {
         "task_id":     task_id,
         "cmd":         cmd,
-        "report_type": getattr(args, "type", cfg["default_type"]),
+        "report_type": getattr(args, "type", None) or cfg["default_type"],
         "label":       cfg["label"],
         "created_at":  datetime.now().isoformat(),
         "date":        today,
@@ -390,12 +499,14 @@ def create_task(cmd: str, args: argparse.Namespace) -> dict:
         "args": {
             "code":   getattr(args, "code", ""),
             "name":   getattr(args, "name", ""),
-            "topic":  getattr(args, "topic", ""),
-            "style":  getattr(args, "style", prompt_tpl.get("style", "blue")),
+            "topic":  tpl_vars.get("topic", getattr(args, "topic", "")),
+            "style":  getattr(args, "style", cfg_style),
+            "color_type": getattr(args, "color_type", cfg_color_type),
+            "layout": getattr(args, "layout", cfg_layout),
             "output": getattr(args, "output", "output"),
             "portfolio_file": getattr(args, "file", ""),
         },
-        "steps": {step: "pending" for step in cfg["steps"]},
+        "steps": {step: "pending" for step in steps_list},
         "search_queries": search_queries,       # 旧模式兼容
         "keyword_groups": keyword_groups,       # 新模式：批量搜索参数
         "files": {},     # 记录各步骤生成的文件路径
@@ -406,6 +517,8 @@ def create_task(cmd: str, args: argparse.Namespace) -> dict:
         "error": "",
         "user_prefs": user_prefs,       # 注入用户画像
     }
+    _log.info(f"📁 创建任务 {task_id} [{cmd}] '{getattr(args, 'topic', '') or getattr(args, 'name', '')}'")
+    _log.info(f"   🎨 样式: {cfg_style}/{cfg_color_type}/{cfg_layout}")
     return meta, task_id
 
 
@@ -453,6 +566,7 @@ def run_task(cmd: str, args: argparse.Namespace):
     meta["task_dir"] = task_dir
     meta["status"] = TaskState.RUNNING
     save_meta(task_dir, meta)
+    _log.info(f"▶ run_task 启动 | 目录: {task_dir}")
 
     banner(f"🦞 龙虾调研 V3 ｜ {meta['label']} ｜ 任务 {task_id}")
     print(f"  任务目录：{task_dir}")
@@ -462,8 +576,13 @@ def run_task(cmd: str, args: argparse.Namespace):
     # ── Step 1: 数据采集（代码驱动，无 Agent 介入）──────────
     print(f"\n【Phase 1】数据采集（代码驱动）")
 
-    for step in cfg["steps"]:
+    is_quick = getattr(args, "type", None) == "quick"
+    steps = cfg.get("quick_steps", cfg["steps"]) if is_quick else cfg["steps"]
+    _log.info(f"▶ Phase 1 开始 | 步骤: {steps}")
+
+    for step in steps:
         try:
+            _log.info(f"  ▶ 执行步骤: {step}")
             if step == "quote":
                 ok, path = runner.run_quote(meta["args"]["code"])
                 meta["steps"]["quote"] = "done" if ok else "failed"
@@ -509,6 +628,15 @@ def run_task(cmd: str, args: argparse.Namespace):
                 else:
                     step_warn("market_state", "大盘整体状况获取失败，可手动补充")
 
+            elif step == "news_stock_flash":
+                ok, path = runner.run_news_stock_flash(meta["args"]["code"])
+                meta["steps"]["news_stock_flash"] = "done" if ok else "failed"
+                if ok:
+                    meta["files"]["news_stock_flash"] = path
+                    step_ok("news_stock_flash", f"个股新闻快讯 → {os.path.basename(path)}")
+                else:
+                    step_warn("news_stock_flash", "个股新闻获取失败，将使用空数据")
+
             elif step == "portfolio":
                 portfolio_file = meta["args"].get("portfolio_file", "")
                 ok, path = runner.run_portfolio(portfolio_file if portfolio_file else None)
@@ -551,12 +679,14 @@ def run_task(cmd: str, args: argparse.Namespace):
 
     meta["status"] = TaskState.DATA_DONE
     save_meta(task_dir, meta)
+    _log.info(f"✅ Phase 1 完成 | 任务 {task_id} | status=DATA_DONE | 步骤状态: {meta['steps']}")
 
     # ── Step 2: 生成 Agent 指引文件 ──────────────────────────
     runner.write_agent_briefing()
 
     # ── Alone 模式检查 ──
     run_mode = get_user_config("system.run_mode", "skill")
+    _log.info(f"  ▶ run_mode={run_mode}")
     if run_mode == "alone":
         from scripts.generate_alonemode import run_alone_mode
         alone_result = run_alone_mode(task_dir, meta, PROJECT_ROOT)
@@ -567,6 +697,7 @@ def run_task(cmd: str, args: argparse.Namespace):
             if alone_result.get("pdf_path"):
                 meta["report_path"] = alone_result["pdf_path"]
             save_meta(task_dir, meta)
+            _log.info(f"✅ Alone 模式完成 | 任务 {task_id} | HTML: {alone_result.get('html_path','')} | PDF: {alone_result.get('pdf_path','')}")
             print(f"\n{'─'*60}")
             print(f"  ✅ Alone 模式完成")
             print(f"{'─'*60}\n")
@@ -580,10 +711,12 @@ def run_task(cmd: str, args: argparse.Namespace):
             print()
             return task_id, task_dir
         else:
+            _log.warn(f"⚠️ Alone 模式失败: {alone_result.get('error', '未知错误')}，降级为 skill 模式")
             print(f"\n  ⚠️ Alone 模式失败: {alone_result.get('error', '未知错误')}")
             print(f"  降级为 skill 模式，继续打印 Agent 指导")
 
     # ── 打印 Agent 操作指南 ──────────────────────────────────
+    _log.info(f"📋 Phase 2 已就绪 | 任务 {task_id} | 等待 Agent 填充 5_agent_report_input.json")
     print(f"\n{'─'*60}")
     print(f"【Phase 2】Agent 整合阶段 ← 现在需要你介入")
     print(f"{'─'*60}")
@@ -613,18 +746,22 @@ def run_generate(task_id: str, base_output: str = "output"):
     """Phase 3：读取 5_agent_report_input.json，生成最终报告（HTML + PDF）"""
     task_dir = os.path.join(PROJECT_ROOT, base_output, "tasks", task_id)
     if not os.path.exists(task_dir):
+        _log.error(f"找不到任务目录：{task_dir}")
         print(f"❌ 找不到任务目录：{task_dir}")
         return
 
     meta = load_meta(task_dir)
     agent_input_path = os.path.join(task_dir, "5_agent_report_input.json")
+    _log.info(f"📄 Generate 任务 {task_id} (类型: {meta.get('report_type','?')})")
 
     if not os.path.exists(agent_input_path):
+        _log.error(f"找不到 Agent 输入文件：{agent_input_path}")
         print(f"❌ 找不到 Agent 输入文件：{agent_input_path}")
         print(f"   请先让 Agent 填充 5_agent_report_input.json 再运行 generate")
         return
 
     banner(f"🦞 Phase 3：生成报告 ｜ 任务 {task_id}")
+    _log.info(f"▶ Phase 3 开始: generate_report({task_id})")
 
     runner = TaskRunner(task_dir, meta, PROJECT_ROOT)
     ok, result = runner.generate_report(agent_input_path)
@@ -634,6 +771,7 @@ def run_generate(task_id: str, base_output: str = "output"):
         meta["report_path"] = result.get("pdf_path", "")
         meta["html_path"] = result.get("html_path", "")
         save_meta(task_dir, meta)
+        _log.info(f"✅ 报告生成成功 [{meta.get('report_type','?')}] {result.get('pdf_path','')}")
         print(f"\n  ✅ 报告生成成功！")
         print(f"     PDF:  {result.get('pdf_path', '')}")
         print(f"     HTML: {result.get('html_path', '')}")
@@ -646,6 +784,7 @@ def run_generate(task_id: str, base_output: str = "output"):
         meta["status"] = TaskState.FAILED
         meta["error"] = result.get("error", "未知错误")
         save_meta(task_dir, meta)
+        _log.error(f"报告生成失败: {result.get('error', '未知错误')}")
         print(f"\n  ❌ 报告生成失败")
         print(f"     原因：{result.get('error', '未知错误')}")
 
@@ -696,7 +835,8 @@ def cmd_list(base_output: str = "output"):
 # Smart 命令：自然语言 → 自动路由 → 执行
 # ═══════════════════════════════════════════════════════════
 def cmd_smart(user_input: str, code: str = "", name: str = "", topic: str = "",
-              style: str = "blue", base_output: str = "output"):
+              style: str = "blue", color_type: str = "liquid", layout: str = "rounded",
+              base_output: str = "output"):
     """
     Smart 模式入口：接收自然语言，自动匹配路由，执行对应流程。
     输出 JSON 到 stdout，Agent 读取后决定下一步。
@@ -708,6 +848,8 @@ def cmd_smart(user_input: str, code: str = "", name: str = "", topic: str = "",
     code = result.get("code", "")
     name = result.get("name", "")
     topic = result.get("topic", "")
+
+    _log.info(f"🔍 Smart 匹配: '{user_input}' → tier={tier} domain={result.get('matched_domain_keyword','?')}")
 
     output = {
         "user_input": user_input,
@@ -754,7 +896,7 @@ def cmd_smart(user_input: str, code: str = "", name: str = "", topic: str = "",
             "created_at": datetime.now().isoformat(),
             "date": today,
             "status": TaskState.RUNNING,
-            "args": {"code": code, "name": name, "topic": topic, "style": style, "output": base_output},
+            "args": {"code": code, "name": name, "topic": topic, "style": style, "color_type": color_type, "output": base_output},
             "steps": {step: "pending" for step in steps},
             "search_queries": [q.format(**tpl_vars) for q in search_templates],
             "keyword_groups": [],
@@ -856,7 +998,7 @@ def cmd_smart(user_input: str, code: str = "", name: str = "", topic: str = "",
         import argparse as ap
         args = ap.Namespace(
             code=code, name=name, topic=topic,
-            style=style, output=base_output, type=None,
+            style=style, color_type=color_type, layout=layout, output=base_output,
         )
 
         task_id, task_dir, meta = run_smart_task(domain, tier, prompt_template, agent_hint, args)
@@ -891,6 +1033,20 @@ def run_smart_task(domain: dict, tier: str, prompt_template: str, agent_hint: st
         "topic": getattr(args, "topic", getattr(args, "name", "")),
         "date":  today,
     }
+
+    # screener 未指定 topic 时，根据投资风格自动派生选股方向
+    if domain["id"] == "screener" and not tpl_vars["topic"]:
+        _user_prefs = _load_user_config()
+        style = _user_prefs.get("user", {}).get("investment_style", "")
+        style_topic_map = {
+            "value":  "蓝筹 低估值 高股息 白马股",
+            "growth": "高科技 高成长 新兴 景气赛道",
+            "band":   "活跃 波段 资金轮动 箱体",
+            "trend":  "趋势 上升通道 资金流入",
+        }
+        derived = style_topic_map.get(style, "低估值蓝筹")
+        tpl_vars["topic"] = derived
+        _log.info(f"   🎯 投资风格《{style}》→ 自动派生选股主题: {derived}")
 
     # 加载 prompt 模板
     prompt_tpl = load_prompt_template(prompt_template) if prompt_template else {}
@@ -980,6 +1136,14 @@ def run_smart_task(domain: dict, tier: str, prompt_template: str, agent_hint: st
     # 加载用户配置
     user_prefs = _load_user_config()
 
+    steps_to_run = domain.get("quick_steps", domain["steps"]) if tier == "quick" else domain["steps"]
+
+    # 从 config.json 读取输出样式（配置优先级：CLI参数 > config.json > 模板默认 > 代码默认）
+    cfg_style      = _style_from_config(user_prefs, "report_style", prompt_tpl.get("style", "blue"))
+    cfg_color_type = _style_from_config(user_prefs, "color_type", prompt_tpl.get("color_type", "liquid"))
+    cfg_layout     = _style_from_config(user_prefs, "layout", prompt_tpl.get("layout", "rounded"))
+
+    _log.info(f"🔍 Smart 路由: domain={domain['id']} tier={tier} → 任务 {task_id}")
     meta = {
         "task_id":     task_id,
         "cmd":         "smart",
@@ -993,10 +1157,12 @@ def run_smart_task(domain: dict, tier: str, prompt_template: str, agent_hint: st
             "code":   getattr(args, "code", ""),
             "name":   getattr(args, "name", ""),
             "topic":  getattr(args, "topic", ""),
-            "style":  getattr(args, "style", prompt_tpl.get("style", "blue")),
+            "style":  getattr(args, "style", cfg_style),
+            "color_type": getattr(args, "color_type", cfg_color_type),
+            "layout": getattr(args, "layout", cfg_layout),
             "output": base_output,
         },
-        "steps": {step: "pending" for step in domain["steps"]},
+        "steps": {step: "pending" for step in steps_to_run},
         "search_queries": search_queries,
         "keyword_groups": keyword_groups,
         "files": {},
@@ -1016,11 +1182,13 @@ def run_smart_task(domain: dict, tier: str, prompt_template: str, agent_hint: st
 
     # ── Phase 1: 数据采集 ──
     print(f"\n【Phase 1】数据采集（代码驱动）")
+    _log.info(f"▶ Phase 1 开始 (smart) | 步骤: {steps_to_run}")
     meta["status"] = TaskState.RUNNING
     save_meta(task_dir, meta)
 
-    for step in domain["steps"]:
+    for step in steps_to_run:
         try:
+            _log.info(f"  ▶ 执行步骤: {step}")
             if step == "quote":
                 ok, path = runner.run_quote(meta["args"]["code"])
                 meta["steps"]["quote"] = "done" if ok else "failed"
@@ -1087,12 +1255,14 @@ def run_smart_task(domain: dict, tier: str, prompt_template: str, agent_hint: st
 
     meta["status"] = TaskState.DATA_DONE
     save_meta(task_dir, meta)
+    _log.info(f"✅ Phase 1 完成 (smart) | 任务 {task_id} | status=DATA_DONE | 步骤状态: {meta['steps']}")
 
     # ── 生成 Agent 指引 ──
     runner.write_agent_briefing()
 
     # ── Alone 模式检查 ──
     run_mode = get_user_config("system.run_mode", "skill")
+    _log.info(f"  ▶ run_mode={run_mode}")
     if run_mode == "alone":
         from scripts.generate_alonemode import run_alone_mode
         alone_result = run_alone_mode(task_dir, meta, PROJECT_ROOT)
@@ -1103,6 +1273,7 @@ def run_smart_task(domain: dict, tier: str, prompt_template: str, agent_hint: st
             if alone_result.get("pdf_path"):
                 meta["report_path"] = alone_result["pdf_path"]
             save_meta(task_dir, meta)
+            _log.info(f"✅ Alone 模式完成 | 任务 {task_id} | HTML: {alone_result.get('html_path','')}")
             print(f"\n{'─'*60}")
             print(f"  ✅ Alone 模式完成")
             print(f"{'─'*60}\n")
@@ -1117,10 +1288,12 @@ def run_smart_task(domain: dict, tier: str, prompt_template: str, agent_hint: st
             print()
             return task_id, task_dir, meta
         else:
+            _log.warn(f"⚠️ Alone 模式失败: {alone_result.get('error', '未知错误')}，降级为 skill 模式")
             print(f"\n  ⚠️ Alone 模式失败: {alone_result.get('error', '未知错误')}")
             print(f"  降级为 skill 模式，继续打印 Agent 指导")
 
     # ── 打印 Agent 操作指南 ──
+    _log.info(f"📋 Phase 2 已就绪 (smart) | 任务 {task_id} | 等待 Agent 填充 5_agent_report_input.json")
     print(f"\n{'─'*60}")
     print(f"【Phase 2】Agent 整合阶段 ← {tier_label}模式")
     print(f"{'─'*60}")
@@ -1158,8 +1331,7 @@ def main():
   python main.py stock --code 000063 --name 中兴通讯
   python main.py stock --code 000063 --name 中兴通讯 --type qiye_baogao
   python main.py market
-  python main.py industry --topic AI芯片 --name "AI芯片行业"
-  python main.py screener --topic 机器人
+  python main.py screener
   python main.py generate --task-id 20260426_103000
   python main.py status  --task-id 20260426_103000
   python main.py list
@@ -1167,37 +1339,40 @@ def main():
     )
     sub = parser.add_subparsers(dest="cmd", required=True)
 
+    _color_type_help = "渲染类型：solid(纯色)/gradient(渐变)/liquid(液态)"
+
     # stock / company
     for cmd_name in ["stock", "company"]:
         p = sub.add_parser(cmd_name, help=REPORT_TYPES[cmd_name]["label"])
         p.add_argument("--code",   "-c", required=True,  help="股票代码，如 000063")
         p.add_argument("--name",   "-n", required=True,  help="股票/公司名称")
         p.add_argument("--type",   "-t", default=None,   help="报告类型（可选覆盖）")
-        p.add_argument("--style",  "-s", default="blue", help="报告样式（blue/orange）")
+        p.add_argument("--style",  "-s", default="blue", help="颜色主题（blue/purple/green/...）")
+        p.add_argument("--color-type", "-C", default="liquid", help=_color_type_help)
+        p.add_argument("--layout", "-l", default="rounded", help="布局风格：rounded(圆角)/square(方正)/minimal(极简)")
         p.add_argument("--output", "-o", default="output")
 
     # market
     p = sub.add_parser("market", help=REPORT_TYPES["market"]["label"])
     p.add_argument("--style",  "-s", default="blue")
+    p.add_argument("--color-type", "-C", default="liquid", help=_color_type_help)
+    p.add_argument("--layout", "-l", default="rounded", help="布局风格")
     p.add_argument("--output", "-o", default="output")
-
-    # industry
-    p = sub.add_parser("industry", help=REPORT_TYPES["industry"]["label"])
-    p.add_argument("--topic", "-T", required=True, help="行业主题，如 AI芯片")
-    p.add_argument("--name",  "-n", default="",    help="行业名称（可选，默认同topic）")
-    p.add_argument("--style", "-s", default="blue")
-    p.add_argument("--output","-o", default="output")
 
     # portfolio
     p = sub.add_parser("portfolio", help=REPORT_TYPES["portfolio"]["label"])
     p.add_argument("--file",  "-f", required=True, help="持仓数据JSON文件路径")
     p.add_argument("--style", "-s", default="blue")
+    p.add_argument("--color-type", "-C", default="liquid", help=_color_type_help)
+    p.add_argument("--layout","-l", default="rounded", help="布局风格")
     p.add_argument("--output","-o", default="output")
 
     # screener
     p = sub.add_parser("screener", help=REPORT_TYPES["screener"]["label"])
-    p.add_argument("--topic", "-T", required=True, help="选股主题，如 机器人")
+    p.add_argument("--topic", "-T", default="", help=argparse.SUPPRESS)
     p.add_argument("--style", "-s", default="blue")
+    p.add_argument("--color-type", "-C", default="liquid", help=_color_type_help)
+    p.add_argument("--layout","-l", default="rounded", help="布局风格")
     p.add_argument("--output","-o", default="output")
 
     # smart — 自然语言入口，自动匹配路由
@@ -1207,6 +1382,8 @@ def main():
     p.add_argument("--name",  "-n", default="", help="股票/公司名称（可选）")
     p.add_argument("--topic", "-T", default="", help="主题（可选，默认从 input 提取）")
     p.add_argument("--style",  "-s", default="blue")
+    p.add_argument("--color-type", "-C", default="liquid", help=_color_type_help)
+    p.add_argument("--layout", "-l", default="rounded", help="布局风格")
     p.add_argument("--output", "-o", default="output")
 
     # generate（Phase 3）
@@ -1223,7 +1400,18 @@ def main():
     p = sub.add_parser("list", help="列出所有任务")
     p.add_argument("--output", "-o", default="output")
 
+    # emu — 模拟持仓（Phase 4）
+    p_emu = sub.add_parser("emu", help="🎮 模拟持仓管理（Phase 4）")
+    emu_sub = p_emu.add_subparsers(dest="emu_cmd")
+    emu_sub.add_parser("show", help="查看模拟持仓")
+    emu_sub.add_parser("ops", help="查看操作记录")
+    emu_sub.add_parser("reflect", help="运行反思复盘")
+    emu_sub.add_parser("init", help="初始化模拟持仓")
+    emu_sub.add_parser("reset", help="重置模拟持仓")
+
     args = parser.parse_args()
+
+    _log.info(f"🚀 CLI 启动: {args.cmd}")
 
     if args.cmd == "generate":
         run_generate(args.task_id, args.output)
@@ -1233,9 +1421,41 @@ def main():
         cmd_list(args.output)
     elif args.cmd == "smart":
         cmd_smart(args.input, code=args.code, name=args.name,
-                  topic=args.topic, style=args.style, base_output=args.output)
+                  topic=args.topic, style=args.style,
+                  color_type=args.color_type, layout=args.layout,
+                  base_output=args.output)
+    elif args.cmd == "emu":
+        _cmd_emu(args)
     else:
         run_task(args.cmd, args)
+
+
+def _cmd_emu(args):
+    """模拟持仓 CLI 入口（Phase 4）"""
+    try:
+        _SCRIPTS_DIR = os.path.join(os.path.dirname(__file__), "scripts")
+        if _SCRIPTS_DIR not in sys.path:
+            sys.path.insert(0, _SCRIPTS_DIR)
+        from emu_manager import cmd_show, cmd_ops, cmd_reflect, cmd_reset
+        from emu_manager import init_emu_portfolio
+    except ImportError as e:
+        print(f"❌ 模拟持仓模块未安装: {e}")
+        return
+
+    cmd = getattr(args, "emu_cmd", "")
+    if cmd == "show":
+        cmd_show()
+    elif cmd == "ops":
+        cmd_ops()
+    elif cmd == "reflect":
+        cmd_reflect()
+    elif cmd == "init":
+        init_emu_portfolio(force=True)
+        print("✅ 模拟持仓已初始化")
+    elif cmd == "reset":
+        cmd_reset()
+    else:
+        print("可用命令: show, ops, reflect, init, reset")
 
 
 if __name__ == "__main__":

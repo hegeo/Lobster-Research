@@ -1,0 +1,10 @@
+{
+  "_schema": "1.0",
+  "domain": "biomedical",
+  "label": "生物与医疗",
+  "search_groups": [
+    {"label": "研发审批", "sources": ["eastmoney.com", "cls.cn", "10jqka.com.cn"], "keywords": ["{topic} 研发管线 临床试验 审批 {date}", "{topic} FDA NMPA 获批 上市"]},
+    {"label": "集采医保", "sources": ["eastmoney.com", "stcn.com", "cls.cn"], "keywords": ["{topic} 集采 医保谈判 降价 {date}", "{topic} 政策 带量采购 影响"]},
+    {"label": "出海BD", "sources": ["eastmoney.com", "cls.cn", "36kr.com"], "keywords": ["{topic} License-out 出海 BD 合作 {date}", "{topic} 国际化 海外市场 授权"]}
+  ]
+}

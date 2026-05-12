@@ -1,89 +1,74 @@
-# 🌍 Localization Guide / 本地化改造指南
+# Localization Guide
 
 > Adapt Lobster Research to your local market.
-> 将龙虾调研适配到您所在的本地市场。
 
----
-
-## Table of Contents / 目录
-
-- [Overview / 概述](#overview--概述)
-- [Step 0: Know Your Local Data Sources / 了解本地数据源](#step-0-know-your-local-data-sources--了解本地数据源)
-- [Step 1: Adapt Data Scripts / 改造数据脚本](#step-1-adapt-data-scripts--改造数据脚本)
-- [Step 2: Translate Prompt Templates / 翻译提示词模板](#step-2-translate-prompt-templates--翻译提示词模板)
-- [Step 3: Translate Code & Docs / 翻译代码与文档](#step-3-translate-code--docs--翻译代码与文档)
-- [Step 4: Adapt Configurations / 适配配置](#step-4-adapt-configurations--适配配置)
-- [Step 5: Test & Iterate / 测试与迭代](#step-5-test--iterate--测试与迭代)
-- [Appendix: File Mapping / 附录：文件映射表](#appendix-file-mapping--附录文件映射表)
-
----
-
-<a id="overview--概述"></a>
-## Overview / 概述
+## Overview
 
 This guide walks you through adapting Lobster Research to any financial market (US, EU, Japan, India, etc.) or language environment.
 
-本指南帮助您将龙虾调研适配到任意金融市场（美股、欧洲、日本、印度等）或语言环境。
-
-**The core principle / 核心原则**: The project separates **data collection** (Phase 1, Python scripts) from **content synthesis** (Phase 2, AI + prompt templates). To localize, you primarily need to:
+**Core principle**: The project separates **data collection** (Phase 1, Python scripts) from **content synthesis** (Phase 2, AI + prompt templates). To localize, you primarily need to:
 
 1. **Replace data sources** — Swap Chinese market APIs for your local ones
 2. **Translate prompts** — Convert report templates to your language
 3. **Update config** — Adjust market codes, currency, labels
 
-**核心原则**：项目将**数据采集**（Phase 1，Python 脚本）与**内容整合**（Phase 2，AI + 提示词模板）分离。本地化时，您主要需要：
+---
 
-1. **替换数据源** — 将中国市场的 API 换为您本地的
-2. **翻译提示词** — 将报告模板转换为您的语言
-3. **更新配置** — 调整市场代码、货币、标签
+## Project Structure (for reference)
+
+```
+lobster-research/
+├── main.py              # Entry point + Smart NLP router
+├── main.json            # Routing config (domains + output types)
+├── SKILL.md             # Agent skill instructions
+├── modules/             # Core algorithms & tools
+│   ├── core.py          # Signal system, trend judgment, scoring models
+│   ├── extend.py        # Report template library + REPORT_TYPES
+│   ├── expert_*.py      # Expert mode workflows
+│   └── logger.py        # Logging system
+├── scripts/             # Data collection & report generation
+│   ├── task_runner.py   # Phase 1/3 execution engine
+│   ├── ticktime.py      # Real-time quotes (Sina/Tencent)
+│   ├── stock_data_collector.py  # K-line + technical indicators
+│   ├── stock_master.py  # Stock profiles
+│   ├── websearch_pro.py # Multi-engine search
+│   ├── akshare_api_kit.py       # AKShare structured data
+│   ├── baidu_dailynews.py       # News headlines
+│   ├── market_state.py  # Market sentiment (Playwright)
+│   ├── parse_image.py   # Portfolio screenshot OCR
+│   ├── generate_report.py       # HTML/PDF renderer
+│   ├── generate_alonemode.py    # Alone mode: auto LLM API
+│   └── emu_manager.py           # Simulated portfolio (Phase 4)
+├── config/              # Configuration
+│   ├── config.py        # Settings manager + CLI
+│   ├── config.json      # User preferences + market config
+│   ├── portfolio.json   # Real portfolio holdings
+│   ├── emu_portfolio.json       # Simulated portfolio holdings
+│   ├── emu_operations.json      # Simulated trade log
+│   ├── emu_reflections.json     # Simulated reflection log
+│   └── settings.json    # API keys
+├── keywords/            # 24 domain search templates
+├── prompts/json/        # 29 report prompt templates (7 quick + 22 deep)
+├── styles/              # Pure CSS style system
+│   ├── palettes.css     # 10 color palettes as CSS custom properties
+│   ├── base.css         # Report CSS template (var() + data-* driven)
+│   └── style_manager.py # Loader (reads CSS files, generates HTML attrs)
+├── references/          # Documentation
+├── test/                # Test suite
+│   └── runner.py        # Full test runner: python -m test.runner
+└── output/tasks/        # Task output folders
+```
 
 ---
 
-<a id="step-0-know-your-local-data-sources--了解本地数据源"></a>
-## Step 0: Know Your Local Data Sources / 了解本地数据源
+## Step 1: Adapt Data Scripts
 
-Before modifying code, research what data sources are available in your target market.
+### 1.1 Real-Time Quotes — `scripts/ticktime.py`
 
-在修改代码之前，先调研目标市场有哪些可用数据源。
+**Current**: Uses Sina Finance (`https://hq.sinajs.cn`) and Tencent Finance.
 
-### Data You Need / 需要的数据
+**To adapt**: Replace the API URLs and stock code format logic.
 
-| Data Type | Chinese Source | Your Local Alternative |
-|:---|:---|:---|
-| Real-time quotes | Sina Finance, Tencent Finance | Yahoo Finance, Alpha Vantage, IEX Cloud, Investing.com |
-| K-line / Technicals | Sina Finance, AKShare | Yahoo Finance API, Polygon.io, Quandl |
-| Stock profiles | Securities Star (证券之星) | Yahoo Finance, Bloomberg API, your local exchange |
-| Market indices | Sina Finance | Yahoo Finance, your central bank / stock exchange |
-| Fund flows / Margin | AKShare | Your local exchange API, SEC/FINRA (US) |
-| News search | Baidu, 360, Bing, Tavily | Google Search API, Bing Search, your local news aggregators |
-| News headlines | Baidu Daily News | RSS feeds, NewsAPI, your local financial news sites |
-
-### Search Engine Priority / 搜索引擎优先级
-
-Current priority in `scripts/websearch_pro.py`:
-1. Tavily API (general)
-2. ProSearch (local auth gateway)
-3. Baidu Search (Chinese)
-4. Bing Search
-5. 360 Search (Chinese)
-6. Direct URL fallback
-
-**For your market**, consider:
-- **US/Global**: Tavily → Bing → Google Custom Search → Yahoo
-- **EU**: Tavily → Bing → Euronews / local financial portals
-- **Japan**: Tavily → Yahoo Japan → Nikkei API
-- **India**: Tavily → Google → Moneycontrol / Economic Times
-
----
-
-<a id="step-1-adapt-data-scripts--改造数据脚本"></a>
-## Step 1: Adapt Data Scripts / 改造数据脚本
-
-### 1.1 Real-Time Quotes / 实时行情 — `scripts/ticktime.py`
-
-**Current**: Uses Sina Finance (`https://hq.sinajs.cn`) and Tencent Finance as fallback.
-
-**To adapt**:
 ```python
 # Replace Sina URLs with your local API
 # Example: Yahoo Finance for US stocks
@@ -91,304 +76,247 @@ YAHOO_QUOTE_URL = "https://query1.finance.yahoo.com/v8/finance/chart/{symbol}"
 
 # Update stock code format logic
 # Current: sz000001 (Shenzhen), sh600000 (Shanghai)
-# US: AAPL, TSLA (no exchange prefix needed)
-# Japan: 7203.T (Toyota on TSE)
-# India: RELIANCE.NS (NSE), RELIANCE.BO (BSE)
+# US: AAPL, TSLA
+# Japan: 7203.T
+# India: RELIANCE.NS
 ```
 
-**Key changes**:
-- `StockDataAPI._format_code()` — Remove/add exchange prefix logic
-- `StockDataAPI._sina_request()` / `_tencent_request()` — Replace with your API client
-- Add error handling for different market trading hours
-
-### 1.2 K-Line & Technicals / K线与技术指标 — `scripts/stock_data_collector.py`
+### 1.2 K-Line & Technicals — `scripts/stock_data_collector.py`
 
 **Current**: Uses Sina Finance K-line API.
 
-**To adapt**:
 ```python
-# Replace Sina K-line with Yahoo Finance or local API
-# Example: Yahoo Finance historical data
+# Replace with yfinance or your local API
 import yfinance as yf
 ticker = yf.Ticker("AAPL")
 hist = ticker.history(period="6mo")
 ```
 
-**Key changes**:
-- Historical data source URL
-- Trading calendar (remove Chinese holidays, add local ones)
-- Technical indicator calculations should remain universal (MA, RSI, MACD)
-
-### 1.3 Stock Profiles / 个股详细资料 — `scripts/stock_master.py`
+### 1.3 Stock Profiles — `scripts/stock_master.py`
 
 **Current**: Scrapes Securities Star (证券之星).
 
-**To adapt**:
 ```python
-# Replace with Yahoo Finance profile or local data provider
-# Example: Yahoo Finance company info
+# Replace with Yahoo Finance profile or your data provider
 profile_url = f"https://finance.yahoo.com/quote/{symbol}/profile"
-# Or use a paid API like Bloomberg, Refinitiv, or your local exchange
 ```
 
-### 1.4 Market Indices / 大盘指数 — `scripts/ticktime.py` (market methods)
+### 1.4 Market Indices — `scripts/ticktime.py`
 
-**Current**: Tracks 上证指数, 深证成指, 创业板指, 科创50.
+**Current**: Tracks Chinese indices (上证指数, 深证成指, etc.).
 
-**To adapt**:
-```python
-# Update index codes in config/config.json
+**To adapt**: Update index codes in `config/config.json`:
+
+```json
 "index_codes": {
-    "^GSPC": "S&P 500",      # US
-    "^DJI": "Dow Jones",      # US
-    "^IXIC": "NASDAQ",        # US
-    "^N225": "Nikkei 225"     # Japan
+    "^GSPC": "S&P 500",
+    "^DJI": "Dow Jones",
+    "^IXIC": "NASDAQ",
+    "^N225": "Nikkei 225"
 }
 ```
 
-### 1.5 Web Search / 联网搜索 — `scripts/websearch_pro.py`
+### 1.5 Web Search — `scripts/websearch_pro.py`
 
 **Current**: Tavily → Baidu → Bing → 360.
 
-**To adapt**:
+**To adapt**: Edit engine priority and API keys in `config/settings.json`:
 
-Edit the engine priority and add/remove engines:
-
-```python
-# In scripts/websearch_pro.py, line ~76
-PRIMARY_ENGINE = "tavily"       # Keep or change
-SECONDARY_ENGINE = "bing"       # Replace baidu with bing/google
-# Remove: baidu, 360 if not relevant
-# Add: google_custom_search, your_local_search_api
-```
-
-Also update `config/settings.json`:
 ```json
 {
   "websearch_pro": {
     "engines": {
       "primary": "tavily",
-      "secondary": "bing",
-      "enable_all": false
+      "secondary": "bing"
     },
     "apis": {
-      "tavily_api_key": "your-key",
-      "bing_api_key": "your-key"
+      "tavily_api_key": "tvly-...",
+      "bing_api_key": "..."
     }
   }
 }
 ```
 
-### 1.6 Structured Data / 结构化数据 — `scripts/akshare_api_kit.py`
+### 1.6 Structured Data — `scripts/akshare_api_kit.py`
 
-**Current**: Uses AKShare (Chinese financial data library).
+**Current**: Uses AKShare (exclusively Chinese markets). Requires full replacement.
 
-**To adapt**:
 ```python
-# For US market, replace with yfinance or pandas-datareader
-# For other markets, find equivalent libraries:
-#   - US: yfinance, pandas-datareader, alpaca-trade-api
-#   - Japan: jquants-api-client
-#   - India: nsepy, yfinance
-#   - EU: yfinance, euronext data
+# US: yfinance, pandas-datareader, alpaca-trade-api
+# Japan: jquants-api-client
+# India: nsepy, yfinance
+# EU: yfinance, euronext data
 ```
 
-### 1.7 News Headlines / 新闻快讯 — `scripts/baidu_dailynews.py`
+### 1.7 News Headlines — `scripts/baidu_dailynews.py`
 
-**Current**: Scrapes Baidu News.
+**Current**: Scrapes Baidu News RSS.
 
-**To adapt**:
 ```python
-# Replace with local news source
-# Example: Google News RSS, NewsAPI, or your local financial news site
-NEWS_URL = "https://news.google.com/rss/search?q=finance"
-# Or use a news API like NewsAPI.org
+# Replace with NewsAPI or your local financial news site
+NEWS_URL = "https://newsapi.org/v2/everything?q=finance"
 ```
 
-### 1.8 Market Sentiment / 市场情绪 — `scripts/market_state.py`
+### 1.8 Market Sentiment — `scripts/market_state.py`
 
 **Current**: Uses Playwright to scrape Sina Finance market page.
 
-**To adapt**:
 ```python
-# Replace target URL with your local market overview page
-# Example: Yahoo Finance market overview
+# Replace with your local market overview page
 MARKET_URL = "https://finance.yahoo.com/markets/"
-# Or your local exchange's market data page
 ```
 
-### 1.9 Summary: Script Changes / 脚本改造总结
+### 1.9 Simulated Portfolio (Phase 4) — `scripts/emu_manager.py`
 
-| Script | Change Effort | What to Change |
-|:---|:---|:---|
+No market-specific logic. Just configure in `config/config.py`:
+- `emu.enabled`: enable/disable
+- `emu.follow_user_prefs`: use user's portfolio settings
+- `emu.independent_capital`: set independent capital if not following user prefs
+
+### 1.10 Summary
+
+| Script | Effort | What to Change |
+|--------|--------|----------------|
 | `ticktime.py` | Medium | API URLs, stock code format, index codes |
 | `stock_data_collector.py` | Medium | K-line data source, trading calendar |
 | `stock_master.py` | Medium | Stock profile scraping target |
-| `websearch_pro.py` | Low | Engine priority, remove/add search engines |
-| `akshare_api_kit.py` | High | Replace entire AKShare dependency |
-| `baidu_dailynews.py` | Low | News source URL/API |
+| `websearch_pro.py` | Low | Engine priority, API keys |
+| `akshare_api_kit.py` | High | Replace entire dependency |
+| `baidu_dailynews.py` | Low | News source URL |
 | `market_state.py` | Low | Target scraping URL |
 | `parse_image.py` | None | OCR is language-agnostic |
-| `generate_report.py` | Low | Currency symbol (¥ → $/€/¥/₹) |
-| `task_runner.py` | None | Orchestrator, no market-specific code |
+| `generate_report.py` | Low | Currency symbol, date format |
+| `task_runner.py` | None | No market-specific code |
+| `emu_manager.py` | None | No market-specific code |
 
 ---
 
-<a id="step-2-translate-prompt-templates--翻译提示词模板"></a>
-## Step 2: Translate Prompt Templates / 翻译提示词模板
+## Step 2: Translate Prompt Templates
 
-All 28 templates live in `prompts/json/`. Each is a JSON file with translatable fields.
-
-28 套模板全部位于 `prompts/json/`。每个都是 JSON 文件，包含以下可翻译字段。
-
-### Template Structure / 模板结构
+All 29 templates live in `prompts/json/`. Each is a JSON file with these translatable fields:
 
 ```json
 {
-  "name": "研报-企业发展",
-  "type": "专家研报",
-  "style": "blue",
+  "name": "快报-个股分析",
+  "type": "专家快报",
+  "style": "purple",
   "parameters": {
-    "stockAndMarket": "个股，企业，上市公司",
-    "observationCycle": "季度",
-    "observationMode": "单企业深度研究"
+    "stockAndMarket": "个股，股票，上市公司",
+    "observationCycle": "分钟级",
+    "observationMode": "单只股票分析"
   },
-  "recommendedKeywords": ["企业发展", "企业估值", "财务分析"],
-  "recommendedDataSources": ["公司年报/季报", "交易所公告", "Wind"],
-  "dataRequirements": "企业财务报表、融资历史...",
-  "coreIdea": "通过对单一企业进行全面深度研究...",
-  "promptBody": "企业深度研报（5000字）\n\n前置导读模块..."
+  "recommendedKeywords": ["个股行情", "技术分析", "资金流向"],
+  "recommendedDataSources": ["交易所行情", "财经新闻", "公司公告"],
+  "dataRequirements": "实时行情数据、K线数据、成交数据...",
+  "coreIdea": "单只股票的分钟级快报..."
 }
 ```
 
-### Fields to Translate / 需要翻译的字段
+### Fields to Translate
 
 | Field | Description | Example (EN) |
-|:---|:---|:---|
-| `name` | Template name | "Research - Company Development" |
-| `type` | Report type | "Expert Research" |
-| `parameters.stockAndMarket` | Applicable scope | "Individual stocks, companies, listed companies" |
-| `parameters.observationCycle` | Time horizon | "Quarterly" |
-| `parameters.observationMode` | Analysis mode | "Single-company deep research" |
-| `recommendedKeywords` | Search keywords | ["company growth", "valuation", "financial analysis"] |
-| `recommendedDataSources` | Data sources | ["Annual/Quarterly Reports", "SEC Filings", "Bloomberg"] |
-| `dataRequirements` | Required data | "Financial statements, funding history..." |
-| `coreIdea` | Core thesis | "Conduct comprehensive deep research on a single company..." |
-| `promptBody` | The full prompt | The entire report outline and chapter instructions |
+|-------|-------------|---------------|
+| `name` | Template name | "Quick - Stock Analysis" |
+| `type` | Report type | "Expert Quick Report" |
+| `style` | Color palette | Keep as-is (CSS handles it) |
+| `parameters.stockAndMarket` | Applicable scope | "Stocks, listed companies" |
+| `parameters.observationCycle` | Time horizon | "Minute-level" |
+| `parameters.observationMode` | Analysis mode | "Single stock analysis" |
+| `recommendedKeywords` | Search keywords | ["stock quote", "technical analysis", "fund flow"] |
+| `recommendedDataSources` | Data sources | ["Exchange data", "Financial news", "Company filings"] |
+| `dataRequirements` | Required data | "Real-time quotes, K-line data..." |
+| `coreIdea` | Core thesis | Short description of the report's purpose |
 
-### Translation Tips / 翻译建议
+### Style Parameter
 
-1. **Keep the structure**: Chapter titles, section headings, and formatting markers (```, ---, tables) should remain
-2. **Adapt examples**: If the prompt mentions "沪深300", change to "S&P 500" or your local index
-3. **Adjust data source references**: "Wind" → "Bloomberg", "东方财富" → "Yahoo Finance"
-4. **Preserve formatting instructions**: "段落① 150字，高亮 50字" controls output structure — keep the format but translate the labels
-5. **Keep output length instructions**: "5000字" → "5000 words" or keep as character count if your language uses characters
+The `style` field in templates maps to one of 10 color palettes:
+- `blue`, `purple`, `green`, `indigo`, `orange`, `pink`, `red`, `yellow`, `cyan`, `brown`
 
-### Batch Translation Workflow / 批量翻译工作流
-
-```bash
-# 1. Create a translation script
-python scripts/translate_templates.py --source-lang zh --target-lang en --input prompts/json/ --output prompts/json_en/
-
-# 2. Review and refine manually (AI translation needs human review for financial terms)
-
-# 3. Replace or symlink
-mv prompts/json prompts/json_zh
-mv prompts/json_en prompts/json
-```
+This is passed to the 3D style system as `--style`. The render type (`--color-type`) and layout (`--layout`) can be overridden via CLI flags. You don't need to change these.
 
 ---
 
-<a id="step-3-translate-code--docs--翻译代码与文档"></a>
-## Step 3: Translate Code & Docs / 翻译代码与文档
+## Step 3: Translate Code & Docs
 
-### 3.1 Code Comments & Strings / 代码注释与字符串
-
-Files with Chinese text to translate:
-
-| File | What to Translate |
-|:---|:---|
-| `main.py` | CLI help text, banner messages, step labels |
-| `scripts/*.py` | Docstrings, print messages, error messages |
-| `config/config.py` | User-facing messages |
-| `modules/*.py` | Docstrings |
-
-**Example**:
-```python
-# Before
-print("  ✅ 实时行情获取成功")
-# After
-print("  ✅ Real-time quote fetched successfully")
-```
-
-### 3.2 SKILL.md / 技能文档
+### 3.1 SKILL.md
 
 This is the most important document for AI agents. Translate:
-- All constraint descriptions (铁律)
+- All constraint rules (铁律)
 - Workflow instructions
 - Command reference table
 - File structure descriptions
 
-Keep the technical terms (JSON filenames, field names) unchanged.
+Keep technical terms (JSON filenames, command names, field names) unchanged.
 
-### 3.3 References / 参考文档
+### 3.2 references/
 
-| File | Priority |
-|:---|:---|
-| `references/phase2_guide.md` | High — guides AI content filling |
-| `references/project_structure.md` | Medium — project overview |
-| `references/ps_cheatsheet.md` | Low — PowerShell specific |
-| `references/pitfalls.md` | Low — accumulated notes |
+| File | Priority | Purpose |
+|------|----------|---------|
+| `phase2_guide.md` | High | AI content filling guide |
+| `project_structure.md` | Medium | Project overview |
+| `ps_cheatsheet.md` | Low | PowerShell-specific |
+| `pitfalls.md` | Low | Accumulated notes |
 
-### 3.4 Config Labels / 配置标签
+### 3.3 Code strings
 
-Translate labels in `config/config.json`:
-```json
-"labels": {
-  "investment_style": {
-    "conservative": "Conservative",
-    "balanced": "Balanced",
-    "aggressive": "Aggressive"
-  }
-}
-```
+Files with user-facing Chinese text:
+
+| File | What to Translate |
+|------|-------------------|
+| `main.py` | CLI help text, banner messages, step labels |
+| `scripts/*.py` | Docstrings, print/output messages |
+| `config/config.py` | Config descriptions, CLI help |
+| `modules/*.py` | Docstrings |
+
+### 3.4 Test Help Text
+
+Translate test descriptions in `test/runner.py` if needed. The test framework uses `log.section()`, `log.ok()`, `log.fail()` etc.
 
 ---
 
-<a id="step-4-adapt-configurations--适配配置"></a>
-## Step 4: Adapt Configurations / 适配配置
+## Step 4: Adapt Configurations
 
-### 4.1 Market Config / 市场配置 — `config/config.json`
+### 4.1 Market Config — `config/config.json`
 
 ```json
 {
   "user": {
-    "country": "US",           // Change from "CN"
-    "language": "en-US"        // Change from "zh-CN"
+    "country": "US",
+    "language": "en-US"
   },
   "market": {
     "index_codes": {
-      "^GSPC": "S&P 500",      // US example
+      "^GSPC": "S&P 500",
       "^DJI": "Dow Jones",
       "^IXIC": "NASDAQ"
     },
     "focus_stocks": ["AAPL", "MSFT", "GOOGL"]
-  },
-  "cross_assets": {
-    "symbols": [
-      {"code": "GC=F", "name": "Gold"},
-      {"code": "BTC-USD", "name": "Bitcoin"}
-    ],
-    "fx": [
-      {"code": "EUR=X", "name": "EUR/USD"}
-    ]
   }
 }
 ```
 
-### 4.2 Routing Config / 路由配置 — `main.json`
+### 4.2 Output Style Config
 
-Update `keywords` in each domain to match your language:
+```json
+"output": {
+    "mode": "expert",
+    "format": "markdown",
+    "report_style": "blue",
+    "color_type": "liquid",
+    "layout": "rounded"
+}
+```
+
+Three independent dimensions:
+- `report_style`: 10 color palettes (blue/purple/green/indigo/orange/pink/red/yellow/cyan/brown)
+- `color_type`: solid (flat colors) | gradient | liquid (glow + frosted glass)
+- `layout`: rounded | square | minimal
+
+Edit color values directly in `styles/palettes.css` (CSS custom properties).
+
+### 4.3 Routing Config — `main.json`
+
+Update keywords in each domain to match your language:
 
 ```json
 {
@@ -396,100 +324,97 @@ Update `keywords` in each domain to match your language:
     {
       "id": "market",
       "label": "Market Overview",
-      "keywords": ["market", "index", "S&P", "Dow", "NASDAQ", "rally", "sell-off"]
+      "keywords": ["market", "index", "S&P", "Dow", "NASDAQ"]
     },
     {
       "id": "stock",
       "label": "Individual Stock",
       "keywords": ["stock", "share", "ticker", "price", "earnings"]
     }
-  ],
-  "news_defaults": {
-    "keywords": ["news", "headlines", "updates", "breaking"]
-  }
+  ]
 }
 ```
 
-### 4.3 Search Engine Config / 搜索引擎配置 — `config/settings.json`
+### 4.4 Search Keywords — `keywords/`
 
-```json
-{
-  "websearch_pro": {
-    "engines": {
-      "primary": "tavily",
-      "secondary": "bing",
-      "enable_all": false
-    },
-    "apis": {
-      "tavily_api_key": "tvly-...",
-      "tavily_api_base": "https://api.tavily.com/search",
-      "bing_api_key": "..."
-    }
-  }
+The 24 domain search templates in `keywords/` contain Chinese search queries. Translate each domain's search groups, keeping the `sites` field if using Chinese data sources (replace if switching to local sources).
+
+### 4.5 Currency & Colors
+
+- **Currency symbol**: Edit in the data sources and any hardcoded references. The CSS files (`styles/base.css`, `styles/palettes.css`) contain color values only, not currency symbols.
+- **Red/Green convention**: Chinese market uses Red = up, Green = down. Adjust `stock_data_collector.py` and reporting scripts if your market uses the opposite convention.
+
+### 4.6 User Preferences — `config/config.py`
+
+Translate the config schema labels if your CLI users need them. Key defaults:
+
+```python
+"user": {
+    "investment_style": "value",    # value | growth | balanced
+    "operation_freq": "short",      # short | medium | long
+    "experience_level": "entry",    # entry | intermediate | advanced
+    "risk_level": "steady",         # steady | balanced | aggressive
 }
 ```
-
-### 4.4 Currency & Colors / 货币与颜色
-
-Update currency symbols in report templates and styles:
-- `styles/*.py`: Search for `¥` and replace with `$`, `€`, `£`, `₹`, etc.
-- Stock price display: Red = up, Green = down (Chinese convention) → adjust for your market
 
 ---
 
-<a id="step-5-test--iterate--测试与迭代"></a>
-## Step 5: Test & Iterate / 测试与迭代
+## Step 5: Test & Iterate
 
-### 5.1 Unit Tests / 单元测试
-
-Test each data script independently:
+### 5.1 Test data scripts independently
 
 ```bash
 # Test real-time quotes
-python scripts/ticktime.py --code AAPL 2>&1
+python scripts/ticktime.py --code AAPL
 
 # Test search
-python scripts/websearch_pro.py "Apple stock news" 2>&1
+python scripts/websearch_pro.py "Apple stock news"
 
 # Test market indices
-python scripts/ticktime.py --market 2>&1
+python scripts/ticktime.py --market
 ```
 
-### 5.2 Integration Tests / 集成测试
-
-Test the full pipeline:
+### 5.2 Test the full pipeline
 
 ```bash
-# Test news mode
-python main.py smart --input "latest market news" 2>&1
+# Quick report
+python main.py smart --input "AAPL daily report"
 
-# Test quick report mode
-python main.py smart --input "Apple daily report" 2>&1
+# Deep research
+python main.py smart --input "Tesla in-depth research"
 
-# Test deep research mode
-python main.py smart --input "Tesla in-depth research" 2>&1
+# Generate report
+python main.py generate --task-id <task_id>
 ```
 
-### 5.3 Validation Checklist / 验证清单
+### 5.3 Run the test suite
 
-| Check | Command | Expected Result |
-|:---|:---|:---|
-| ✅ Quotes work | `python main.py stock --code 00700 --name 腾讯控股` | `2_stock_quote_realtime.json` created with data |
-| ✅ Search works | Check 05_search_*.json | Results in your language/market |
-| ✅ Report generates | `python main.py generate --task-id ...` | PDF created successfully |
-| ✅ Text is translated | Open PDF | All content in target language |
-| ✅ Currency correct | Check PDF tables | Correct currency symbol |
-| ✅ Colors correct | Check PDF | Red=up / Green=down (or your convention) |
+```bash
+python -m test.runner --dry-run       # Dry run all categories
+python -m test.runner --category style # Test style system
+python -m test.runner --execute       # Execute all tests
+```
+
+### 5.4 Validation Checklist
+
+| Check | How |
+|-------|-----|
+| ✅ Quotes work | Check `2_stock_quote_realtime.json` has data |
+| ✅ Search works | Check `4_search_batch_summary.json` has results |
+| ✅ Report generates | `python main.py generate --task-id ...` creates PDF |
+| ✅ Text is translated | Open PDF — all content in target language |
+| ✅ Currency correct | Check PDF tables for correct currency symbol |
+| ✅ Colors correct | Check PDF for Red=up / Green=down convention |
+| ✅ CSS renders correctly | Check HTML preview for proper glass/gradient effects |
 
 ---
 
-<a id="appendix-file-mapping--附录文件映射表"></a>
-## Appendix: File Mapping / 附录：文件映射表
+## Appendix: File Mapping
 
-### Data Scripts → Data Type / 数据脚本 → 数据类型
+### Scripts → Data Type
 
 | Script | Data Type | Localize? | Effort |
-|:---|:---|:---|:---|
+|--------|-----------|-----------|--------|
 | `ticktime.py` | Real-time quotes, market indices | Yes | Medium |
 | `stock_data_collector.py` | K-line, technical indicators | Yes | Medium |
 | `stock_master.py` | Stock profiles | Yes | Medium |
@@ -500,11 +425,12 @@ python main.py smart --input "Tesla in-depth research" 2>&1
 | `parse_image.py` | Portfolio OCR | No | None |
 | `generate_report.py` | HTML/PDF rendering | Partial | Low |
 | `task_runner.py` | Orchestration | No | None |
+| `emu_manager.py` | Simulated portfolio | No | None |
 
-### Prompt Templates / 提示词模板
+### Prompt Templates (29 total — 7 quick + 22 deep)
 
-| File | Type | Words |
-|:---|:---|:---|
+| File | Type | Est. Words |
+|------|------|------------|
 | `快报-今日行情.json` | Quick — Market | ~500 |
 | `快报-个股分析.json` | Quick — Stock | ~500 |
 | `快报-ETF选择.json` | Quick — ETF | ~400 |
@@ -512,6 +438,7 @@ python main.py smart --input "Tesla in-depth research" 2>&1
 | `快报-短线机会.json` | Quick — Short-term | ~400 |
 | `快报-科技风向.json` | Quick — Tech | ~400 |
 | `快报-技术发展.json` | Quick — Frontier Tech | ~400 |
+| `研报-个股分析.json` | Deep — Stock | ~5000 |
 | `研报-企业发展.json` | Deep — Company | ~5000 |
 | `研报-大盘行情.json` | Deep — Market | ~4000 |
 | `研报-行业发展.json` | Deep — Industry | ~4000 |
@@ -534,13 +461,25 @@ python main.py smart --input "Tesla in-depth research" 2>&1
 | `研报-社会发展.json` | Deep — Society | ~3000 |
 | `研报-社会金融.json` | Deep — Finance | ~3000 |
 
-**Total prompt text to translate: ~75,000 Chinese characters / ~50,000 English words**
+---
+
+### Style System (no localization needed)
+
+The CSS files in `styles/` are localization-neutral:
+- `palettes.css` — Only color hex values, no text
+- `base.css` — Only CSS property values, no text
+- `style_manager.py` — No user-facing text
+
+To change colors, edit `palettes.css` directly:
+
+```css
+[data-palette="blue"] {
+  --primary: #007AFF;
+  --primary-bg: #E8F1FF;
+  /* ... */
+}
+```
 
 ---
 
-<div align="center">
-
-_Questions? Open an issue or discussion on GitHub._<br>
-_有问题？请在 GitHub 上提交 Issue 或开启 Discussion。_
-
-</div>
+_Questions? Open an issue or discussion on GitHub._

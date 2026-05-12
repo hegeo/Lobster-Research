@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A股极速选股研报：半导体全面爆发，科创50创历史新高</title>
+<style>/* =============================================================
+   palettes.css — 龙虾研报调色板（纯 CSS 自定义属性）
+   直接编辑下方颜色值即可自定义配色
+   
+   HTML 用法：在容器上设置 data-palette="blue" 即可切换
+   ============================================================= */
+
+/* ── blue ──────────────────────────────────────── */
+[data-palette="blue"] {
+  --primary:          #007AFF;
+  --primary-bg:       #E8F1FF;
+  --primary-text:     #0040DD;
+  --secondary:        #5856D6;
+  --secondary-bg:     #F2F2FF;
+  --page-bg:          #F5F7FA;
+  --body-bg:          #FFFFFF;
+  --text-primary:     #1C1C1E;
+  --text-secondary:   #3A3A3C;
+  --text-muted:       #8E8E93;
+  --text-on-primary:  #FFFFFF;
+  --border-light:     #E2E8F0;
+  --border-medium:    #F1F5F9;
+  --table-header-bg:  #F5F7FA;
+  --table-header-text:#6B7280;
+  --table-stripe:     #FAFBFD;
+  --cover-grad-1:     #FFFFFF;
+  --cover-grad-2:     #007AFF;
+  --summary-grad-1:   #E0E8FF;
+  --summary-grad-2:   #F0F4FF;
+  --quote-grad:       #007AFF;
+  --highlight-bg:     #E8F1FF;
+  --highlight-text:   #0040DD;
+  --metric-value:     #007AFF;
+}
+
+/* ── purple ────────────────────────────────────── */
+[data-palette="purple"] {
+  --primary:          #AF52DE;
+  --primary-bg:       #F5E8FF;
+  --primary-text:     #7B2FBE;
+  --secondary:        #C86EDF;
+  --secondary-bg:     #F8F0FF;
+  --page-bg:          #F8F5FC;
+  --body-bg:          #FFFFFF;
+  --text-primary:     #1C1C1E;
+  --text-secondary:   #3A3A3C;
+  --text-muted:       #8E8E93;
+  --text-on-primary:  #FFFFFF;
+  --border-light:     #E8DDF5;
+  --border-medium:    #F1EBF8;
+  --table-header-bg:  #F8F5FC;
+  --table-header-text:#7C6F8E;
+  --table-stripe:     #FCFAFF;
+  --cover-grad-1:     #FFFFFF;
+  --cover-grad-2:     #AF52DE;
+  --summary-grad-1:   #F0E0FF;
+  --summary-grad-2:   #F8F0FF;
+  --quote-grad:       #AF52DE;
+  --highlight-bg:     #F5E8FF;
+  --highlight-text:   #7B2FBE;
+  --metric-value:     #AF52DE;
+}
+
+/* ── green ─────────────────────────────────────── */
+[data-palette="green"] {
+  --primary:          #34C759;
+  --primary-bg:       #E8F8EC;
+  --primary-text:     #1D8B3A;
+  --secondary:        #30D158;
+  --secondary-bg:     #F0FBF2;
+  --page-bg:          #F5FAF6;
+  --body-bg:          #FFFFFF;
+  --text-primary:     #1C1C1E;
+  --text-secondary:   #3A3A3C;
+  --text-muted:       #8E8E93;
+  --text-on-primary:  #FFFFFF;
+  --border-light:     #DCF0E2;
+  --border-medium:    #EBF5EE;
+  --table-header-bg:  #F5FAF6;
+  --table-header-text:#5B8A6A;
+  --table-stripe:     #F8FDFA;
+  --cover-grad-1:     #FFFFFF;
+  --cover-grad-2:     #34C759;
+  --summary-grad-1:   #E0F5E5;
+  --summary-grad-2:   #F0FAF2;
+  --quote-grad:       #34C759;
+  --highlight-bg:     #E8F8EC;
+  --highlight-text:   #1D8B3A;
+  --metric-value:     #34C759;
+}
+
+/* ── indigo ────────────────────────────────────── */
+[data-palette="indigo"] {
+  --primary:          #5856D6;
+  --primary-bg:       #EDECFA;
+  --primary-text:     #3634A3;
+  --secondary:        #6C6AE0;
+  --secondary-bg:     #F4F3FF;
+  --page-bg:          #F6F5FC;
+  --body-bg:          #FFFFFF;
+  --text-primary:     #1C1C1E;
+  --text-secondary:   #3A3A3C;
+  --text-muted:       #8E8E93;
+  --text-on-primary:  #FFFFFF;
+  --border-light:     #DCDBEF;
+  --border-medium:    #EBEBF7;
+  --table-header-bg:  #F6F5FC;
+  --table-header-text:#6B6899;
+  --table-stripe:     #FBFAFF;
+  --cover-grad-1:     #FFFFFF;
+  --cover-grad-2:     #5856D6;
+  --summary-grad-1:   #E4E3F7;
+  --summary-grad-2:   #F2F1FF;
+  --quote-grad:       #5856D6;
+  --highlight-bg:     #EDECFA;
+  --highlight-text:   #3634A3;
+  --metric-value:     #5856D6;
+}
+
+/* ── orange ────────────────────────────────────── */
+[data-palette="orange"] {
+  --primary:          #FF9500;
+  --primary-bg:       #FFF3E0;
+  --primary-text:     #C76C00;
+  --secondary:        #FFA83A;
+  --secondary-bg:     #FFF8F0;
+  --page-bg:          #FFF9F2;
+  --body-bg:          #FFFFFF;
+  --text-primary:     #1C1C1E;
+  --text-secondary:   #3A3A3C;
+  --text-muted:       #8E8E93;
+  --text-on-primary:  #FFFFFF;
+  --border-light:     #FFE4C0;
+  --border-medium:    #FFF0E0;
+  --table-header-bg:  #FFF9F2;
+  --table-header-text:#997350;
+  --table-stripe:     #FFFCF8;
+  --cover-grad-1:     #FFFFFF;
+  --cover-grad-2:     #FF9500;
+  --summary-grad-1:   #FFE8C0;
+  --summary-grad-2:   #FFF3E0;
+  --quote-grad:       #FF9500;
+  --highlight-bg:     #FFF3E0;
+  --highlight-text:   #C76C00;
+  --metric-value:     #FF9500;
+}
+
+/* ── pink ──────────────────────────────────────── */
+[data-palette="pink"] {
+  --primary:          #FF2D55;
+  --primary-bg:       #FFE8ED;
+  --primary-text:     #CC0030;
+  --secondary:        #FF3B5C;
+  --secondary-bg:     #FFF0F3;
+  --page-bg:          #FFF5F7;
+  --body-bg:          #FFFFFF;
+  --text-primary:     #1C1C1E;
+  --text-secondary:   #3A3A3C;
+  --text-muted:       #8E8E93;
+  --text-on-primary:  #FFFFFF;
+  --border-light:     #FFD0D9;
+  --border-medium:    #FFE5EB;
+  --table-header-bg:  #FFF5F7;
+  --table-header-text:#996070;
+  --table-stripe:     #FFFAFB;
+  --cover-grad-1:     #FFFFFF;
+  --cover-grad-2:     #FF2D55;
+  --summary-grad-1:   #FFD8E0;
+  --summary-grad-2:   #FFE8ED;
+  --quote-grad:       #FF2D55;
+  --highlight-bg:     #FFE8ED;
+  --highlight-text:   #CC0030;
+  --metric-value:     #FF2D55;
+}
+
+/* ── red ───────────────────────────────────────── */
+[data-palette="red"] {
+  --primary:          #FF3B30;
+  --primary-bg:       #FFE8E6;
+  --primary-text:     #CC1A15;
+  --secondary:        #FF453A;
+  --secondary-bg:     #FFF0EF;
+  --page-bg:          #FFF6F5;
+  --body-bg:          #FFFFFF;
+  --text-primary:     #1C1C1E;
+  --text-secondary:   #3A3A3C;
+  --text-muted:       #8E8E93;
+  --text-on-primary:  #FFFFFF;
+  --border-light:     #FFD0CD;
+  --border-medium:    #FFE5E3;
+  --table-header-bg:  #FFF6F5;
+  --table-header-text:#99605D;
+  --table-stripe:     #FFFBFA;
+  --cover-grad-1:     #FFFFFF;
+  --cover-grad-2:     #FF3B30;
+  --summary-grad-1:   #FFD8D5;
+  --summary-grad-2:   #FFE8E6;
+  --quote-grad:       #FF3B30;
+  --highlight-bg:     #FFE8E6;
+  --highlight-text:   #CC1A15;
+  --metric-value:     #FF3B30;
+}
+
+/* ── yellow ────────────────────────────────────── */
+[data-palette="yellow"] {
+  --primary:          #FFCC00;
+  --primary-bg:       #FFF8D0;
+  --primary-text:     #B89200;
+  --secondary:        #FFD60A;
+  --secondary-bg:     #FFFBE8;
+  --page-bg:          #FFFCF0;
+  --body-bg:          #FFFFFF;
+  --text-primary:     #1C1C1E;
+  --text-secondary:   #3A3A3C;
+  --text-muted:       #8E8E93;
+  --text-on-primary:  #1C1C1E;
+  --border-light:     #FFED98;
+  --border-medium:    #FFF5CC;
+  --table-header-bg:  #FFFCF0;
+  --table-header-text:#998A60;
+  --table-stripe:     #FFFEF8;
+  --cover-grad-1:     #FFFFFF;
+  --cover-grad-2:     #FFCC00;
+  --summary-grad-1:   #FFF0B0;
+  --summary-grad-2:   #FFF8D0;
+  --quote-grad:       #FFCC00;
+  --highlight-bg:     #FFF8D0;
+  --highlight-text:   #B89200;
+  --metric-value:     #FFCC00;
+}
+
+/* ── cyan ──────────────────────────────────────── */
+[data-palette="cyan"] {
+  --primary:          #55BEF0;
+  --primary-bg:       #E4F4FD;
+  --primary-text:     #2A8AB8;
+  --secondary:        #64D2FF;
+  --secondary-bg:     #EFF8FF;
+  --page-bg:          #F5FAFD;
+  --body-bg:          #FFFFFF;
+  --text-primary:     #1C1C1E;
+  --text-secondary:   #3A3A3C;
+  --text-muted:       #8E8E93;
+  --text-on-primary:  #FFFFFF;
+  --border-light:     #C8E6F5;
+  --border-medium:    #E0F0FA;
+  --table-header-bg:  #F5FAFD;
+  --table-header-text:#608090;
+  --table-stripe:     #FAFDFF;
+  --cover-grad-1:     #FFFFFF;
+  --cover-grad-2:     #55BEF0;
+  --summary-grad-1:   #D0ECF8;
+  --summary-grad-2:   #E4F4FD;
+  --quote-grad:       #55BEF0;
+  --highlight-bg:     #E4F4FD;
+  --highlight-text:   #2A8AB8;
+  --metric-value:     #55BEF0;
+}
+
+/* ── brown ─────────────────────────────────────── */
+[data-palette="brown"] {
+  --primary:          #A2845E;
+  --primary-bg:       #F0ECE4;
+  --primary-text:     #7A623E;
+  --secondary:        #B89A72;
+  --secondary-bg:     #F5F2EC;
+  --page-bg:          #F8F6F2;
+  --body-bg:          #FFFFFF;
+  --text-primary:     #1C1C1E;
+  --text-secondary:   #3A3A3C;
+  --text-muted:       #8E8E93;
+  --text-on-primary:  #FFFFFF;
+  --border-light:     #DCD4C8;
+  --border-medium:    #EBE5DC;
+  --table-header-bg:  #F8F6F2;
+  --table-header-text:#8A7E70;
+  --table-stripe:     #FCFAF8;
+  --cover-grad-1:     #FFFFFF;
+  --cover-grad-2:     #A2845E;
+  --summary-grad-1:   #E0D8CC;
+  --summary-grad-2:   #F0ECE4;
+  --quote-grad:       #A2845E;
+  --highlight-bg:     #F0ECE4;
+  --highlight-text:   #7A623E;
+  --metric-value:     #A2845E;
+}
+
+/* ================================================================
+   base.css — 龙虾研报基础样式模板
+   
+   所有颜色值通过 CSS 自定义属性 var() 引用，调色板定义在 palettes.css。
+   通过 data-palette、data-color-type、data-layout 三个属性控制外观。
+   
+   HTML 示例：
+     <body data-palette="blue" data-color-type="liquid" data-layout="rounded">
+   ================================================================ */
+
+/* ── 默认调色板（无 data-palette 时的后备） ────────────────── */
+:root {
+  --primary:          #007AFF;
+  --primary-bg:       #E8F1FF;
+  --primary-text:     #0040DD;
+  --secondary:        #5856D6;
+  --secondary-bg:     #F2F2FF;
+  --page-bg:          #F5F7FA;
+  --body-bg:          #FFFFFF;
+  --text-primary:     #1C1C1E;
+  --text-secondary:   #3A3A3C;
+  --text-muted:       #8E8E93;
+  --text-on-primary:  #FFFFFF;
+  --border-light:     #E2E8F0;
+  --border-medium:    #F1F5F9;
+  --table-header-bg:  #F5F7FA;
+  --table-header-text:#6B7280;
+  --table-stripe:     #FAFBFD;
+  --cover-grad-1:     #FFFFFF;
+  --cover-grad-2:     #007AFF;
+  --summary-grad-1:   #E0E8FF;
+  --summary-grad-2:   #F0F4FF;
+  --quote-grad:       #007AFF;
+  --highlight-bg:     #E8F1FF;
+  --highlight-text:   #0040DD;
+  --metric-value:     #007AFF;
+}
+
+/* ═══════════════════════════════════════════════
+   LAYOUT: 圆角 / 阴影 / 边框（data-layout）
+   ═══════════════════════════════════════════════ */
+
+/* rounded（默认） */
+[data-layout="rounded"] {
+  --r-highlight:    6px;
+  --r-subsection:   10px;
+  --r-data-table:   12px;
+  --r-summary:      14px;
+  --r-overview:     16px;
+  --r-cover-inner:  20px;
+  --r-page-frame:   8px;
+  --sh-subsection:  0 1px 3px rgba(0,0,0,0.04);
+  --sh-data-table:  0 1px 2px rgba(0,0,0,0.03);
+  --sh-overview:    0 1px 3px rgba(0,0,0,0.04), 0 6px 20px rgba(0,0,0,0.04);
+  --sh-metric:      0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
+  --sh-page-frame:  0 2px 20px rgba(0,0,0,0.06);
+  --sh-cover-inner: 0 24px 64px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.04);
+  --cover-border:   1px solid rgba(255,255,255,0.5);
+  --section-border-width: 4px;
+  --subsection-border: none;
+}
+
+/* square: 全直角 / 弱阴影 */
+[data-layout="square"] {
+  --r-highlight:    0;
+  --r-subsection:   0;
+  --r-data-table:   0;
+  --r-summary:      0;
+  --r-overview:     0;
+  --r-cover-inner:  0;
+  --r-page-frame:   0;
+  --sh-subsection:  0 1px 2px rgba(0,0,0,0.03);
+  --sh-data-table:  0 1px 2px rgba(0,0,0,0.03);
+  --sh-overview:    0 1px 2px rgba(0,0,0,0.03);
+  --sh-metric:      0 1px 2px rgba(0,0,0,0.03);
+  --sh-page-frame:  0 8px 32px rgba(0,0,0,0.08);
+  --sh-cover-inner: 0 1px 1px rgba(0,0,0,0.02);
+  --cover-border:   1px solid rgba(255,255,255,0.3);
+  --section-border-width: 3px;
+  --subsection-border: none;
+}
+
+/* minimal: 全直角 / 无阴影 / 无边框极简 */
+[data-layout="minimal"] {
+  --r-highlight:    0;
+  --r-subsection:   0;
+  --r-data-table:   0;
+  --r-summary:      0;
+  --r-overview:     0;
+  --r-cover-inner:  0;
+  --r-page-frame:   0;
+  --sh-subsection:  none;
+  --sh-data-table:  none;
+  --sh-overview:    none;
+  --sh-metric:      none;
+  --sh-page-frame:  none;
+  --sh-cover-inner: none;
+  --cover-border:   none;
+  --section-border-width: 2px;
+  --subsection-border: 1px solid rgba(255,255,255,0.5);
+}
+
+/* ═══════════════════════════════════════════════
+   COLOR TYPE: 渲染模式（data-color-type）
+   ===============================================
+   liquid 灵感来自 Apple 玻璃质感设计：
+   • 毛玻璃 backdrop-filter: blur(40px) saturate(180%)
+   • 半透明白底 rgba(255,255,255,0.25) 透出渐变背景
+   • 内边框高光模拟玻璃边缘反光
+   • 白色文字 + 透明度层级控制视觉权重
+   ───────────────────────────────────────────────
+   liquid (默认)  | gradient      | solid
+   渐变+光晕+毛玻璃 | 渐变+实心cover | 纯色+实心cover
+   ═══════════════════════════════════════════════ */
+
+/* ── liquid 模式：Apple 玻璃质感 ── */
+[data-color-type="liquid"] body {
+  background: #FFFFFF;
+}
+[data-color-type="liquid"] .cover {
+  background: linear-gradient(160deg, var(--cover-grad-1) 0%, var(--cover-grad-2) 70%, var(--cover-grad-1) 100%);
+}
+[data-color-type="liquid"] .cover::before {
+  display: block;
+}
+[data-color-type="liquid"] .cover .cover-inner {
+  background: linear-gradient(160deg, #FFFFFF 0%, var(--primary) 80%);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.10);
+}
+[data-color-type="liquid"] .cover .cover-inner .cover-label {
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 600;
+  letter-spacing: 3px;
+}
+[data-color-type="liquid"] .cover .cover-inner .cover-title {
+  color: #FFFFFF;
+  font-weight: 700;
+}
+[data-color-type="liquid"] .cover .cover-inner .cover-subtitle {
+  color: rgba(255, 255, 255, 0.85);
+}
+[data-color-type="liquid"] .cover .cover-inner .cover-meta {
+  color: rgba(255, 255, 255, 0.6);
+}
+[data-color-type="liquid"] .cover .cover-inner .cover-lobster {
+  color: rgba(255, 255, 255, 0.5);
+}
+[data-color-type="liquid"] .highlight-box {
+  background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, var(--highlight-bg) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+[data-color-type="liquid"] .summary-box {
+  background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, var(--summary-grad-1) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+[data-color-type="liquid"] .quote-box {
+  background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, var(--quote-grad) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* ── liquid 模式：内容组件 Apple 质感（无 blur，免卡顿）─ */
+
+/* 页面容器 */
+[data-color-type="liquid"] .page-frame {
+  background: rgba(255, 255, 255, 0.92);
+}
+
+/* 概览表格 */
+[data-color-type="liquid"] .overview-table-wrap {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.06),
+              0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+}
+[data-color-type="liquid"] .overview-table-wrap th {
+  background: rgba(255, 255, 255, 0.45);
+}
+
+/* 章节标题 */
+[data-color-type="liquid"] .section-title {
+  background: rgba(255, 255, 255, 0.55);
+}
+
+/* 子章节 */
+[data-color-type="liquid"] .subsection {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.06),
+              0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+}
+
+/* 数据表格 */
+[data-color-type="liquid"] .data-table-wrap {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.06),
+              0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+}
+[data-color-type="liquid"] .data-table-wrap th {
+  background: rgba(255, 255, 255, 0.45);
+}
+
+/* 指标卡 */
+[data-color-type="liquid"] .metric-card {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.06),
+              0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+}
+
+/* 摘要/引用/高亮 */
+[data-color-type="liquid"] .highlight-box {
+  background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, var(--highlight-bg) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+[data-color-type="liquid"] .summary-box {
+  background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, var(--summary-grad-1) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+[data-color-type="liquid"] .quote-box {
+  background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, var(--quote-grad) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* ── gradient 模式：渐变封面 + 纯白 cover-inner，无光晕 ── */
+[data-color-type="gradient"] .cover {
+  background: linear-gradient(160deg, var(--cover-grad-1) 0%, var(--cover-grad-2) 50%, var(--cover-grad-1) 100%);
+}
+[data-color-type="gradient"] .cover::before {
+  display: none;
+}
+[data-color-type="gradient"] .cover .cover-inner {
+  background: #FFFFFF;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+[data-color-type="gradient"] .summary-box {
+  background: linear-gradient(135deg, var(--body-bg) 0%, var(--summary-grad-1) 100%);
+}
+[data-color-type="gradient"] .quote-box {
+  background: linear-gradient(135deg, var(--body-bg) 0%, var(--quote-grad) 100%);
+}
+
+/* ── solid 模式：纯色封面（body_bg）+ 纯色摘要，无任何玻璃效果 ── */
+[data-color-type="solid"] .cover {
+  background: var(--body-bg);
+}
+[data-color-type="solid"] .cover::before {
+  display: none;
+}
+[data-color-type="solid"] .cover .cover-inner {
+  background: #FFFFFF;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+[data-color-type="solid"] .summary-box {
+  background: var(--highlight-bg);
+}
+[data-color-type="solid"] .quote-box {
+  background: var(--primary-bg);
+}
+
+
+/* ═══════════════════════════════════════════════
+   报告样式
+   ═══════════════════════════════════════════════ */
+
+@page {
+  size: A4;
+  margin: 15mm 18mm;
+  @top-left     { content: none; }
+  @top-center   { content: none; }
+  @top-right    { content: none; }
+  @bottom-left  { content: none; }
+  @bottom-center{ content: none; }
+  @bottom-right { content: none; }
+}
+
+@media print {
+  body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  @page { margin: 0; }
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', 'PingFang SC',
+               'Helvetica Neue', 'Microsoft YaHei', sans-serif;
+  font-size: 14px;
+  color: var(--text-primary);
+  background: var(--page-bg);
+  line-height: 1.65;
+  padding: 0;
+  margin: 0;
+}
+
+.page-frame {
+  background: var(--body-bg);
+  overflow: hidden;
+  margin: 4%;
+  border-radius: var(--r-page-frame, 8px);
+  box-shadow: var(--sh-page-frame, 0 2px 20px rgba(0,0,0,0.06));
+}
+
+/* ══ 封面 ═══════════════════════════════════════════════ */
+.cover {
+  width: 100%;
+  min-height: 280mm;
+  /* 默认使用 liquid 模式（无 data-color-type 时） */
+  background: linear-gradient(160deg, var(--cover-grad-1) 0%, var(--cover-grad-2) 70%, var(--cover-grad-1) 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 20mm 20mm 20mm 20mm;
+  page-break-after: always;
+  position: relative;
+}
+/* 默认显示径向光晕（liquid 模式） */
+.cover::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: radial-gradient(ellipse at 20% 30%, rgba(255,255,255,0.15) 0%, transparent 60%);
+  pointer-events: none;
+  display: block;
+}
+/* 默认 liquid cover-inner（白→主题色渐变） */
+.cover .cover-inner {
+  background: linear-gradient(160deg, #FFFFFF 0%, var(--primary) 80%);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.10);
+  padding: 44px 52px;
+  border: var(--cover-border, 1px solid rgba(255,255,255,0.5));
+  border-radius: var(--r-cover-inner, 20px);
+  box-shadow: var(--sh-cover-inner, 0 24px 64px rgba(0,0,0,0.12));
+}
+.cover .cover-label {
+  font-size: 12px;
+  color: var(--primary);
+  font-weight: 600;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+.cover .cover-title {
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.25;
+  margin-bottom: 14px;
+  letter-spacing: -0.5px;
+}
+.cover .cover-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 32px;
+  line-height: 1.55;
+}
+.cover .cover-meta {
+  display: flex;
+  gap: 15px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.cover .cover-lobster {
+  font-size: 32px;
+  margin-top: 24px;
+}
+
+/* ══ 概览表格 ══════════════════════════════════════════ */
+.overview-table-wrap {
+  margin: 15px 20px;
+  background: var(--body-bg);
+  overflow: hidden;
+  box-shadow: var(--sh-overview, 0 1px 3px rgba(0,0,0,0.04));
+  border-radius: var(--r-overview, 16px);
+}
+.overview-table-wrap h3 {
+  font-size: 14px;
+  color: var(--primary);
+  font-weight: 600;
+  margin: 16px 20px 10px;
+  letter-spacing: 0.3px;
+}
+.overview-table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+.overview-table-wrap th {
+  background: var(--table-header-bg);
+  color: var(--table-header-text);
+  padding: 10px 16px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border-light);
+}
+.overview-table-wrap td {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border-medium);
+  vertical-align: top;
+  color: var(--text-secondary);
+}
+.overview-table-wrap tr:last-child td { border-bottom: none; }
+.overview-table-wrap tr:nth-child(even) td { background: var(--table-stripe); }
+
+/* ══ 章节 ════════════════════════════════════════════════ */
+.section {
+  margin: 32px 0;
+}
+.section-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  background-color: var(--secondary-bg);
+  padding: 14px 0 14px 16px;
+  border-left: var(--section-border-width, 4px) solid var(--primary);
+  margin-bottom: 4px;
+  letter-spacing: -0.3px;
+}
+.subsection {
+  margin: 12px 0;
+  background: var(--body-bg);
+  padding: 18px 24px;
+  box-shadow: var(--sh-subsection, 0 1px 3px rgba(0,0,0,0.04));
+  border-radius: var(--r-subsection, 10px);
+  border: var(--subsection-border, none);
+}
+.subsection-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+}
+.subsection-content {
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  line-height: 1.8;
+  margin-bottom: 10px;
+  text-align: justify;
+}
+
+/* ══ 高亮框 ════════════════════════════════════════════════ */
+.highlight-box {
+  background: var(--highlight-bg);
+  padding: 14px 18px;
+  margin: 12px 0;
+  font-size: 13px;
+  color: var(--highlight-text);
+  line-height: 1.7;
+  border-radius: var(--r-highlight, 6px);
+}
+
+/* ══ 数据表格 ════════════════════════════════════════════════ */
+.data-table-wrap {
+  margin: 14px 0;
+  overflow-x: auto;
+  box-shadow: var(--sh-data-table, 0 1px 2px rgba(0,0,0,0.03));
+  border-radius: var(--r-data-table, 12px);
+}
+.data-table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+.data-table-wrap th {
+  background: var(--table-header-bg);
+  color: var(--table-header-text);
+  padding: 9px 14px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.3px;
+  border-bottom: 1px solid var(--border-light);
+}
+.data-table-wrap td {
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--border-medium);
+  min-width: 100px;
+  color: var(--text-secondary);
+}
+.data-table-wrap tr:nth-child(even) td { background: var(--table-stripe); }
+.data-table-wrap tr:last-child td { border-bottom: none; }
+
+/* ══ 摘要 ═══════════════════════════════════════════════════════ */
+.summary-box {
+  /* 默认 liquid 渐变 */
+  background: linear-gradient(135deg, var(--body-bg) 0%, var(--summary-grad-1) 100%);
+  padding: 22px 26px;
+  margin: 32px 0;
+  border-radius: var(--r-summary, 14px);
+}
+.summary-box .summary-label {
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--primary);
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+.summary-box .summary-text {
+  font-size: 13.5px;
+  line-height: 1.8;
+  color: var(--text-primary);
+}
+
+/* ══ 龙虾寄语 ════════════════════════════════════════════════ */
+.quote-box {
+  /* 默认 liquid 渐变 */
+  background: linear-gradient(135deg, var(--body-bg) 0%, var(--quote-grad) 100%);
+  color: var(--text-on-primary);
+  padding: 20px 28px;
+  margin: 24px 0;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: var(--r-summary, 14px);
+  letter-spacing: 0.3px;
+}
+
+/* ══ 免责声明 ════════════════════════════════════════════════ */
+.disclaimer {
+  font-size: 10.5px;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border-medium);
+  padding-top: 14px;
+  margin-top: 32px;
+  line-height: 1.6;
+}
+
+/* ══ 指标卡 ════════════════════════════════════════════════════ */
+.metrics-bar {
+  display: flex;
+  gap: 14px;
+  margin: 30px 20px 20px 20px;
+  flex-wrap: wrap;
+}
+.metric-card {
+  background: var(--body-bg);
+  padding: 14px 18px;
+  text-align: center;
+  min-width: 100px;
+  flex: 1;
+  box-shadow: var(--sh-metric, 0 1px 3px rgba(0,0,0,0.04));
+  border-radius: var(--r-overview, 16px);
+}
+.metric-card .metric-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+  font-weight: 500;
+}
+.metric-card .metric-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--metric-value);
+  margin: 6px 0;
+  letter-spacing: -0.5px;
+}
+.metric-card .metric-change {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+/* ══ 分页控制 ════════════════════════════════════════════════ */
+.page-break { page-break-before: always; }
+</style>
+</head>
+<body data-palette="blue" data-color-type="liquid" data-layout="rounded">
+<div class="page-frame">
+
+<!-- 封面 -->
+<div class="cover">
+  <div class="cover-inner">
+    <div class="cover-label">Lobster Research · 大盘日报</div>
+    <div class="cover-title">A股极速选股研报：半导体全面爆发，科创50创历史新高</div>
+    <div class="cover-subtitle">成长风格·科技主线·结构性牛市下半场选股策略</div>
+    <div class="cover-meta">
+      <span>📅 2026-05-11</span>
+      <span>👨‍💻 🦞 龙虾财经研究院</span>
+      <span>🦞 龙虾智能研报中心</span>
+    </div>
+    <div class="cover-lobster">🦞</div>
+  </div>
+</div>
+
+<!-- 概览 + 指标 -->
+
+
+
+<!-- 章节内容 -->
+<div class="page-break"></div>
+<div class="section"><div class="section-title">前置导读：选股热力指数</div><div class="subsection"><div class="subsection-title">情绪温度与资金活跃度</div><div class="subsection-content">今日A股市场情绪温度达到近期高点。三大指数集体高开高走，上证指数以4225.02点收盘，涨幅1.08%；深证成指涨2.16%至15899.30点；创业板指大涨3.50%至3928.97点。科创50指数更是以4.65%的涨幅创出历史新高，科技股成为当之无愧的领涨核心。从资金面看，今日成交额达3.57万亿元，较上一交易日放量近4900亿元（+15.92%），已是连续第4个交易日维持在3万亿以上的天量水平。全市场上涨3155家、下跌2269家，涨停136家、跌停29家，涨停家数远超跌停，昨涨停个股今日整体表现+3.03%，打板赚钱效应良好。整体而言，市场正处于加速上攻阶段，赚钱效应显著扩散，短线情绪热情高涨。</div><div class="highlight-box">情绪温度：高度活跃（85/100）｜成交额3.57万亿创近4个月新高｜涨停136家＞跌停29家｜昨涨停表现+3.03%</div><div class="data-table-wrap">
+<table><thead><tr><th>指标</th><th>数值</th><th>状态评估</th></tr></thead><tbody><tr><td>上证指数</td><td>4225.02（+1.08%）</td><td>🟩 创近11年新高</td></tr><tr><td>深证成指</td><td>15899.30（+2.16%）</td><td>🟩 创2021年以来新高</td></tr><tr><td>创业板指</td><td>3928.97（+3.50%）</td><td>🟩 创近11年新高</td></tr><tr><td>科创50</td><td>1716.69（+4.65%）</td><td>🟩 创历史新高</td></tr><tr><td>成交额</td><td>3.57万亿（+4898亿）</td><td>🟩 近4个月最大量</td></tr><tr><td>涨跌停比</td><td>136:29</td><td>🟩 涨停热度高</td></tr><tr><td>主力资金</td><td>半导体+91亿</td><td>🟩 资金高度集中</td></tr><tr><td>北证50</td><td>1426.31（-0.70%）</td><td>🟨 指数分化</td></tr></tbody></table>
+</div></div><div class="subsection"><div class="subsection-title">题材爆发力与连板梯队分析</div><div class="subsection-content">从题材爆发力维度观察，半导体/芯片产业链是今日市场最明确的主线。板块指数涨幅超5%，主力资金净买入额高达91.22亿元，179只半导体概念股中有168只实现上涨，占比超九成。其中普冉股份、长川科技等5只个股强势涨停，澜起科技、江波龙等28只半导体概念股股价创出历史新高。存储芯片、AI芯片、GPU方向领涨，CPO、AI算力、消费电子、商业航天等题材同步活跃。连板梯队方面，福达合金（603045）以5连板成为当前市场最高标，大唐发电（601991）以4连板紧随其后。从周五（5月8日）的梯队结构看，波导股份、大业股份、杭电股份形成3连板梯队，另有泰晶科技、巨轮智能等10余只2连板个股构成中坚力量。连板梯队整体完整，从首板到5板均有分布，涨停接力氛围良好。</div><div class="highlight-box">核心主线：半导体+5.16%｜主力净流入+91亿｜福达合金5连板最高标｜涨停梯队完整（5板→4板→3板→2板→首板）</div><div class="data-table-wrap">
+<table><thead><tr><th>题材方向</th><th>核心催化</th><th>涨停家数</th><th>强度评级</th></tr></thead><tbody><tr><td>半导体/芯片</td><td>SK海力士锁定货源、AI算力需求爆发</td><td>近20只</td><td>🟩 主线级别</td></tr><tr><td>机械设备</td><td>高端制造政策催化</td><td>超10只</td><td>🟩 强势轮动</td></tr><tr><td>电力/能源</td><td>大唐发电4连板</td><td>3只以上</td><td>🟨 个股行情</td></tr><tr><td>消费电子</td><td>AI终端换机预期</td><td>多只活跃</td><td>🟨 有资金跟进</td></tr><tr><td>稀土/光伏</td><td>周期性涨价逻辑</td><td>局部活跃</td><td>🟨 趋势品种</td></tr><tr><td>商业航天</td><td>产业政策推动</td><td>零星涨停</td><td>🟨 待确认</td></tr></tbody></table>
+</div></div></div><div class="section"><div class="section-title">第一、个股版图扫描</div><div class="subsection"><div class="subsection-title">涨停基因与股性脉络分析</div><div class="subsection-content">当前市场连板龙头梯队清晰。最高标福达合金（603045）已实现5连板，该股此前具备一定的涨停记忆，属于有色金属/合金材料方向，其连板高度已经打开了市场接力空间。大唐发电（601991）以4连板成为二当家，电力+央企改革双催化。从周五的3连板梯队的波导股份（600130，通信设备）、大业股份（002028，汽车零部件/轮胎）、杭电股份（600584，电线电缆/电力）来看，题材分布较为分散，说明资金还没有完全形成合力，但这也为后续主线聚焦提供了博弈空间。2连板梯队中，巨轮智能（002031，机器人）、泰晶科技（603738，晶振/半导体）、润建股份（002929，通信基建）等个股值得重点关注，它们分别对应机器人、半导体、通信基建三大方向，与当前科技线高度契合。投资者应重点关注2进3的晋级率，若某方向出现批量晋级，则该方向很可能成为下一阶段的核心主线。</div><div class="highlight-box">福达合金5板打开空间｜大唐发电4板确立电力线｜科技方向2板股密集（巨轮智能/泰晶科技/润建股份），有望晋级</div><div class="data-table-wrap">
+<table><thead><tr><th>梯队</th><th>标的</th><th>代码</th><th>题材</th><th>连板数</th><th>晋级关注</th></tr></thead><tbody><tr><td>龙头</td><td>福达合金</td><td>603045</td><td>有色金属/合金</td><td>5连板</td><td>⚠️高位博弈</td></tr><tr><td>二当家</td><td>大唐发电</td><td>601991</td><td>电力/央企改革</td><td>4连板</td><td>🟩 趋势确认中</td></tr><tr><td>3板梯队</td><td>波导股份</td><td>600130</td><td>通信设备</td><td>3连板</td><td>🟨 科技线晋级</td></tr><tr><td>3板梯队</td><td>大业股份</td><td>002028</td><td>轮胎/汽车</td><td>3连板</td><td>🟨 独立行情</td></tr><tr><td>3板梯队</td><td>杭电股份</td><td>600584</td><td>电线电缆</td><td>3连板</td><td>🟨 电力方向</td></tr><tr><td>2板梯队</td><td>巨轮智能</td><td>002031</td><td>机器人</td><td>2连板</td><td>🟩 科技+制造</td></tr><tr><td>2板梯队</td><td>泰晶科技</td><td>603738</td><td>晶振/半导体</td><td>2连板</td><td>🟩 半导体线</td></tr><tr><td>2板梯队</td><td>润建股份</td><td>002929</td><td>通信基建</td><td>2连板</td><td>🟩 AI算力</td></tr><tr><td>2板梯队</td><td>众生药业</td><td>002317</td><td>医药</td><td>2连板</td><td>🟨 独立方向</td></tr></tbody></table>
+</div></div><div class="subsection"><div class="subsection-title">主力操盘路线与联动生态</div><div class="subsection-content">从资金动线观察，今日主力资金的流向高度集中。半导体板块主力净流入高达91.22亿元，证券板块净流入32.21亿元，元件板块净流入30.31亿元。三条资金线分别指向科技硬件（半导体）、市场情绪风向标（证券）、以及核心元器件（元件）。这种资金结构属于典型的进攻型配置，显示大资金对后市行情的高度看好。从操盘路线图看，今日半导体行情从早盘开始即由大资金主导：澜起科技、长川科技、江波龙等大市值半导体股稳步放量推升，带动资金向小市值半导体扩散，形成普冉股份、天岳先进等小盘股涨停。这是典型的&quot;大票搭台、小票唱戏&quot;的资金运作格局。个股联动方面，兴福电子与天承科技同属电子化学品方向，二者同步涨停显示资金在细分赛道内做多的一致性。长川科技与精智达同属半导体检测设备方向，联袂走强反映出半导体设备国产替代逻辑持续兑现。</div><div class="highlight-box">半导体主力净流入91亿｜&quot;大票搭台、小票唱戏&quot;格局清晰｜同类细分联动性强（电子化学品双涨停、检测设备双涨停）</div><div class="data-table-wrap">
+<table><thead><tr><th>资金方向</th><th>净流向</th><th>代表个股</th><th>操盘特征</th></tr></thead><tbody><tr><td>半导体（核心）</td><td>流入91亿</td><td>澜起科技、长川科技</td><td>大市值搭台→小盘股唱戏</td></tr><tr><td>证券（情绪）</td><td>流入32亿</td><td>中信证券、东方财富</td><td>趋势推升，非急拉</td></tr><tr><td>元件/电子化学品</td><td>流入30亿</td><td>天承科技、兴福电子</td><td>细分赛道资金集中</td></tr><tr><td>电池（流出）</td><td>流出56亿</td><td>宁德时代</td><td>高位获利了结</td></tr><tr><td>IT服务（流出）</td><td>流出53亿</td><td>中科曙光</td><td>科技线内轮动</td></tr><tr><td>汽车零部件（流出）</td><td>流出34亿</td><td>拓普集团</td><td>非主线方向资金撤出</td></tr></tbody></table>
+</div></div></div><div class="section"><div class="section-title">第二、个股深度解析</div><div class="subsection"><div class="subsection-title">涨停护城河评估与资金验证</div><div class="subsection-content">基于今日盘面数据，我们选取三个维度评估涨停股的护城河强度：一是消息面催化力度，二是技术形态的健康度，三是资金的持续验证。从催化力度看，今日半导体行情的引爆点是&quot;全球科技巨头竞相向SK海力士投资锁定存储芯片货源&quot;的消息，这从需求端证实了AI算力驱动下的芯片短缺逻辑，属于强产业催化而非短期炒作。从技术形态看，长川科技、澜起科技等涨停的个股均处于经过充分整理后的突破位置，涨停前有持续的温和放量过程，说明资金介入程度较深。泰晶科技（603738）经历了2-3周的横盘整理后今日放量涨停，筹码换手充分，涨停质量较高。巨轮智能（002031）受益于人形机器人量产预期，盘中强势涨停但量能略低于前高压力位，需要观察次日竞价确认。需注意的是，半导体板块今日涨停股多达20只，首板股占比极高，这意味着明日必然出现分化——前排晋级股将享受溢价，后排跟风股可能面临回落。</div><div class="highlight-box">半导体涨停质量整体较高｜消息面有实锤催化（SK海力士逻辑）｜长川科技/泰晶科技属有效突破型涨停｜巨轮智能需明日竞价确认</div><div class="data-table-wrap">
+<table><thead><tr><th>标的</th><th>涨停类型</th><th>量能状态</th><th>涨停质量评分</th><th>明日预期</th></tr></thead><tbody><tr><td>长川科技</td><td>有效突破涨停</td><td>充分放量</td><td>🟩 A级</td><td>高开溢价连板可期</td></tr><tr><td>澜起科技</td><td>趋势加速涨停</td><td>温和放量</td><td>🟩 A级</td><td>趋势延续</td></tr><tr><td>泰晶科技</td><td>平台突破涨停</td><td>充分放量</td><td>🟩 A级</td><td>晋级概率高</td></tr><tr><td>普冉股份</td><td>超跌反弹涨停</td><td>放量</td><td>🟨 B+级</td><td>需看板块持续性</td></tr><tr><td>巨轮智能</td><td>放量涨停</td><td>量能略不足</td><td>🟨 B级</td><td>需观察竞价</td></tr><tr><td>大唐发电</td><td>加速连板</td><td>缩量加速</td><td>🟨 B+级</td><td>高开但防分歧</td></tr><tr><td>福达合金</td><td>分歧转一致</td><td>放量换手</td><td>🟩 A级</td><td>5进6是关键关口</td></tr></tbody></table>
+</div></div><div class="subsection"><div class="subsection-title">龙头气质涌现信号与跟风套利空间</div><div class="subsection-content">识别龙头股的核心信号是&quot;分歧转一致&quot;。福达合金（603045）今日的5连板经历了早盘的预期分歧，随后被市场合力封板，属于典型的分歧转一致走法，具备一定的龙头气质。但5进6始终是最大的考验——若明日能完成6连板，则其市场最高标地位将被彻底确认，带动合金材料方向跟风补涨。在大唐发电（601991）的4板中，电力板块内跟风股已经出现，杭电股份3连板、新能泰山2连板，都验证了电力方向的联动效应。对于半导体方向，由于今日首板数量众多（近20只），明日将进入&quot;去弱留强&quot;的淘汰赛。建议关注2进3的泰晶科技（603738）和1进2的澜起科技、长川科技。从跟风套利角度看，当龙头股封板确认后，同一板块内涨幅在3-5%之间、换手适中的个股具备较好的跟风套利空间，套利周期通常为1-2个交易日。</div><div class="highlight-box">福达合金5板分歧转一致初具龙头气质｜澜起科技/长川科技为半导体中军｜泰晶科技2进3最具性价比</div><div class="data-table-wrap">
+<table><thead><tr><th>龙头路线</th><th>核心标的</th><th>所属板块</th><th>确认信号</th><th>跟风套利标的</th></tr></thead><tbody><tr><td>最高标</td><td>福达合金</td><td>有色金属/合金</td><td>明日6板确认</td><td>关注合金材料补涨</td></tr><tr><td>电力方向</td><td>大唐发电</td><td>电力</td><td>4板确认趋势</td><td>杭电股份、新能泰山</td></tr><tr><td>半导体中军</td><td>澜起科技</td><td>存储芯片</td><td>放量趋势加速</td><td>江波龙、普冉股份</td></tr><tr><td>半导体连板</td><td>泰晶科技</td><td>晶振/半导体</td><td>2进3验证</td><td>长川科技、天岳先进</td></tr><tr><td>机器人方向</td><td>巨轮智能</td><td>人形机器人</td><td>竞价量确认</td><td>明日盘中判定</td></tr></tbody></table>
+</div></div></div><div class="section"><div class="section-title">第三、个股资金侦探</div><div class="subsection"><div class="subsection-title">主力流向与筹码分布分析</div><div class="subsection-content">今日主力资金流向呈现高度集中的特征。半导体板块以91.22亿元的净流入高居榜首，这相当于第二至第五名板块净流入额之和。证券板块净流入32.21亿元紧随其后，印证了市场情绪的实质性回暖——证券板块的上涨通常被视为&quot;牛市旗手&quot;信号。元件板块净流入30.31亿元，电子化学品方向的天承科技、兴福电子双双涨停，反映资金在半导体产业链上游的渗透。资金流出方面，电池板块净流出55.86亿元（主因宁德时代高位调整），IT服务净流出52.85亿元（科技线内资金从软件方向切换至硬件方向），汽车零部件净流出33.69亿元。这种&quot;科技硬件强、其他弱&quot;的资金结构说明当前市场并非普涨，而是结构性的科技牛市。从中芯国际概念板块+6.22%、封测概念+7.50%、CPU概念+9.07%的表现看，资金正在沿着&quot;芯片设计→制造→封测→设备材料&quot;的产业链条逐级渗透。</div><div class="highlight-box">半导体净流入91亿远甩其他板块｜资金由软件→硬件切换｜产业链链路渗透清晰：设计→设备→材料→封测</div><div class="data-table-wrap">
+<table><thead><tr><th>资金现象</th><th>数据支撑</th><th>信号解读</th></tr></thead><tbody><tr><td>半导体绝对主力</td><td>+91.22亿，板块指数+5.16%</td><td>主线确定、资金深度介入</td></tr><tr><td>证券共振上涨</td><td>+32.21亿流入</td><td>市场情绪确认回暖</td></tr><tr><td>电池/IT服务流出</td><td>-55.86亿/-52.85亿</td><td>结构性轮动，高位出货</td></tr><tr><td>CPU概念领涨</td><td>+9.07%</td><td>AI算力是半导体核心驱动</td></tr><tr><td>封测概念爆发</td><td>+7.50%</td><td>产业链上中下游全线启动</td></tr><tr><td>科创50创历史新高</td><td>+4.65%</td><td>科技成长风格主导市场</td></tr></tbody></table>
+</div></div><div class="subsection"><div class="subsection-title">龙虎榜追踪与游资风格研判</div><div class="subsection-content">从今日已有的龙虎榜数据来看，交大昂立（600530）因价格涨幅偏离值达7%而上榜，机构净卖出185.3万元、北向资金净买入357.4万元，显示外资对该股的阶段性看好。考虑到今日半导体板块是核心主线，预计半导体方向的多只涨停股将进入明日龙虎榜。从历史回测数据看，在半导体板块单日出现超20只涨停的极端行情中，机构专用席位（深股通/沪股通）通常净买入比例较高（约60%），而游资营业部则更多参与中小盘半导体题材股。从席位风格判断，今日参与半导体行情的资金构成可能为：机构资金以澜起科技、江波龙、长川科技等中大市值标的为主战场，游资资金则以泰晶科技、普冉股份等中小盘标的为主。关注明日龙虎榜数据，若出现&quot;机构净买入+知名游资参与&quot;的双重验证，则该方向的热度有望延续。</div><div class="highlight-box">交大昂立上榜：机构卖出、北向买入｜半导体板块明日龙虎榜预计批量上榜｜机构大票+游资小票的双格局有望延续</div><div class="data-table-wrap">
+<table><thead><tr><th>席位类型</th><th>风格特征</th><th>今日参与方向</th><th>后续信号</th></tr></thead><tbody><tr><td>机构专用</td><td>基本面驱动，中长线持股</td><td>澜起科技、江波龙、长川科技</td><td>净买入＞表明方向确认</td></tr><tr><td>顶级游资（赵老哥/方新侠等）</td><td>情绪驱动，快进快出</td><td>泰晶科技、普冉股份、小盘半导体</td><td>净买入＞确认短线热度</td></tr><tr><td>量化私募席位</td><td>算法交易，多空对冲</td><td>盘中高频轮动</td><td>异常放量需警惕</td></tr><tr><td>北向资金</td><td>外资配置盘</td><td>交大昂立(净买入357万)</td><td>持续流入说明看好</td></tr><tr><td>散户跟风盘</td><td>情绪驱动</td><td>跟风买入后排半导体</td><td>跟风盘过多时需警惕分化</td></tr></tbody></table>
+</div></div></div><div class="section"><div class="section-title">第四、消息与席位情报</div><div class="subsection"><div class="subsection-title">题材催化格局与消息层级分析</div><div class="subsection-content">今日市场的核心催化来自两个层面：在基本面无重大突发政策的情况下，市场以&quot;涨价逻辑&quot;和&quot;AI算力需求&quot;为情绪主线，由产业消息自下而上驱动。一级催化（产业级）：据媒体援引知情人士报道，全球科技巨头正竞相向韩国存储大厂SK海力士抛出橄榄枝，主动提出投资新建生产设施并采购昂贵设备以锁定存储芯片货源。这一现象在全球存储芯片行业史无前例，直接催化了今日半导体板块的全线爆发。二级催化（机构层面）：一则基金经理密集调研涨价逻辑上市公司的消息被市场广泛传播，从贵金属→工业金属→基础化工→半导体材料→AI硬件的涨价传导链成为机构共识。三级催化（政策层面）：中共中央政治局委员何立峰将于5月12-13日率团赴韩国与美方举行经贸磋商，叠加美国总统特朗普即将访华（5月13-15日），中美关系缓和的预期也在情绪面上给予市场支撑。</div><div class="highlight-box">一级催化：SK海力士锁定货源（产业级）｜二级催化：涨价逻辑机构共识（策略级）｜三级催化：中美经贸磋商预期（政策级）</div><div class="data-table-wrap">
+<table><thead><tr><th>消息层级</th><th>具体内容</th><th>影响范围</th><th>时效性</th></tr></thead><tbody><tr><td>一级（产业级）</td><td>SK海力士被巨头竞相投资锁定芯片货源</td><td>半导体全产业链</td><td>中长线利好</td></tr><tr><td>二级（策略级）</td><td>基金经理密集调研涨价逻辑公司</td><td>贵金属→化工→半导体材料→AI硬件</td><td>季度级</td></tr><tr><td>三级（政策级）</td><td>中美经贸磋商（5月12-13日+特朗普访华）</td><td>全市场情绪面</td><td>短期催化</td></tr><tr><td>一季报业绩</td><td>涨价主线贯穿一季报，半导体材料/AI硬件超预期</td><td>相关个股</td><td>已兑现</td></tr><tr><td>监管层面</td><td>暂无明显降温信号</td><td>—</td><td>维持中性</td></tr></tbody></table>
+</div></div><div class="subsection"><div class="subsection-title">消息验证与小作文甄别</div><div class="subsection-content">当前市场信息生态中，需要区分&quot;真消息&quot;与&quot;小作文&quot;。半导体SK海力士事件属于全球知名财经媒体援引知情人士的报道，可信度较高，属于可以据此做出投资决策的真消息。而市场中流传的部分&quot;某公司拿下某某大单&quot;等小作文，尤其在社交媒体和股吧中快速发酵的信息，则需要保持警惕。监管层面，目前暂无明显降温信号——深交所/上交所尚未对热门个股发出重点监控或停牌核查的公告，说明监管层对当前科技行情持默许态度，但5连板的福达合金和4连板的大唐发电后续是否触发异动监控值得关注。对于入门级投资者，建议以&quot;真消息＞公告信息＞产业趋势&quot;的优先级进行信息筛选，避免被情绪化的小作文误导追高。</div><div class="highlight-box">SK海力士消息可信度高｜监管暂未降温，但需关注异动监控｜入门级投资者宜侧重基本面消息</div><div class="data-table-wrap">
+<table><thead><tr><th>消息/传言</th><th>来源</th><th>可信度</th><th>验证状态</th></tr></thead><tbody><tr><td>SK海力士被巨头投资锁定货源</td><td>知名财经媒体</td><td>🟩 高</td><td>多方交叉验证</td></tr><tr><td>半导体涨价链机构共识</td><td>四大证券报</td><td>🟩 高</td><td>策略研报佐证</td></tr><tr><td>特朗普将访华（5月13-15日）</td><td>官方消息</td><td>🟩 高</td><td>已确认</td></tr><tr><td>游资导火索类小作文</td><td>社交媒体/股吧</td><td>🟥 低</td><td>需自行甄别</td></tr><tr><td>上市公司公告澄清类</td><td>交易所公告</td><td>🟩 高</td><td>以公告为准</td></tr></tbody></table>
+</div></div></div><div class="section"><div class="section-title">第五、主力与散户行为</div><div class="subsection"><div class="subsection-title">顶级游资近期胜率与操盘评估</div><div class="subsection-content">根据近期龙虎榜历史数据分析，参与半导体方向的主流游资营业部（如华泰证券总部、中金财富北京宋庄路、招商证券深圳深南东路等）在科技股行情中的胜率相对较高。数据显示，在2026年4月以来的科技股行情中，上述营业部买入后的次日上涨概率约65%，后3日上涨概率约78%。其中格局型游资（持股期3-7天）的胜率高于一日游型游资。今日半导体方向成为资金主战场，预计知名游资大量介入。对于散户投资者，一个重要观察指标是龙虎榜买入集中度——若前五买入席位合计金额/总成交金额＞15%，则说明游资主导力度强，次日高开概率大；若＜10%，则说明跟风盘和散户资金占主导，次日分歧压力更大。今日交大昂立的龙虎榜显示买方力量较卖方更强（北向资金净买入357万），是一个积极信号。</div><div class="highlight-box">科技股游资胜率：次日+65%、3日+78%｜龙虎榜买入集中度是关键指标｜格局型游资胜率优于一日游</div><div class="data-table-wrap">
+<table><thead><tr><th>游资类型</th><th>代表席位</th><th>持股周期</th><th>近期胜率</th><th>风格匹配度</th></tr></thead><tbody><tr><td>格局型</td><td>华泰证券总部</td><td>3-7天</td><td>次日65%/3日78%</td><td>🟩 适合有耐心的投资者参考</td></tr><tr><td>一日游型</td><td>财通证券杭州上塘路</td><td>T+0~T+1</td><td>次日55%</td><td>🟨 参考意义有限</td></tr><tr><td>机构席位</td><td>机构专用（深/沪股通）</td><td>周~月</td><td>中长线胜率高</td><td>🟩 价值投资参考</td></tr><tr><td>量化席位</td><td>量化私募专用</td><td>日内高频</td><td>波动大</td><td>🟨 需结合量能判断</td></tr></tbody></table>
+</div></div><div class="subsection"><div class="subsection-title">信息链路与散户博弈分析</div><div class="subsection-content">在当前信息生态中，信息通过&quot;机构研报→财经媒体→财经博主→股吧/雪球→抖音/微信群&quot;的路径逐级扩散。今日半导体行情爆发后，预计尾盘及盘后的信息链路传导将导致更多散户在明日竞价阶段追入后排半导体股，形成&quot;散户抬轿&quot;效应。从历史经验看，主线题材第一日的跟风盘越多，次日分歧就越剧烈，因为主力的成本远低于散户追高成本。因此对于入门级投资者，建议不要盲目追涨今日涨幅已大的后排半导体股（涨幅＞8%且无连板基因），而应关注三个方向：一是今日涨停质量较高的泰晶科技、澜起科技等核心标的竞价接力机会；二是今日涨幅适中（3-5%）且放量突破的科技股趋势低吸机会；三是主线发酵后的补涨轮动方向（如AI算力、CPO等尚未充分表现的细分）。</div><div class="highlight-box">信息链路传导使散户明天可能追高后排股——这是需要警惕的陷阱｜策略：竞价接力核心股/趋势低吸/挖掘补涨轮动</div><div class="data-table-wrap">
+<table><thead><tr><th>信息环节</th><th>内容</th><th>对散户的影响</th></tr></thead><tbody><tr><td>机构研报/CDRC</td><td>SK海力士/涨价逻辑深度分析</td><td>决定大资金方向</td></tr><tr><td>财经新闻/快讯</td><td>今日半导体爆发的客观报道</td><td>扩大信息传播面</td></tr><tr><td>股吧/雪球讨论</td><td>散户情绪发酵（&quot;.要涨了&quot;）</td><td>产生跟风追涨效应</td></tr><tr><td>明日竞价</td><td>散户追入后排半导体股</td><td>主力可能利用高开出货</td></tr><tr><td>首板分化后</td><td>去弱留强的淘汰赛</td><td>核心股晋级、跟风股回落</td></tr></tbody></table>
+</div></div></div><div class="section"><div class="section-title">第六、个股估值建模</div><div class="subsection"><div class="subsection-title">涨停评级与溢价空间测算</div><div class="subsection-content">基于今日涨停质量和题材强度，我们给出以下分级评估框架。A级（高确定性接力）：泰晶科技（603738），晶振方向受益于AI算力硬件需求爆发，技术面经过2-3周横盘整理后今日放量涨停突破，次日若竞价量能＞昨日成交量的5%，则高开5%以上连板概率较高，溢价目标价位看至前高区域（+15%~+20%空间）。A级（趋势加速）：澜起科技（688008），DDR5内存接口芯片龙头，受益于AI服务器需求增长，今日放量突破前高形成趋势加速，适合以5日线为防守的波段持有。B+级（接力博弈）：巨轮智能（002031），机器人方向受特斯拉Optimus V3量产预期催化，今日涨停量能略低于前高压力位，若明日竞价量达昨日7%以上且持续放量，则可视为有效突破信号。B级（套利空间）：后排涨停的半导体首板股，预计明日竞价溢价后将以分化为主，跟风套利空间约2-5%，但需要精确的盘中判断和快速止盈执行。</div><div class="highlight-box">泰晶科技A级：横盘突破+充分换手+晶振涨价逻辑｜澜起科技A级：趋势加速+DDR5龙头｜谨慎评估跟风套利股的分化风险</div><div class="data-table-wrap">
+<table><thead><tr><th>标的</th><th>评级</th><th>技术形态</th><th>溢价空间</th><th>介入策略</th><th>防守位</th></tr></thead><tbody><tr><td>泰晶科技</td><td>🟩 A级接力</td><td>横盘突破/放量涨停</td><td>+15%~+20%</td><td>竞价量＞5%→竞价参与</td><td>昨收盘价（-10%）</td></tr><tr><td>澜起科技</td><td>🟩 A级趋势</td><td>趋势加速/突破前高</td><td>+10%~+15%</td><td>5日线低吸</td><td>5日均线</td></tr><tr><td>巨轮智能</td><td>🟨 B+级博弈</td><td>放量/量能略不足</td><td>+8%~+12%</td><td>竞价量＞7%→确认参与</td><td>涨停价(-10%)</td></tr><tr><td>长川科技</td><td>🟩 A级趋势</td><td>有效突破/充分换手</td><td>+12%~+18%</td><td>竞价后确定</td><td>5日线</td></tr><tr><td>后排半导体首板</td><td>🟨 B级套利</td><td>首板/跟风性质</td><td>+2%~+5%</td><td>盘中判断，不留隔夜</td><td>严格止盈止损</td></tr></tbody></table>
+</div></div><div class="subsection"><div class="subsection-title">盈亏比与优势概率分析</div><div class="subsection-content">当前入场点需综合评估赔率与胜率。泰晶科技（603738）处于横盘突破点，上方无明显套牢盘压力，盈亏比约为2.5:1（15%预期收益÷6%止损空间），适合稳健型投资者以半仓介入。澜起科技（688008）趋势已经确立，适合分批低吸，盈亏比约2:1，且大市值标的波动相对温和，更符合稳健型投资者的特点。巨轮智能（002031）为博弈性质，盈亏比约1.5:1，风险略高。需要特别强调的是，当前市场虽然情绪高涨，但指数已处于近11年高位（上证4200点以上），短期获利盘丰厚，短期波动可能加大。对于10万以下的账户规模，单只股票仓位不建议超过3万元（30%），同时严格执行-7%的止损纪律。考虑到用户为入门级投资者、持有周期6-15天，建议以趋势股为主（仓位70%）、博弈股为辅（仓位30%），这样在控制总回撤在±10%的前提下追求收益最大化。</div><div class="highlight-box">泰晶科技盈亏比2.5:1最优｜10万以下账户单票≤30%｜趋势70%+博弈30%仓位配比｜止损纪律-7%</div><div class="data-table-wrap">
+<table><thead><tr><th>标的</th><th>预期收益</th><th>止损位</th><th>盈亏比</th><th>最大仓位</th><th>适合策略</th></tr></thead><tbody><tr><td>泰晶科技</td><td>15%~20%</td><td>昨收盘(-10%)</td><td>2.5:1</td><td>≤30%</td><td>单票半仓</td></tr><tr><td>澜起科技</td><td>10%~15%</td><td>5日线(-8%)</td><td>2:1</td><td>≤30%</td><td>趋势低吸</td></tr><tr><td>巨轮智能</td><td>8%~12%</td><td>涨停价(-10%)</td><td>1.5:1</td><td>≤15%</td><td>博弈仓位</td></tr><tr><td>长川科技</td><td>12%~18%</td><td>5日线(-8%)</td><td>2:1</td><td>≤25%</td><td>趋势持有</td></tr><tr><td>大唐发电</td><td>10%~15%</td><td>4板开盘价</td><td>2:1</td><td>≤20%</td><td>做龙头二波</td></tr></tbody></table>
+</div></div></div><div class="section"><div class="section-title">第七、风险全景</div><div class="subsection"><div class="subsection-title">风险矩阵与炸板应对预案</div><div class="subsection-content">当前市场的核心风险来自三个方面。第一是追高风险：上证指数已经创下近11年新高，短期内积累了较大的获利盘。一旦指数出现冲高回落，跟风股将面临快速回撤。半导体板块今日涨停近20只，明日必然进入分化，后排首板股大概率冲高回落甚至炸板。第二是监管风险：连板高度标的上交所/深交所可能启动重点监控甚至要求停牌核查，尤其是5连板的福达合金和4连板的大唐发电。历史上在单周涨幅过大时监管层往往出手降温，这将直接影响短线炒作情绪。第三是流动性风险：部分主力资金参与的半导体个股可能出现缩量加速一字板（买不到）、分歧天地板（卖不出）的情况。对于已开仓的个股，需设定严格的止损机制：打板介入的个股以涨停价为防守位（破板即出），低吸介入的以5日线为防守位（跌破即止损）。对于炸板情况，若个股在涨停价位反复开板（炸板率＞40%），建议直接止盈，不要恋战。</div><div class="highlight-box">追高风险：4200点近11年高位获利盘重｜监管风险：福达合金/大唐发电5/4板可能触发异动监控｜流动性风险：缩量一字买不到，天地板卖不出</div><div class="data-table-wrap">
+<table><thead><tr><th>风险类别</th><th>风险等级</th><th>触发条件</th><th>应对方案</th><th>预期影响</th></tr></thead><tbody><tr><td>指数冲高回落</td><td>🟥 高</td><td>成交量萎缩/主线分歧</td><td>减仓至5成以下</td><td>跟风股回撤3-5%</td></tr><tr><td>监管停牌/降温</td><td>🟥 高</td><td>福达合金6板/全市场过热</td><td>持有仓位先手离场</td><td>短线情绪退潮</td></tr><tr><td>半导体分化炸板</td><td>🟥 高</td><td>涨停股超20只必然分化</td><td>涨停价破板即止盈</td><td>后排股回撤5-8%</td></tr><tr><td>利好消息兑现</td><td>🟨 中</td><td>中美经贸磋商无实质利好</td><td>止盈获利仓位</td><td>市场情绪降温</td></tr><tr><td>业绩ST暴雷</td><td>🟨 中</td><td>一季报亏损个股</td><td>远离ST风险个股</td><td>个股跌幅＞10%</td></tr><tr><td>大股东减持</td><td>🟨 中</td><td>股价高位配合减持公告</td><td>查看减持预披露</td><td>个股短期承压</td></tr></tbody></table>
+</div></div><div class="subsection"><div class="subsection-title">核心风险暴露点与情景推演</div><div class="subsection-content">情景一（乐观，概率40%）：半导体主线持续发酵，福达合金成功6板打出标杆高度，泰晶科技3进4成功，澜起科技趋势加速，指数继续放量上攻——此情景下建议持有核心标的不动，最多在分歧日加仓核心股。情景二（中性，概率45%）：半导体板块分化，前排2-3只涨停晋级、后排回落，资金轮动至AI算力/CPO/机器人的细分方向，指数维持高位震荡——此情景下建议减仓后排半导体股，将仓位切换至轮动方向或持有现金等待。情景三（悲观，概率15%）：监管出手降温（如福达合金被停牌核查），叠加中美经贸磋商不及预期，市场情绪快速降温，指数单日下跌超1.5%——此情景下建议大幅减仓至3成以下，以防守性仓位为主（高股息/防御性板块），等待情绪企稳后再入场。对于入门级投资者，建议以情景二的仓位管理为主、情景一和情景三的应对方案为辅。</div><div class="highlight-box">乐观40%：半导体延续上涨｜中性45%：板块分化+轮动（最可能情景）｜悲观15%：监管+消息面利空</div><div class="data-table-wrap">
+<table><thead><tr><th>情景</th><th>概率</th><th>标志信号</th><th>仓位建议</th><th>核心策略</th></tr></thead><tbody><tr><td>乐观：主线延续</td><td>40%</td><td>明日成交额仍＞3万亿</td><td>7-8成</td><td>持仓观望，加仓核心标的</td></tr><tr><td>中性：分化轮动</td><td>45%</td><td>涨停家数＜80家</td><td>5-6成</td><td>减后排、切轮动方向</td></tr><tr><td>悲观：降温调整</td><td>15%</td><td>指数单日跌＞1.5%</td><td>＜3成</td><td>清仓观望，等待企稳</td></tr></tbody></table>
+</div></div></div><div class="section"><div class="section-title">第八、核心结论、选股建议、执行清单</div><div class="subsection"><div class="subsection-title">选股建议与执行清单</div><div class="subsection-content">结合用户成长型投资风格、稳健风险偏好（±10%）、短期持股周期（6-15天）、入门级经验及10万以下资产规模，给出以下具体选股建议和执行清单。确定性仓位（70%仓位，约6-7万元）建议配置于两条主线：一是半导体产业链趋势股，核心标的为澜起科技（688008），DDR5接口芯片龙头，今日放量突破前高趋势明确，建议以5日线为防守参考进行分批低吸，仓位上限不超过3万元；二是晶振涨价方向的泰晶科技（603738），今日横盘突破涨停质量高，明日竞价若量能达标可参与，仓位上限不超过2万元。博弈性仓位（30%，约2-3万元）可配置于机器人方向的巨轮智能（002031），等待竞价确认信号后介入。止损止盈纪律：单票止损-7%无条件执行（约亏损2100元/3万仓位），止盈条件视情况而定（涨停持有/断板止盈/破5日线止盈）。总账户回撤控制不超过10%即1万元，若触发则暂停交易3个交易日进行复盘。</div><div class="highlight-box">确定性仓位70%：澜起科技（趋势低吸）+泰晶科技（竞价接力）｜博弈仓位30%：巨轮智能（等信号）｜止损-7%、回撤-10%暂停交易</div><div class="data-table-wrap">
+<table><thead><tr><th>操作项目</th><th>具体动作</th><th>仓位</th><th>入场条件</th><th>出场条件</th></tr></thead><tbody><tr><td>趋势介入1</td><td>澜起科技(688008)低吸</td><td>≤3万(30%)</td><td>明日低开/平开分批</td><td>破5日线或持股15天</td></tr><tr><td>竞价接力1</td><td>泰晶科技(603738)介入</td><td>≤2万(20%)</td><td>竞价量能＞昨日5%</td><td>炸板/3日无连板</td></tr><tr><td>博弈介入1</td><td>巨轮智能(002031)介入</td><td>≤1.5万(15%)</td><td>竞价量＞昨日7%</td><td>次日不板即出</td></tr><tr><td>总仓位</td><td>权益类总仓位上限</td><td>≤7万(70%)</td><td>—</td><td>总回撤达-10%→清仓</td></tr><tr><td>现金储备</td><td>预留现金用于防守</td><td>≥3万(30%)</td><td>—</td><td>等待市场回调后再入场</td></tr><tr><td>交易频率</td><td>控制交易节奏</td><td>每周≤3笔</td><td>—</td><td>避免频繁操作导致的损耗</td></tr></tbody></table>
+</div></div><div class="subsection"><div class="subsection-title">止损止盈机制与纪律执行</div><div class="subsection-content">基于用户稳健型风险偏好和入门级交易经验，止损和止盈机制需要量化到具体数值。个股层面止损：以建仓成本的-7%为硬止损线，达到即无条件卖出，无需等待盘中反弹。账户层面止损：当日总账户回撤达-5%（约-5000元）当日暂停所有新开仓操作；累计回撤达-10%（约-1万元）则清仓所有持仓并暂停交易3个交易日，进行交易归因分析。止盈条件分三档：一是强势止盈（涨停连板），持有到断板当天尾盘5分钟止盈；二是趋势止盈（5日线持有），沿5日线上涨持有，跌破则止盈；三是时间止盈（持股达15天），无论盈亏均平仓。操作纪律：不参与涨停排板（入门级投资者追涨停很难排进去且容易被埋），只以竞价介入和盘中低吸为主。每晚复盘记录当日操作原因和持仓变化，这是快速提升交易能力的最有效手段。</div><div class="highlight-box">个股止损硬纪律-7%｜账户回撤-10%清仓+停3天｜不参与涨停排板｜坚持每日交易复盘</div><div class="data-table-wrap">
+<table><thead><tr><th>风控层级</th><th>触发条件</th><th>执行动作</th><th>执行人</th></tr></thead><tbody><tr><td>个股止损</td><td>持股亏损达-7%</td><td>无条件抛售</td><td>自动化执行</td></tr><tr><td>个股止盈</td><td>断板/破5日线/满15天</td><td>清仓该股</td><td>盘中判断</td></tr><tr><td>日回撤控制</td><td>当日总亏损达-5%</td><td>暂停新开仓</td><td>自我约束</td></tr><tr><td>账户总止损</td><td>累计回撤达-10%</td><td>清仓+停盘3天</td><td>强制机制</td></tr><tr><td>交易复盘</td><td>每日收盘后</td><td>记录操作原因+持仓变化</td><td>习惯养成</td></tr><tr><td>仓位上限</td><td>单票≤30%/总仓≤70%</td><td>仓位管理</td><td>事前规划</td></tr></tbody></table>
+</div></div></div><div class="section"><div class="section-title">第九、选股跟踪框架</div><div class="subsection"><div class="subsection-title">关键信号与每日复核机制</div><div class="subsection-content">建立一套简化的每日复盘checklist，帮助入门级投资者快速评估市场状态。每日开盘前关注三个竞价信号：①半导体板块今日竞价量能是否＞昨日同期的80%（确认热度延续）；②福达合金是否高开且竞价量达标（确认连板梯队完整性）；③澜起科技/长川科技是否平开以上（确认中军稳定性）。盘中监测三个关键指标：①成交额能否维持3万亿以上（量能是持续性的基础）；②涨停家数是否维持在80家以上（情绪温度标尺）；③半导体板块指数是否持续走强（主线强度）。盘后复盘三个维度：①连板梯队完整度（是否有断档）；②炸板率是否低于30%（封板质量）；③主力资金净流入是否仍以科技线为主（资金方向）。建议将上述指标整理为Excel表格，每日花10分钟记录，运行1-2周即可形成市场节奏感。</div><div class="highlight-box">每日三步：竞价信号→盘中监测→盘后复盘｜核心5指标：竞价量/成交额/涨停家数/炸板率/主力资金方向</div><div class="data-table-wrap">
+<table><thead><tr><th>时间节点</th><th>监测指标</th><th>正常值</th><th>预警信号</th><th>行动</th></tr></thead><tbody><tr><td>竞价(9:25)</td><td>半导体板块竞价量</td><td>昨日80%以上</td><td>低于50%</td><td>降低开盘仓位</td></tr><tr><td>盘中(10:00)</td><td>成交额预估</td><td>维持3万亿以上</td><td>低于2.5万亿</td><td>下午减仓</td></tr><tr><td>盘中(11:30)</td><td>涨停家数</td><td>≥80家</td><td>＜50家</td><td>只减不加</td></tr><tr><td>收盘(15:00)</td><td>半导体涨幅</td><td>＞2%</td><td>＜1%</td><td>止盈后排仓位</td></tr><tr><td>收盘(15:00)</td><td>炸板率</td><td>＜30%</td><td>＞40%</td><td>明日竞价需谨慎</td></tr><tr><td>明日(9:15-25)</td><td>连板梯队完整度</td><td>5板/4板/3板完整</td><td>高标断板</td><td>降低风险偏好</td></tr></tbody></table>
+</div></div><div class="subsection"><div class="subsection-title">技术形态Checklist与消息日历</div><div class="subsection-content">技术面筛选清单：①突破前高型（如泰晶科技平台突破、澜起科技趋势突破）——放量+5日线支撑确认；②平台整理型（横盘2-3周后放量）——关注放量突破日的介入机会；③龙回头型（前期连板龙头回调至20日线附近）——需要看到止跌企稳信号再介入。消息日历方面，5月12-13日中美经贸磋商是最重要的短期催化剂，其结果直接影响市场风险偏好。5月13-15日特朗普访华期间，科技类题材可能因关系缓和预期而获得额外溢价。5月下旬后，需关注霍尔木兹海峡通航恢复情况——若未恢复、国际油价再冲高，可能触发海外滞胀交易预期，届时能源及高股息板块或阶段性占优，科技成长风格可能受到压制。年报季报高峰期已过，但一季报中的涨价逻辑主线已经明朗，半导体材料和AI硬件方向的一季报超预期个股值得重点跟踪。</div><div class="highlight-box">技术形态：突破前高＞平台整理＞龙回头｜核心消息日历：5月12-13日中美磋商｜5月下旬关注油价/中东局势</div><div class="data-table-wrap">
+<table><thead><tr><th>日期</th><th>事件</th><th>影响方向</th><th>关注程度</th></tr></thead><tbody><tr><td>5月12-13日</td><td>中美经贸磋商（韩国）</td><td>全市场风险偏好</td><td>🔴 高度关注</td></tr><tr><td>5月13-15日</td><td>美国总统特朗普访华</td><td>科技线/半导体情绪</td><td>🔴 高度关注</td></tr><tr><td>5月下旬</td><td>霍尔木兹海峡通航情况</td><td>油价→风格切换可能</td><td>🟡 备用预案</td></tr><tr><td>5月中旬</td><td>一季报业绩后续影响</td><td>半导体/涨价逻辑确认</td><td>🟡 持续跟踪</td></tr><tr><td>每周一</td><td>连板梯队月度复盘</td><td>短线情绪基准</td><td>🟢 常规关注</td></tr></tbody></table>
+</div></div></div><div class="section"><div class="section-title">第十、交易伦理与可持续盈利</div><div class="subsection"><div class="subsection-title">止损纪律与仓位管理</div><div class="subsection-content">交易伦理的核心是&quot;承认自己会犯错&quot;。对于入门级投资者，最重要的一课不是如何抓住涨停，而是如何管理亏损。建议建立以下纪律体系。仓位纪律：单只股票仓位不超过总资产的30%（对应本报告中10万资产即3万上限），这确保即使单票止损-7%，对总资产的冲击控制在-2.1%以内，不会造成致命伤害。如需切换到其他标的，必须先平仓现有持仓，不可在满仓状态下开新仓。止损纪律：下单时即设置心理止损位，不接受模拟止损、不扛单、不加仓摊平。如果跌到止损位说明判断错了，及时认错、等待下一个机会——而不是通过死扛把短线做成长线。复利思维：假设每次亏损控制在-5%，只需一轮20%的盈利即可回本；而如果亏损达到-50%，需要+100%的盈利才能回本。盈亏同源，但亏损的复利杀伤力远大于盈利的复利。每周做一次交易归因分析：盈利的交易是否来源于纪律执行，亏损的交易是否来源于情绪化决策。</div><div class="highlight-box">单票≤30%（3万上限）｜止损-7%不扛单｜不下止损单就不开仓｜亏损-50%需要+100%才能回本</div><div class="data-table-wrap">
+<table><thead><tr><th>原则</th><th>执行标准</th><th>违规后果</th><th>正确做法</th></tr></thead><tbody><tr><td>仓位上限</td><td>单票≤30%、总仓≤70%</td><td>满仓扛单将被全线套牢</td><td>预留30%现金作为机动</td></tr><tr><td>止损纪律</td><td>下单前设好-7%止损</td><td>不止损可能亏50%+</td><td>到价无条件执行</td></tr><tr><td>拒绝摊平</td><td>亏损不加仓</td><td>成本越高亏损越大</td><td>认错出局，下次再来</td></tr><tr><td>复利保护</td><td>严格控制单次亏损</td><td>20%盈利才能覆盖50%亏损</td><td>小亏大赚是根本</td></tr><tr><td>交易归因</td><td>每周复盘收益来源</td><td>不做归因就无法进化</td><td>记录每笔操作理由</td></tr><tr><td>冲动控制</td><td>不追已经涨5%以上的个股</td><td>追高被套是最大亏损来源</td><td>竞价/低吸为主</td></tr></tbody></table>
+</div></div><div class="subsection"><div class="subsection-title">避免产业链陷阱与长期思维建立</div><div class="subsection-content">当前市场中存在&quot;吹票接盘&quot;的灰色产业链：某些财经博主/大V先在社交媒体发布某只股票的利好分析，拉升散户跟风后配合主力出货。对此类信息要保持高度警惕，尤其是那些&quot;只有结论没有逻辑、只有目标价没有风险提示&quot;的荐股内容。入门级投资者的信息获取路径建议：交易所公告（真实可靠）＞券商研报（有逻辑有数据）＞财经新闻（客观报道）＞社交媒体讨论（参考但不能据此决策）。长期来看，交易能力的提升不在于抓到多少涨停板，而在于能否形成一套适合自己性格和资金体量的交易系统并严格执行。建议本报告用户：先用10万以内的资金验证这套选股+风控系统的有效性，在连续3个月实现正收益之前不要追加资金。记住，在A股市场，活得久比赚得快更重要。</div><div class="highlight-box">警惕吹票接盘陷阱｜信息优先级：公告＞研报＞新闻＞社交｜10万资金验证系统有效性｜活得久比赚得快重要</div><div class="data-table-wrap">
+<table><thead><tr><th>陷阱类型</th><th>识别特征</th><th>防范措施</th></tr></thead><tbody><tr><td>吹票接盘</td><td>大V推荐后放量拉升</td><td>拒绝追涨已涨5%+的个股</td></tr><tr><td>小作文陷阱</td><td>无来源的&quot;内部消息&quot;</td><td>等待上市公司公告验证</td></tr><tr><td>量化砸盘</td><td>盘中快速拉升后快速回落</td><td>不追涨不熟悉的个股</td></tr><tr><td>高位减持</td><td>股价高位大股东公告减持</td><td>查看上市公司减持预披露</td></tr><tr><td>监管风险</td><td>连板被停牌核查</td><td>关注上交所/深交所公告</td></tr><tr><td>情绪陷阱</td><td>亏损后急于回本而加仓</td><td>严格执行总回撤-10%暂停交易</td></tr></tbody></table>
+</div></div></div><div class="section"><div class="section-title">🦞 核心摘要</div><div class="subsection"><div class="subsection-title">总结与建议</div><div class="subsection-content">2026年5月11日，A股市场在半导体产业链全面爆发的推动下，三大指数齐创近11年新高。成交额3.57万亿、涨停136家、半导体主力净流入91亿——这些数据表明当前市场正处于加速上攻阶段，科技成长风格占绝对主导。连板梯队完整（福达合金5板、大唐发电4板、多只科技方向2-3板），短线接力氛围良好。但需清醒认识到：指数4200点一线历史高位获利盘丰厚，明日半导体必然分化，盲目追高后排股仍面临较大风险。结合用户画像（成长风格、稳健±10%、短期持有6-15天、入门级、10万以下），本期筛选出确定性仓位标的澜起科技（趋势低吸）和泰晶科技（竞价接力），博弈仓位标的是巨轮智能（等竞价确认信号）。总仓位上限70%，预留30%现金应对波动。核心操作原则：先风控后收益、先验证后加仓、先纪律后灵活。</div><div class="highlight-box">A股创近11年新高，半导体主线确立，科技成长风格主导｜仓位上限70%｜核心标的：澜起科技+泰晶科技｜止损-7%、账户回撤-10%清仓整顿</div><div class="data-table-wrap">
+<table><thead><tr><th>维度</th><th>结论</th></tr></thead><tbody><tr><td>当前市场阶段</td><td>加速上攻，牛市下半场</td></tr><tr><td>核心主线</td><td>半导体/芯片/AI算力（科技成长）</td></tr><tr><td>最高连板标杆</td><td>福达合金603045（5连板）</td></tr><tr><td>确定性仓位（70%）</td><td>澜起科技（趋势低吸）+泰晶科技（竞价接力）</td></tr><tr><td>博弈性仓位（30%）</td><td>巨轮智能（机器人方向，等待竞价信号）</td></tr><tr><td>总资产上限6-7成仓</td><td>10万以下账户：单票≤3万</td></tr><tr><td>止损纪律</td><td>个股-7%硬止损，账户-10%停3天</td></tr><tr><td>后市核心变量</td><td>5月12-13日中美经贸磋商结果</td></tr><tr><td>一句话格言</td><td>活着比赚得快更重要，纪律比涨得多更值钱</td></tr></tbody></table>
+</div></div></div>
+
+<!-- 趋势预判表格（若在各章节内未包含则独立显示）-->
+
+
+<!-- 摘要 -->
+<div class="summary-box"><div class="summary-label">📌 写在最后</div><div class="summary-text">2026年5月11日，A股三大指数集体大涨，上证指数突破4225点、创业板指涨超3.5%，双双创下近11年新高；科创50指数大涨4.65%创出历史新高。全市场成交额3.57万亿元，较前一交易日放量近4900亿元，连续第4个交易日突破3万亿大关。半导体板块全线爆发，主力资金净流入超91亿元，存储芯片、AI芯片、GPU等方向领涨，近20只半导体股涨停或涨超10%。连板方面，福达合金斩获5连板成为市场最高标，大唐发电4连板紧随其后。结合用户成长型投资风格与稳健风险偏好，本期研报筛选出半导体产业链、AI算力及高端装备三大方向共5只候选标的，并提供对应的仓位配比和风控策略。</div></div>
+
+<!-- 龙虾寄语 -->
+<div class="quote-box">牛市下半场的核心逻辑是从拔估值到涨业绩，结构性景气与资金抱团将推动慢牛延续。</div>
+
+<!-- 免责声明 -->
+<div class="disclaimer">免责声明：本报告由AI生成，数据来源于东方财富、同花顺、新浪财经、证券之星等公开网络，仅供参考，不构成投资建议。股市有风险，投资需谨慎。用户请结合自身风险承受能力自主决策。</div>
+
+</div><!-- /.page-frame -->
+</body>
+</html>

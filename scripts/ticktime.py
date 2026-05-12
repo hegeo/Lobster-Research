@@ -185,7 +185,10 @@ class StockDataAPI:
             except Exception:
                 return None
 
-        return _sina_impl() or _tencent_impl() or {"error": f"获取{code}实时数据失败"}
+        result = _sina_impl() or _tencent_impl()
+        if result:
+            return {"success": True, "data": result}
+        return {"success": False, "error": f"获取{code}实时数据失败"}
 
     # ===================== 3. 历史K线（大盘/个股） =====================
     def get_history_kline(self, code: str, start: str, end: str, period: str = "day") -> List[Dict]:
@@ -213,10 +216,11 @@ class StockDataAPI:
                 data = json.loads(text)
                 if not isinstance(data, list):
                     return None
-                # 过滤日期范围
+                # 过滤日期范围（API 返回 YYYY-MM-DD，参数为 YYYYMMDD，需统一格式）
                 result = []
                 for item in data:
-                    if start <= item['day'] <= end:
+                    day_clean = item['day'].replace('-', '')
+                    if start <= day_clean <= end:
                         result.append({
                             "日期": item['day'],
                             "开盘": float(item['open']),

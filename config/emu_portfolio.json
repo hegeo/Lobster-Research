@@ -1,0 +1,46 @@
+{
+  "_version": "3.0",
+  "_updated": "2026-04-26T15:45:53.136659",
+  "account": {
+    "total_assets": 80000.0,
+    "available_cash": 35000.0,
+    "currency": "CNY"
+  },
+  "positions": [
+    {
+      "code": "000063",
+      "name": "中兴通讯",
+      "exchange": "SZ",
+      "cost_price": 32.5,
+      "current_price": 36.38,
+      "shares": 500,
+      "market_value": 18190.0,
+      "profit_loss": 1940.0,
+      "profit_loss_pct": 11.94,
+      "buy_date": "2026-04-26"
+    },
+    {
+      "code": "300750",
+      "name": "宁德时代",
+      "exchange": "SZ",
+      "cost_price": 210.0,
+      "current_price": 235.8,
+      "shares": 100,
+      "market_value": 23580.0,
+      "profit_loss": 2580.0,
+      "profit_loss_pct": 12.29,
+      "buy_date": "2026-02-20"
+    }
+  ],
+  "summary": {
+    "total_market_value": 41770.0,
+    "total_profit_loss": 4520.0,
+    "total_profit_loss_pct": 12.13,
+    "position_count": 2
+  },
+  "_meta": {
+    "version": "1.0",
+    "created": "2026-05-11T19:55:46.921257",
+    "source": "user_sync"
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "_schema": "1.0",
+  "domain": "stock",
+  "label": "个股",
+  "description": "个股搜索词模板 — 从财务/机构/新闻/技术/竞争多维度搜索",
+  "search_groups": [
+    {
+      "label": "财务业绩",
+      "sources": ["eastmoney.com", "10jqka.com.cn", "cninfo.com.cn"],
+      "keywords": [
+        "{name} {code} 年报 营收 净利润 {date}",
+        "{name} {code} 业绩预告 财报 每股收益",
+        "{name} {code} 毛利率 ROE 资产负债率"
+      ]
+    },
+    {
+      "label": "机构观点",
+      "sources": ["eastmoney.com", "10jqka.com.cn", "futunn.com"],
+      "keywords": [
+        "{name} {code} 机构评级 目标价 研报 {date}",
+        "{name} {code} 券商 买入 增持 评级"
+      ]
+    },
+    {
+      "label": "新闻公告",
+      "sources": ["finance.sina.com.cn", "eastmoney.com", "stcn.com", "cnstock.com"],
+      "keywords": [
+        "{name} {code} 最新公告 新闻 {date}",
+        "{name} {code} 重大合同 减持 回购"
+      ]
+    },
+    {
+      "label": "资金面",
+      "sources": ["eastmoney.com", "10jqka.com.cn", "data.eastmoney.com"],
+      "keywords": [
+        "{name} {code} 主力资金 北向资金 龙虎榜 {date}",
+        "{name} {code} 融资融券 大宗交易 股东增减持"
+      ]
+    },
+    {
+      "label": "技术面",
+      "sources": ["quote.eastmoney.com", "stock.finance.sina.com.cn"],
+      "keywords": [
+        "{name} {code} K线 均线 技术分析 {date}",
+        "{name} {code} 行情走势 成交量 换手率"
+      ]
+    }
+  ]
+}

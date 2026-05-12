@@ -1,0 +1,9 @@
+{
+  "_schema": "1.0",
+  "domain": "agri",
+  "label": "农业与工业",
+  "search_groups": [
+    {"label": "价格供需", "sources": ["eastmoney.com", "cls.cn", "10jqka.com.cn"], "keywords": ["{topic} 价格走势 供需 库存 {date}", "{topic} 生猪 粮食 农产品 期货"]},
+    {"label": "政策补贴", "sources": ["gov.cn", "cls.cn", "stcn.com"], "keywords": ["{topic} 农业政策 补贴 种业 {date}", "{topic} 乡村振兴 粮食安全 {date}"]}
+  ]
+}

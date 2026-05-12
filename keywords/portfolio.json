@@ -1,0 +1,10 @@
+{
+  "_schema": "1.0",
+  "domain": "portfolio",
+  "label": "持仓诊断",
+  "search_groups": [
+    {"label": "持仓个股", "sources": ["eastmoney.com", "10jqka.com.cn"], "keywords": ["{name} {code} 最新行情 公告 新闻 {date}", "{name} {code} 业绩 财务 风险提示"]},
+    {"label": "大盘情绪", "sources": ["eastmoney.com", "finance.sina.com.cn"], "keywords": ["A股 大盘 市场情绪 板块轮动 {date}", "北向资金 主力资金 流向 {date}"]},
+    {"label": "行业风险", "sources": ["eastmoney.com", "cls.cn", "stcn.com"], "keywords": ["{topic} 行业风险 政策变化 {date}", "{topic} 利空 调整 行业观点"]}
+  ]
+}

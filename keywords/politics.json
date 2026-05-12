@@ -1,0 +1,9 @@
+{
+  "_schema": "1.0",
+  "domain": "politics",
+  "label": "政治与影响力",
+  "search_groups": [
+    {"label": "地缘政治", "sources": ["huanqiu.com", "finance.sina.com.cn", "cls.cn"], "keywords": ["{topic} 地缘政治 最新动态 影响 {date}", "{topic} 国际关系 制裁 贸易 {date}"]},
+    {"label": "经济影响", "sources": ["cls.cn", "finance.sina.com.cn", "eastmoney.com"], "keywords": ["{topic} 经济影响 市场反应 投资策略 {date}", "{topic} 全球供应链 能源 通胀 {date}"]}
+  ]
+}

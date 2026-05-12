@@ -1,0 +1,9 @@
+{
+  "_schema": "1.0",
+  "domain": "crossasset",
+  "label": "跨资产研究",
+  "search_groups": [
+    {"label": "全球市场", "sources": ["finance.sina.com.cn", "eastmoney.com", "cls.cn"], "keywords": ["{topic} 全球市场 行情 走势 {date}", "{topic} 美股 港股 欧股 日股 {date}"]},
+    {"label": "资产配置", "sources": ["eastmoney.com", "cls.cn", "xueqiu.com"], "keywords": ["{topic} 资产配置 投资策略 宏观 {date}", "{topic} 股债 黄金 商品 汇率 {date}"]}
+  ]
+}

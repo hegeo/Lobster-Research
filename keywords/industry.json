@@ -1,0 +1,12 @@
+{
+  "_schema": "1.0",
+  "domain": "industry",
+  "label": "行业发展",
+  "description": "行业发展研究搜索词模板",
+  "search_groups": [
+    {"label": "市场规模", "sources": ["qianzhan.com", "eastmoney.com", "10jqka.com.cn", "report.stats.gov.cn"], "keywords": ["{topic} 市场规模 增速 行业报告 {date}", "{topic} 产业链 上中下游 产值"]},
+    {"label": "竞争格局", "sources": ["eastmoney.com", "10jqka.com.cn", "huxiu.com", "36kr.com"], "keywords": ["{topic} 龙头企业 市场份额 竞争格局 {date}", "{topic} 上市公司 排名 集中度"]},
+    {"label": "政策环境", "sources": ["gov.cn", "cls.cn", "stcn.com", "finance.sina.com.cn"], "keywords": ["{topic} 产业政策 扶持 补贴 {date}", "{topic} 监管 法规 行业标准"]},
+    {"label": "投资机会", "sources": ["eastmoney.com", "10jqka.com.cn", "futunn.com", "xueqiu.com"], "keywords": ["{topic} 投资机会 推荐标的 券商研报 {date}", "{topic} 龙头股 估值 成长空间"]}
+  ]
+}

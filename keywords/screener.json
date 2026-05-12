@@ -1,0 +1,10 @@
+{
+  "_schema": "1.0",
+  "domain": "screener",
+  "label": "快速选股",
+  "search_groups": [
+    {"label": "涨停复盘", "sources": ["eastmoney.com", "10jqka.com.cn", "data.eastmoney.com"], "keywords": ["涨停复盘 连板 龙头股 {date}", "{topic} 涨停 热门 强势股 {date}"]},
+    {"label": "资金动向", "sources": ["eastmoney.com", "10jqka.com.cn", "data.eastmoney.com"], "keywords": ["龙虎榜 游资 机构席位 {date}", "主力资金 净流入 板块排名 {date}"]},
+    {"label": "题材热点", "sources": ["eastmoney.com", "cls.cn", "finance.sina.com.cn"], "keywords": ["{topic} 概念 题材 龙头 {date}", "A股 热点 主题投资 消息面 {date}"]}
+  ]
+}

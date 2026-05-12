@@ -1,0 +1,9 @@
+{
+  "_schema": "1.0",
+  "domain": "etf",
+  "label": "ETF",
+  "search_groups": [
+    {"label": "ETF净值", "sources": ["eastmoney.com", "10jqka.com.cn", "fund.eastmoney.com"], "keywords": ["ETF 净值 涨幅 资金流入 {date}", "ETF 排行 热门 规模 {date}"]},
+    {"label": "定投标的", "sources": ["eastmoney.com", "xueqiu.com", "fund.eastmoney.com"], "keywords": ["ETF 推荐 定投 宽基 行业ETF {date}", "红利ETF 科创ETF 沪深300 中证500 走势 {date}"]}
+  ]
+}

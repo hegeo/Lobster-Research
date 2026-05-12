@@ -1,27 +1,27 @@
 {
-  "_doc": "龙虾智能调研 — Smart 路由配置。Agent 直接传用户输入给 main.py smart 命令，main.py 自动匹配。CLI 子命令（stock/company/market/industry/portfolio/screener）也从此文件读取配置，通过 cli_default_type 和 cli_prompt_template 字段区分。",
+  "_doc": "龙虾智能调研 — Smart 路由配置。Agent 直接传用户输入给 main.py smart 命令，main.py 自动匹配。CLI 子命令（stock/company/market/portfolio/screener）也从此文件读取配置，通过 cli_default_type 和 cli_prompt_template 字段区分。注意：industry 已无 CLI 入口（纯搜索），统一由 smart 路由覆盖。",
   "_match_logic": "双层关键词匹配：先匹配 domain（领域），再匹配 tier_tag（输出类型）。domain 命中但 tier_tag 未命中 → 默认走 news 快讯。",
   "_version": "1.4",
   "_changelog_v1.4": "统一所有 search_templates 使用 {date} 占位符（去除硬编码 2026），增强时效性；缩短信源关键词提升匹配率",
   "_changelog_v1.3": "精简 search_templates：4→2/3→2/2→1，合并重叠维度，收紧关键词减少噪声，总模板数 67→42（-37%），提速约 40%",
   "_changelog_v1.2": "收紧过度宽泛的领域关键词（市场/技术/推荐/关注/细分/公司/潮流等），差异化各 domain 的 search_templates 避免同质化",
 
-  "_reserved_steps_doc": "以下步骤已在 main.py 路由和 task_runner.py 中注册为预留占位。触发时自动创建空占位 JSON 文件，不会中断流程。待后续实现具体逻辑。",
+  "_reserved_steps_doc": "以下步骤已在 main.py 路由和 task_runner.py 中注册为预留占位。触发时自动创建空占位 JSON 文件，不会中断流程。注意：news_stock_flash 已实现（从占位移除），其余待后续实现。",
   "_reserved_steps": {
-    "news_market_flash":  "3_news_market_flash.json — 大盘专属行情快讯、盘面热点资讯",
-    "news_stock_flash":   "3_news_stock_flash.json — 单个股相关快讯、公告、题材消息",
-    "search_research":    "4_search_research_report.json — 研报专题批量搜索汇总结果",
-    "search_market_batch":"4_search_market_batch.json — 市场宏观专题批量搜索汇总结果",
-    "search_stock_batch": "4_search_stock_batch.json — 个股专题批量搜索汇总结果",
-    "emu_portfolio":      "6_emu_portfolio.json — 模拟盘当前持仓快照数据",
-    "emu_operation":      "6_emu_operation_log.json — 模拟盘买卖操作流水、委托记录",
-    "emu_reflection":     "6_emu_reflection_review.json — 模拟盘每日复盘、交易反思、策略迭代记录"
+    "news_market_flash":   "3_news_market_flash.json — 大盘专属行情快讯、盘面热点资讯（预留）",
+    "news_stock_flash":    "3_news_stock_flash.json — ✅ 已实现：通过 akshare stock_news_em 获取东方财富个股新闻",
+    "search_research":     "4_search_research_report.json — 研报专题批量搜索汇总结果（预留）",
+    "search_market_batch":"4_search_market_batch.json — 市场宏观专题批量搜索汇总结果（预留）",
+    "search_stock_batch": "4_search_stock_batch.json — 个股专题批量搜索汇总结果（预留）",
+    "emu_portfolio":      "6_emu_portfolio.json — 模拟盘当前持仓快照数据（预留）",
+    "emu_operation":      "6_emu_operation_log.json — 模拟盘买卖操作流水、委托记录（预留）",
+    "emu_reflection":     "6_emu_reflection_review.json — 模拟盘每日复盘、交易反思、策略迭代记录（预留）"
   },
 
   "tier_tags": {
-    "_doc": "输出类型关键词：决定生成什么格式的输出",
-    "quick": ["快报", "日报", "速览", "今日推荐", "周报"],
-    "deep":  ["研报", "深度", "研究", "深度分析", "尽调", "调查", "报告"]
+    "_doc": "输出类型关键词：决定生成什么格式的输出。注意匹配顺序：先domain后tier_tag，避免news_defaults抢断",
+    "quick": ["快报", "速报", "日报", "速览", "周报", "简报"],
+    "deep":  ["深度研报", "深度分析", "研报", "深度", "尽调", "调查", "研究"]
   },
 
   "domains": [
@@ -45,25 +45,27 @@
     {
       "id": "stock",
       "label": "个股",
-      "keywords": ["股票", "个股", "走势", "股价", "涨停", "跌停", "K线", "龙虎榜"],
+      "keywords": ["股票", "个股", "走势", "股价", "涨停", "跌停", "K线", "龙虎榜", "代码"],
       "steps": ["quote", "kline", "master", "market_state", "news_stock_flash", "search_stock_batch", "search"],
+      "quick_steps": ["quote", "kline", "market_state", "news_stock_flash"],
       "search_templates": [
         "{name} {code} 最新消息 业绩 财报 {date}",
         "{name} 机构评级 目标价 券商研报 {date}"
       ],
       "quick_template": "快报-个股分析.json",
-      "deep_template":  "研报-企业发展.json",
+      "deep_template":  "研报-个股分析.json",
       "quick_hint": "请读取JSON数据，分析个股行情和技术面，填充 5_agent_report_input.json",
-      "deep_hint":  "请读取以上JSON，补充搜索财务数据、机构观点、行业背景，填充 5_agent_report_input.json",
+      "deep_hint":  "请读取K线/个股/资金/搜索数据，从行情技术面、基本面、资金面、估值、催化剂等多维度分析个股，给出具体交易策略，填充 5_agent_report_input.json",
       "news_hint":  "这是一条个股快讯请求。请用 finance-data 工具查询该股票的实时行情，整理成简短文字快讯直接回复用户。",
       "cli_default_type": "gupiao_fenxi",
-      "cli_prompt_template": "研报-企业发展.json"
+      "cli_prompt_template": "研报-个股分析.json"
     },
     {
       "id": "portfolio",
       "label": "持仓",
       "keywords": ["持仓", "仓位", "组合", "资产配置", "投资组合"],
       "steps": ["portfolio", "market_index", "market_state", "emu_portfolio", "emu_operation", "emu_reflection", "search"],
+      "quick_steps": ["portfolio", "market_index", "market_state"],
       "search_templates": [
         "A股 大盘 市场情绪 板块轮动 {date}"
       ],
@@ -80,6 +82,7 @@
       "label": "选股",
       "keywords": ["选股", "买什么", "标的", "快速选股"],
       "steps": ["market_index", "market_state","news_market_flash", "search_research", "search_stock_batch", "search"],
+      "quick_steps": ["market_index", "market_state"],
       "search_templates": [
         "A股 涨停复盘 连板梯队 龙头股 {date}",
         "龙虎榜 主力资金 游资动向 {date}"
@@ -134,14 +137,12 @@
       "deep_template":  "研报-行业发展.json",
       "quick_hint": null,
       "deep_hint":  "请读取搜索结果JSON，分析行业规模/竞争/政策/机会/风险，填充 5_agent_report_input.json",
-      "news_hint":  "这是一条行业快讯。请查询相关行业动态，整理成文字快讯回复用户。",
-      "cli_default_type": "hangye_baogao",
-      "cli_prompt_template": "研报-行业发展.json"
+      "news_hint":  "这是一条行业快讯。请查询相关行业动态，整理成文字快讯回复用户。"
     },
     {
       "id": "company",
       "label": "企业",
-      "keywords": ["企业", "公司研报", "尽调", "商业模式", "财报", "年报"],
+      "keywords": ["企业", "公司研报", "尽调", "商业模式", "财报", "年报", "公司", "企业分析", "企业研究"],
       "steps": ["quote", "kline", "master", "search_research", "search_stock_batch", "search"],
       "search_templates": [
         "{name} 年报 财报 营收 利润 业绩 {date}",
@@ -158,7 +159,7 @@
     {
       "id": "tech",
       "label": "科技",
-      "keywords": ["科技", "AI", "人工智能", "芯片", "半导体", "互联网", "软件", "大模型", "算力", "数据中心"],
+      "keywords": ["科技", "AI", "人工智能", "芯片", "半导体", "互联网", "软件", "大模型", "算力", "数据中心", "低空经济", "数据要素"],
       "steps": ["search_research", "search"],
       "search_templates": [
         "{topic} 技术突破 趋势 {date}",
@@ -173,7 +174,7 @@
     {
       "id": "frontier",
       "label": "前沿技术",
-      "keywords": ["前沿", "技术研报", "技术研究", "技术发展", "核聚变", "6G", "具身智能", "机器人"],
+      "keywords": ["前沿", "技术研报", "技术研究", "技术发展", "核聚变", "具身智能", "机器人"],
       "steps": ["search"],
       "search_templates": [
         "{topic} 技术突破 进展 {date}",
@@ -393,7 +394,7 @@
 
   "news_defaults": {
     "_doc": "纯新闻/资讯类关键词，不需要匹配任何 domain，直接走快讯",
-    "keywords": ["新闻", "消息", "快讯", "热点", "最新", "新鲜事", "资讯", "头条"],
+    "keywords": ["新闻", "消息", "快讯", "热点", "最新", "新鲜事", "资讯", "头条", "今天"],
     "hint": "这是一条新闻快讯请求。请读取搜索结果，用 finance-data 补充实时资讯，整理成 300-500 字的文字快讯直接回复用户，不需要生成 PDF。"
   }
 }

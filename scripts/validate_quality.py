@@ -30,15 +30,15 @@ def _get_quality_thresholds(report_type: str, prompt_template: Optional[dict] = 
     # 从模板 type 判断
     tpl_type = (prompt_template or {}).get("type", "")
     if tpl_type == "快报":
-        return {"min_sections": 3, "min_tables": 0, "min_chars": 800, "mode": "quick"}
+        return {"min_sections": 3, "min_tables": 0, "min_chars": 1800, "mode": "quick"}
     if tpl_type == "研报":
-        return {"min_sections": 8, "min_tables": 3, "min_chars": 3000, "mode": "deep"}
+        return {"min_sections": 8, "min_tables": 3, "min_chars": 5000, "mode": "deep"}
 
     # fallback: 从 report_type 名称判断
     quick_types = ["kuaibao", "dongtai", "shunshi", "kuaisu"]
     if any(q in report_type for q in quick_types):
-        return {"min_sections": 3, "min_tables": 0, "min_chars": 800, "mode": "quick"}
-    return {"min_sections": 8, "min_tables": 3, "min_chars": 3000, "mode": "deep"}
+        return {"min_sections": 3, "min_tables": 0, "min_chars": 1800, "mode": "quick"}
+    return {"min_sections": 8, "min_tables": 3, "min_chars": 5000, "mode": "deep"}
 
 
 # ═══════════════════════════════════════════════════════════
@@ -49,9 +49,10 @@ def normalize_table(table, section_label="", sub_label=""):
     """
     统一 table 字段为 {headers: [...], rows: [...]} 格式。
 
-    兼容两种 Agent 输入：
+    兼容三种 Agent 输入：
       ✅ 正确: {"headers": ["h1"], "rows": [["v1"]]}
       ✅ 自动转: [["h1"], ["v1"]] → {"headers": ["h1"], "rows": [["v1"]]}
+      ✅ 自动转: "| h1 |\\n|:---|\\n| v1 |" → {"headers": ["h1"], "rows": [["v1"]]}
 
     返回:
       dict | None   — None 表示无效或空表
@@ -70,6 +71,35 @@ def normalize_table(table, section_label="", sub_label=""):
 
     if isinstance(table, dict):
         return table
+
+    if isinstance(table, str):
+        # Agent 写了 markdown 表格字符串 → 自动解析
+        lines = [l.strip() for l in table.strip().split('\n') if l.strip()]
+        if len(lines) < 2:
+            print(f"  ⚠️ table 格式无法识别（{section_label}/{sub_label}）：str 行数不足")
+            return None
+
+        def split_row(row):
+            r = row.strip()
+            if r.startswith('|'): r = r[1:]
+            if r.endswith('|'): r = r[:-1]
+            return [c.strip() for c in r.split('|')]
+
+        # 第一行: headers
+        headers = split_row(lines[0])
+        # 第二行: 分隔线（跳过）
+        rows = []
+        for row in lines[2:]:
+            cells = split_row(row)
+            if len(cells) >= 2:  # 至少2列才认为是有效行
+                rows.append(cells)
+
+        if not headers or not rows:
+            print(f"  ⚠️ table 格式无法识别（{section_label}/{sub_label}）：str 解析结果为空")
+            return None
+
+        print(f"  ⚠️ table 格式自动转换（{section_label}/{sub_label}）：str → obj")
+        return {"headers": headers, "rows": rows}
 
     print(f"  ⚠️ table 格式无法识别（{section_label}/{sub_label}）：{type(table).__name__}")
     return None

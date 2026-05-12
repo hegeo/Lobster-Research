@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-龙虾调研助手 V3 - 配置管理
+龙虾调研助手 - 配置管理
 ===========================
 统一管理 config.json（系统/用户配置）和 portfolio.json（持仓数据）。
 
@@ -76,7 +76,7 @@ _SETTINGS_JSON = os.path.join(_CONFIG_DIR, "settings.json")
 # 默认配置（首次初始化用）
 # ═══════════════════════════════════════════════════════════
 _DEFAULT_CONFIG = {
-    "_version": "3.0",
+    "_version": "2.2",
     "_updated": "",
     "user": {
         "country": "CN",
@@ -91,7 +91,9 @@ _DEFAULT_CONFIG = {
     "output": {
         "mode": "expert",
         "format": "markdown",
-        "report_style": "ios_liquid",
+        "report_style": "blue",
+        "color_type": "liquid",
+        "layout": "rounded",
         "default_dir": "output",
     },
     "market": {
@@ -112,26 +114,6 @@ _DEFAULT_CONFIG = {
             "User-Agent": "Mozilla/5.0",
             "Accept": "application/json",
         },
-    },
-    "cross_assets": {
-        "symbols": [
-            {"code": "GC=F", "name": "黄金 XAU/USD"},
-            {"code": "DX=F", "name": "美元指数 DXY"},
-            {"code": "BTC-USD", "name": "比特币 BTC/USD"},
-            {"code": "SI=F", "name": "白银 XAG/USD"},
-            {"code": "ETH-USD", "name": "以太坊 ETH/USD"},
-        ],
-        "fx": [
-            {"code": "CNY=X", "name": "美元/人民币 USD/CNY"},
-            {"code": "EUR=X", "name": "EUR/USD"},
-            {"code": "JPY=X", "name": "USD/JPY"},
-        ],
-        "fred": [
-            {"code": "DGS10", "name": "10Y名义利率(%)"},
-            {"code": "DFII10", "name": "10Y通胀保值债券(TIPS)"},
-            {"code": "DGS2", "name": "2Y名义利率(%)"},
-            {"code": "DTB3", "name": "3M LIBOR(%)"},
-        ],
     },
     "system": {
         "run_mode": "skill",
@@ -182,11 +164,15 @@ _DEFAULT_CONFIG = {
             "markdown": "结构化文档",
             "pdf": "PDF文档",
         },
-        "report_style": {
-            "liquid": "液态简约",
-            "orange": "经典橙色",
-            "blue": "经典蓝色",
-            "ios_liquid": "液态简约",
+        "color_type": {
+            "solid":    "纯色（纯色封面/纯白cover/纯色摘要）",
+            "gradient": "渐变（渐变封面/纯白cover/渐变摘要）",
+            "liquid":   "液态（渐变+光晕/毛玻璃cover/渐变摘要）",
+        },
+        "layout": {
+            "rounded": "圆角（大圆角柔阴影）",
+            "square":  "方正（直角弱阴影）",
+            "minimal": "极简（无线无影无边框）",
         },
         "run_mode": {
             "skill": "Skill 模式（Agent 手动填充）",
@@ -247,7 +233,7 @@ def get(path: str = "", default: Any = None) -> Any:
     用法：
         get()                          → 全部配置 dict
         get("user")                    → user 分组 dict
-        get("output.report_style")     → "ios_liquid"
+        get("output.report_style")     → "liquid"
         get("user.investment_style")   → "balanced"
         get("non.exist", "fallback")   → "fallback"
     """
@@ -961,6 +947,16 @@ def main():
   python config/config.py settings show websearch_pro
   python config/config.py settings set websearch_pro.engines.primary bing
   python config/config.py settings set websearch_pro.apis.tavily_api_key tvly-xxx
+
+  python config/config.py emu show
+  python config/config.py emu ops
+  python config/config.py emu reflect
+  python config/config.py emu init
+  python config/config.py emu reset
+
+  python config/config.py set emu.enabled true
+  python config/config.py set emu.follow_user_prefs true
+  python config/config.py set emu.independent_capital 200000
         """
     )
 
@@ -1026,6 +1022,15 @@ def main():
     p_st_set.add_argument("path", help="配置路径，如 websearch_pro.engines.primary")
     p_st_set.add_argument("value", help="配置值")
 
+    # emu — 模拟持仓
+    p_emu = sub.add_parser("emu", help="模拟持仓管理")
+    emu_sub = p_emu.add_subparsers(dest="emu_command")
+    emu_sub.add_parser("show", help="查看模拟持仓")
+    emu_sub.add_parser("ops", help="查看操作记录")
+    emu_sub.add_parser("reflect", help="运行反思复盘")
+    emu_sub.add_parser("init", help="初始化模拟持仓")
+    emu_sub.add_parser("reset", help="重置模拟持仓")
+
     args = parser.parse_args()
 
     if args.command == "show":
@@ -1058,6 +1063,29 @@ def main():
             _cmd_settings_set(args.path, args.value)
         else:
             p_st.print_help()
+    elif args.command == "emu":
+        try:
+            _SCRIPTS_DIR = os.path.join(os.path.dirname(__file__), "..", "scripts")
+            if _SCRIPTS_DIR not in sys.path:
+                sys.path.insert(0, _SCRIPTS_DIR)
+            from emu_manager import cmd_show, cmd_ops, cmd_reflect, cmd_reset
+            from emu_manager import init_emu_portfolio
+        except ImportError as e:
+            print(f"❌ 模拟持仓模块未安装: {e}")
+            return
+        if args.emu_command == "show":
+            cmd_show()
+        elif args.emu_command == "ops":
+            cmd_ops()
+        elif args.emu_command == "reflect":
+            cmd_reflect()
+        elif args.emu_command == "init":
+            init_emu_portfolio(force=True)
+            print("✅ 模拟持仓已初始化")
+        elif args.emu_command == "reset":
+            cmd_reset()
+        else:
+            p_emu.print_help()
     else:
         parser.print_help()
 

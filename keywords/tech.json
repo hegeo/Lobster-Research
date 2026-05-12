@@ -1,0 +1,10 @@
+{
+  "_schema": "1.0",
+  "domain": "tech",
+  "label": "科技风向",
+  "search_groups": [
+    {"label": "前沿技术", "sources": ["36kr.com", "huxiu.com", "leiphone.com", "jiqizhixin.com"], "keywords": ["{topic} 技术突破 最新进展 {date}", "{topic} 研发 创新 成果 {date}"]},
+    {"label": "产业动态", "sources": ["eastmoney.com", "cls.cn", "stcn.com", "36kr.com"], "keywords": ["{topic} 市场规模 融资 商业化 {date}", "{topic} 产业链 龙头企业 布局 {date}"]},
+    {"label": "投资机会", "sources": ["eastmoney.com", "10jqka.com.cn", "xueqiu.com"], "keywords": ["{topic} 概念股 推荐 券商研报 {date}", "{topic} 估值 成长性 投资逻辑 {date}"]}
+  ]
+}

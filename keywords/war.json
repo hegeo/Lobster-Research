@@ -1,0 +1,9 @@
+{
+  "_schema": "1.0",
+  "domain": "war",
+  "label": "战争与军事",
+  "search_groups": [
+    {"label": "军事动态", "sources": ["huanqiu.com", "finance.sina.com.cn", "cls.cn"], "keywords": ["{topic} 军事动态 最新战况 {date}", "{topic} 军备 采购 国防预算"]},
+    {"label": "军工产业", "sources": ["eastmoney.com", "10jqka.com.cn", "cls.cn"], "keywords": ["{topic} 军工 上市公司 订单 业绩 {date}", "{topic} 国防 装备 产业链"]}
+  ]
+}

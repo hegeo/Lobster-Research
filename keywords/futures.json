@@ -1,0 +1,9 @@
+{
+  "_schema": "1.0",
+  "domain": "futures",
+  "label": "期货方向",
+  "search_groups": [
+    {"label": "期货行情", "sources": ["eastmoney.com", "10jqka.com.cn", "finance.sina.com.cn"], "keywords": ["{topic} 期货 价格走势 持仓 成交量 {date}", "{topic} 主力合约 基差 期限结构"]},
+    {"label": "供需分析", "sources": ["eastmoney.com", "cls.cn", "stcn.com"], "keywords": ["{topic} 供需 库存 产量 进口 {date}", "{topic} 政策 调控 国储 {date}"]}
+  ]
+}

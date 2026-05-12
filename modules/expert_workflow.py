@@ -68,10 +68,12 @@ def step2_collect_technical_data(stock_code: str) -> Dict[str, Any]:
     api = StockDataAPI()
     
     # 获取实时行情
-    realtime_data = api.get_realtime_stock(f'sz{stock_code}')  # 默认深圳，上海用sh
-    if not realtime_data.get('success'):
+    raw = api.get_realtime_stock(f'sz{stock_code}')  # 默认深圳，上海用sh
+    if not raw.get('success'):
         # 尝试上海
-        realtime_data = api.get_realtime_stock(f'sh{stock_code}')
+        raw = api.get_realtime_stock(f'sh{stock_code}')
+    # 解包 success/data 格式
+    realtime_data = raw.get('data', {}) if raw.get('success') else {}
     
     # 获取历史K线（近3个月）
     end_date = datetime.now().strftime('%Y%m%d')

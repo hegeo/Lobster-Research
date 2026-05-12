@@ -1,0 +1,9 @@
+{
+  "_schema": "1.0",
+  "domain": "space",
+  "label": "宇宙与地理",
+  "search_groups": [
+    {"label": "航天动态", "sources": ["huanqiu.com", "cls.cn", "finance.sina.com.cn"], "keywords": ["{topic} 航天 卫星 火箭 最新任务 {date}", "{topic} 空间站 探月 深空探测"]},
+    {"label": "商业航天", "sources": ["36kr.com", "huxiu.com", "cls.cn"], "keywords": ["{topic} 商业航天 融资 产业 {date}", "{topic} 卫星互联网 太空经济 市场规模"]}
+  ]
+}

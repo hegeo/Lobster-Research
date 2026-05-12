@@ -1,0 +1,9 @@
+{
+  "_schema": "1.0",
+  "domain": "resource",
+  "label": "资源与工业",
+  "search_groups": [
+    {"label": "产能价格", "sources": ["eastmoney.com", "10jqka.com.cn", "cls.cn"], "keywords": ["{topic} 产能 产量 价格 库存 {date}", "{topic} 供需 开工率 利润"]},
+    {"label": "绿色转型", "sources": ["eastmoney.com", "cls.cn", "stcn.com", "gov.cn"], "keywords": ["{topic} 碳中和 节能减排 绿色转型 {date}", "{topic} 出海 贸易壁垒 关税"]}
+  ]
+}

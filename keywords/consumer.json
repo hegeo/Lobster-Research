@@ -1,0 +1,10 @@
+{
+  "_schema": "1.0",
+  "domain": "consumer",
+  "label": "消费与潮流",
+  "search_groups": [
+    {"label": "消费趋势", "sources": ["eastmoney.com", "cls.cn", "36kr.com"], "keywords": ["{topic} 消费趋势 市场规模 增速 {date}", "{topic} 品牌 渠道 新零售 {date}"]},
+    {"label": "业绩跟踪", "sources": ["eastmoney.com", "10jqka.com.cn"], "keywords": ["{topic} 龙头业绩 财报 营收 {date}", "{topic} 毛利率 净利率 同店增长"]},
+    {"label": "估值对比", "sources": ["eastmoney.com", "xueqiu.com", "futunn.com"], "keywords": ["{topic} 估值 PE 历史分位 {date}", "{topic} 券商 推荐 评级 目标价"]}
+  ]
+}

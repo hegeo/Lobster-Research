@@ -1,0 +1,9 @@
+{
+  "_schema": "1.0",
+  "domain": "telecom",
+  "label": "通讯与物流航运",
+  "search_groups": [
+    {"label": "运营数据", "sources": ["eastmoney.com", "10jqka.com.cn", "cls.cn"], "keywords": ["{topic} 运营数据 5G 用户数 营收 {date}", "{topic} 基站 光通信 物联网 {date}"]},
+    {"label": "物流航运", "sources": ["eastmoney.com", "cls.cn", "stcn.com"], "keywords": ["{topic} 物流 快递 航运 运价 {date}", "{topic} 供应链 跨境电商 仓储 {date}"]}
+  ]
+}

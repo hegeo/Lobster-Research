@@ -1,0 +1,49 @@
+{
+  "_schema": "1.0",
+  "domain": "company",
+  "label": "企业",
+  "description": "企业/公司研究搜索词模板 — 财报/治理/竞争/估值多维度",
+  "search_groups": [
+    {
+      "label": "财务深度",
+      "sources": ["eastmoney.com", "10jqka.com.cn", "cninfo.com.cn", "wind.com.cn"],
+      "keywords": [
+        "{name} {code} 年报 营收 净利润 现金流 {date}",
+        "{name} {code} 资产负债表 毛利率 净利率 ROE",
+        "{name} {code} 业务板块 收入构成 利润率"
+      ]
+    },
+    {
+      "label": "治理与管理层",
+      "sources": ["eastmoney.com", "cninfo.com.cn", "emweb.securities.eastmoney.com"],
+      "keywords": [
+        "{name} {code} 管理层 董事长 高管 变动",
+        "{name} {code} 股权结构 十大股东 实际控制人"
+      ]
+    },
+    {
+      "label": "竞争格局",
+      "sources": ["eastmoney.com", "10jqka.com.cn", "qianzhan.com", "huxiu.com"],
+      "keywords": [
+        "{name} {code} 行业地位 市场份额 竞争优势 {date}",
+        "{name} {code} 竞争对手 对比 龙头"
+      ]
+    },
+    {
+      "label": "估值与机构",
+      "sources": ["eastmoney.com", "10jqka.com.cn", "futunn.com"],
+      "keywords": [
+        "{name} {code} PE PB 估值 目标价 {date}",
+        "{name} {code} 券商研报 评级 买入 持有"
+      ]
+    },
+    {
+      "label": "行业政策",
+      "sources": ["gov.cn", "stcn.com", "finance.sina.com.cn", "cls.cn"],
+      "keywords": [
+        "{name} 所属行业 产业政策 发展规划 {date}",
+        "{name} {code} 监管 合规 行业动态"
+      ]
+    }
+  ]
+}
