@@ -40,7 +40,8 @@
         {
           "title": "技术动向",
           "content": "_基于数据文件和搜索结果的技术动向分析，300字",
-          "table": "_Agent 填充表格数据（格式：{headers:[...], rows:[[...]]}）"
+          "table": "_Agent 填充表格数据（格式：{headers:[...], rows:[[...]]}）",
+          "highlight": "_核心判断一句话"
         }
       ]
     },
@@ -50,7 +51,8 @@
         {
           "title": "技术突破",
           "content": "_基于数据文件和搜索结果的技术突破分析，300字",
-          "table": "_Agent 填充表格数据（格式：{headers:[...], rows:[[...]]}）"
+          "table": "_Agent 填充表格数据（格式：{headers:[...], rows:[[...]]}）",
+          "highlight": "_核心判断一句话"
         }
       ]
     },
@@ -60,7 +62,8 @@
         {
           "title": "资本脉搏",
           "content": "_基于数据文件和搜索结果的资本脉搏分析，300字",
-          "table": "_Agent 填充表格数据（格式：{headers:[...], rows:[[...]]}）"
+          "table": "_Agent 填充表格数据（格式：{headers:[...], rows:[[...]]}）",
+          "highlight": "_核心判断一句话"
         }
       ]
     },
@@ -70,7 +73,8 @@
         {
           "title": "政策与标准",
           "content": "_基于数据文件和搜索结果的政策与标准分析，300字",
-          "table": "_Agent 填充表格数据（格式：{headers:[...], rows:[[...]]}）"
+          "table": "_Agent 填充表格数据（格式：{headers:[...], rows:[[...]]}）",
+          "highlight": "_核心判断一句话"
         }
       ]
     },
@@ -80,7 +84,8 @@
         {
           "title": "下周/下双周瞭望",
           "content": "_基于数据文件和搜索结果的下周/下双周瞭望分析，300字",
-          "table": "_Agent 填充表格数据（格式：{headers:[...], rows:[[...]]}）"
+          "table": "_Agent 填充表格数据（格式：{headers:[...], rows:[[...]]}）",
+          "highlight": "_核心判断一句话"
         }
       ]
     },

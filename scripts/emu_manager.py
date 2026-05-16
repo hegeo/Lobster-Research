@@ -80,6 +80,7 @@ def get_emu_config() -> dict:
     default = {
         "enabled": False,
         "follow_user_prefs": True,
+        "use_independent_capital": False,
         "independent_capital": 100000.0,
         "independent_freq": "short",
         "independent_style": "value",
@@ -108,15 +109,27 @@ def get_resolved_emu_config() -> dict:
 
     if emu.get("follow_user_prefs", True):
         user = config.get("user", {})
-        assets_map = {
-            "below_10w": 50000, "10w_to_50w": 200000,
-            "50w_to_100w": 600000, "above_100w": 1000000,
-        }
-        assets = assets_map.get(user.get("total_assets_range", "below_10w"), 50000)
-        emu["effective_capital"] = float(assets)
+        # 风格/频率/风险跟随用户画像（避免报告分析与模拟盘冲突）
         emu["effective_freq"]    = user.get("operation_freq", "short")
         emu["effective_style"]   = user.get("investment_style", "value")
         emu["effective_risk"]    = user.get("risk_level", "steady")
+
+        # 资金量：可选独立初始资金（use_independent_capital=true 时用独立值，否则用用户实际资产）
+        if emu.get("use_independent_capital", False):
+            emu["effective_capital"] = emu.get("independent_capital", 100000.0)
+        else:
+            portfolio_path = os.path.join(_CONFIG_DIR, "portfolio.json")
+            portfolio = _read_json(portfolio_path, {})
+            actual_assets = portfolio.get("account", {}).get("total_assets")
+            if actual_assets and actual_assets > 0:
+                emu["effective_capital"] = float(actual_assets)
+            else:
+                assets_map = {
+                    "below_10w": 50000, "10w_to_50w": 200000,
+                    "50w_to_100w": 600000, "above_100w": 1000000,
+                }
+                assets = assets_map.get(user.get("total_assets_range", "below_10w"), 50000)
+                emu["effective_capital"] = float(assets)
     else:
         emu["effective_capital"] = emu.get("independent_capital", 100000.0)
         emu["effective_freq"]    = emu.get("independent_freq", "short")

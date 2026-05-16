@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A股极速选股深度研报 — 「AI+算电协同」主线爆发，成长风格布局指南</title>
+<style>/* =============================================================
+   palettes.css — 龙虾研报调色板（纯 CSS 自定义属性）
+   直接编辑下方颜色值即可自定义配色
+   
+   HTML 用法：在容器上设置 data-palette="blue" 即可切换
+   ============================================================= */
+
+/* ── blue ──────────────────────────────────────── */
+[data-palette="blue"] {
+  --primary:          #007AFF;
+  --primary-bg:       #E8F1FF;
+  --primary-text:     #0040DD;
+  --secondary:        #5856D6;
+  --secondary-bg:     #F2F2FF;
+  --page-bg:          #F5F7FA;
+  --body-bg:          #FFFFFF;
+  --text-primary:     #1C1C1E;
+  --text-secondary:   #3A3A3C;
+  --text-muted:       #8E8E93;
+  --text-on-primary:  #FFFFFF;
+  --border-light:     #E2E8F0;
+  --border-medium:    #F1F5F9;
+  --table-header-bg:  #F5F7FA;
+  --table-header-text:#6B7280;
+  --table-stripe:     #FAFBFD;
+  --cover-grad-1:     #FFFFFF;
+  --cover-grad-2:     #007AFF;
+  --summary-grad-1:   #E0E8FF;
+  --summary-grad-2:   #F0F4FF;
+  --quote-grad:       #007AFF;
+  --highlight-bg:     #E8F1FF;
+  --highlight-text:   #0040DD;
+  --metric-value:     #007AFF;
+}
+
+/* ── purple ────────────────────────────────────── */
+[data-palette="purple"] {
+  --primary:          #AF52DE;
+  --primary-bg:       #F5E8FF;
+  --primary-text:     #7B2FBE;
+  --secondary:        #C86EDF;
+  --secondary-bg:     #F8F0FF;
+  --page-bg:          #F8F5FC;
+  --body-bg:          #FFFFFF;
+  --text-primary:     #1C1C1E;
+  --text-secondary:   #3A3A3C;
+  --text-muted:       #8E8E93;
+  --text-on-primary:  #FFFFFF;
+  --border-light:     #E8DDF5;
+  --border-medium:    #F1EBF8;
+  --table-header-bg:  #F8F5FC;
+  --table-header-text:#7C6F8E;
+  --table-stripe:     #FCFAFF;
+  --cover-grad-1:     #FFFFFF;
+  --cover-grad-2:     #AF52DE;
+  --summary-grad-1:   #F0E0FF;
+  --summary-grad-2:   #F8F0FF;
+  --quote-grad:       #AF52DE;
+  --highlight-bg:     #F5E8FF;
+  --highlight-text:   #7B2FBE;
+  --metric-value:     #AF52DE;
+}
+
+/* ── green ─────────────────────────────────────── */
+[data-palette="green"] {
+  --primary:          #34C759;
+  --primary-bg:       #E8F8EC;
+  --primary-text:     #1D8B3A;
+  --secondary:        #30D158;
+  --secondary-bg:     #F0FBF2;
+  --page-bg:          #F5FAF6;
+  --body-bg:          #FFFFFF;
+  --text-primary:     #1C1C1E;
+  --text-secondary:   #3A3A3C;
+  --text-muted:       #8E8E93;
+  --text-on-primary:  #FFFFFF;
+  --border-light:     #DCF0E2;
+  --border-medium:    #EBF5EE;
+  --table-header-bg:  #F5FAF6;
+  --table-header-text:#5B8A6A;
+  --table-stripe:     #F8FDFA;
+  --cover-grad-1:     #FFFFFF;
+  --cover-grad-2:     #34C759;
+  --summary-grad-1:   #E0F5E5;
+  --summary-grad-2:   #F0FAF2;
+  --quote-grad:       #34C759;
+  --highlight-bg:     #E8F8EC;
+  --highlight-text:   #1D8B3A;
+  --metric-value:     #34C759;
+}
+
+/* ── indigo ────────────────────────────────────── */
+[data-palette="indigo"] {
+  --primary:          #5856D6;
+  --primary-bg:       #EDECFA;
+  --primary-text:     #3634A3;
+  --secondary:        #6C6AE0;
+  --secondary-bg:     #F4F3FF;
+  --page-bg:          #F6F5FC;
+  --body-bg:          #FFFFFF;
+  --text-primary:     #1C1C1E;
+  --text-secondary:   #3A3A3C;
+  --text-muted:       #8E8E93;
+  --text-on-primary:  #FFFFFF;
+  --border-light:     #DCDBEF;
+  --border-medium:    #EBEBF7;
+  --table-header-bg:  #F6F5FC;
+  --table-header-text:#6B6899;
+  --table-stripe:     #FBFAFF;
+  --cover-grad-1:     #FFFFFF;
+  --cover-grad-2:     #5856D6;
+  --summary-grad-1:   #E4E3F7;
+  --summary-grad-2:   #F2F1FF;
+  --quote-grad:       #5856D6;
+  --highlight-bg:     #EDECFA;
+  --highlight-text:   #3634A3;
+  --metric-value:     #5856D6;
+}
+
+/* ── orange ────────────────────────────────────── */
+[data-palette="orange"] {
+  --primary:          #FF9500;
+  --primary-bg:       #FFF3E0;
+  --primary-text:     #C76C00;
+  --secondary:        #FFA83A;
+  --secondary-bg:     #FFF8F0;
+  --page-bg:          #FFF9F2;
+  --body-bg:          #FFFFFF;
+  --text-primary:     #1C1C1E;
+  --text-secondary:   #3A3A3C;
+  --text-muted:       #8E8E93;
+  --text-on-primary:  #FFFFFF;
+  --border-light:     #FFE4C0;
+  --border-medium:    #FFF0E0;
+  --table-header-bg:  #FFF9F2;
+  --table-header-text:#997350;
+  --table-stripe:     #FFFCF8;
+  --cover-grad-1:     #FFFFFF;
+  --cover-grad-2:     #FF9500;
+  --summary-grad-1:   #FFE8C0;
+  --summary-grad-2:   #FFF3E0;
+  --quote-grad:       #FF9500;
+  --highlight-bg:     #FFF3E0;
+  --highlight-text:   #C76C00;
+  --metric-value:     #FF9500;
+}
+
+/* ── pink ──────────────────────────────────────── */
+[data-palette="pink"] {
+  --primary:          #FF2D55;
+  --primary-bg:       #FFE8ED;
+  --primary-text:     #CC0030;
+  --secondary:        #FF3B5C;
+  --secondary-bg:     #FFF0F3;
+  --page-bg:          #FFF5F7;
+  --body-bg:          #FFFFFF;
+  --text-primary:     #1C1C1E;
+  --text-secondary:   #3A3A3C;
+  --text-muted:       #8E8E93;
+  --text-on-primary:  #FFFFFF;
+  --border-light:     #FFD0D9;
+  --border-medium:    #FFE5EB;
+  --table-header-bg:  #FFF5F7;
+  --table-header-text:#996070;
+  --table-stripe:     #FFFAFB;
+  --cover-grad-1:     #FFFFFF;
+  --cover-grad-2:     #FF2D55;
+  --summary-grad-1:   #FFD8E0;
+  --summary-grad-2:   #FFE8ED;
+  --quote-grad:       #FF2D55;
+  --highlight-bg:     #FFE8ED;
+  --highlight-text:   #CC0030;
+  --metric-value:     #FF2D55;
+}
+
+/* ── red ───────────────────────────────────────── */
+[data-palette="red"] {
+  --primary:          #FF3B30;
+  --primary-bg:       #FFE8E6;
+  --primary-text:     #CC1A15;
+  --secondary:        #FF453A;
+  --secondary-bg:     #FFF0EF;
+  --page-bg:          #FFF6F5;
+  --body-bg:          #FFFFFF;
+  --text-primary:     #1C1C1E;
+  --text-secondary:   #3A3A3C;
+  --text-muted:       #8E8E93;
+  --text-on-primary:  #FFFFFF;
+  --border-light:     #FFD0CD;
+  --border-medium:    #FFE5E3;
+  --table-header-bg:  #FFF6F5;
+  --table-header-text:#99605D;
+  --table-stripe:     #FFFBFA;
+  --cover-grad-1:     #FFFFFF;
+  --cover-grad-2:     #FF3B30;
+  --summary-grad-1:   #FFD8D5;
+  --summary-grad-2:   #FFE8E6;
+  --quote-grad:       #FF3B30;
+  --highlight-bg:     #FFE8E6;
+  --highlight-text:   #CC1A15;
+  --metric-value:     #FF3B30;
+}
+
+/* ── yellow ────────────────────────────────────── */
+[data-palette="yellow"] {
+  --primary:          #FFCC00;
+  --primary-bg:       #FFF8D0;
+  --primary-text:     #B89200;
+  --secondary:        #FFD60A;
+  --secondary-bg:     #FFFBE8;
+  --page-bg:          #FFFCF0;
+  --body-bg:          #FFFFFF;
+  --text-primary:     #1C1C1E;
+  --text-secondary:   #3A3A3C;
+  --text-muted:       #8E8E93;
+  --text-on-primary:  #1C1C1E;
+  --border-light:     #FFED98;
+  --border-medium:    #FFF5CC;
+  --table-header-bg:  #FFFCF0;
+  --table-header-text:#998A60;
+  --table-stripe:     #FFFEF8;
+  --cover-grad-1:     #FFFFFF;
+  --cover-grad-2:     #FFCC00;
+  --summary-grad-1:   #FFF0B0;
+  --summary-grad-2:   #FFF8D0;
+  --quote-grad:       #FFCC00;
+  --highlight-bg:     #FFF8D0;
+  --highlight-text:   #B89200;
+  --metric-value:     #FFCC00;
+}
+
+/* ── cyan ──────────────────────────────────────── */
+[data-palette="cyan"] {
+  --primary:          #55BEF0;
+  --primary-bg:       #E4F4FD;
+  --primary-text:     #2A8AB8;
+  --secondary:        #64D2FF;
+  --secondary-bg:     #EFF8FF;
+  --page-bg:          #F5FAFD;
+  --body-bg:          #FFFFFF;
+  --text-primary:     #1C1C1E;
+  --text-secondary:   #3A3A3C;
+  --text-muted:       #8E8E93;
+  --text-on-primary:  #FFFFFF;
+  --border-light:     #C8E6F5;
+  --border-medium:    #E0F0FA;
+  --table-header-bg:  #F5FAFD;
+  --table-header-text:#608090;
+  --table-stripe:     #FAFDFF;
+  --cover-grad-1:     #FFFFFF;
+  --cover-grad-2:     #55BEF0;
+  --summary-grad-1:   #D0ECF8;
+  --summary-grad-2:   #E4F4FD;
+  --quote-grad:       #55BEF0;
+  --highlight-bg:     #E4F4FD;
+  --highlight-text:   #2A8AB8;
+  --metric-value:     #55BEF0;
+}
+
+/* ── brown ─────────────────────────────────────── */
+[data-palette="brown"] {
+  --primary:          #A2845E;
+  --primary-bg:       #F0ECE4;
+  --primary-text:     #7A623E;
+  --secondary:        #B89A72;
+  --secondary-bg:     #F5F2EC;
+  --page-bg:          #F8F6F2;
+  --body-bg:          #FFFFFF;
+  --text-primary:     #1C1C1E;
+  --text-secondary:   #3A3A3C;
+  --text-muted:       #8E8E93;
+  --text-on-primary:  #FFFFFF;
+  --border-light:     #DCD4C8;
+  --border-medium:    #EBE5DC;
+  --table-header-bg:  #F8F6F2;
+  --table-header-text:#8A7E70;
+  --table-stripe:     #FCFAF8;
+  --cover-grad-1:     #FFFFFF;
+  --cover-grad-2:     #A2845E;
+  --summary-grad-1:   #E0D8CC;
+  --summary-grad-2:   #F0ECE4;
+  --quote-grad:       #A2845E;
+  --highlight-bg:     #F0ECE4;
+  --highlight-text:   #7A623E;
+  --metric-value:     #A2845E;
+}
+
+/* ================================================================
+   base.css — 龙虾研报基础样式模板
+   
+   所有颜色值通过 CSS 自定义属性 var() 引用，调色板定义在 palettes.css。
+   通过 data-palette、data-color-type、data-layout 三个属性控制外观。
+   
+   HTML 示例：
+     <body data-palette="blue" data-color-type="liquid" data-layout="rounded">
+   ================================================================ */
+
+/* ── 默认调色板（无 data-palette 时的后备） ────────────────── */
+:root {
+  --primary:          #007AFF;
+  --primary-bg:       #E8F1FF;
+  --primary-text:     #0040DD;
+  --secondary:        #5856D6;
+  --secondary-bg:     #F2F2FF;
+  --page-bg:          #F5F7FA;
+  --body-bg:          #FFFFFF;
+  --text-primary:     #1C1C1E;
+  --text-secondary:   #3A3A3C;
+  --text-muted:       #8E8E93;
+  --text-on-primary:  #FFFFFF;
+  --border-light:     #E2E8F0;
+  --border-medium:    #F1F5F9;
+  --table-header-bg:  #F5F7FA;
+  --table-header-text:#6B7280;
+  --table-stripe:     #FAFBFD;
+  --cover-grad-1:     #FFFFFF;
+  --cover-grad-2:     #007AFF;
+  --summary-grad-1:   #E0E8FF;
+  --summary-grad-2:   #F0F4FF;
+  --quote-grad:       #007AFF;
+  --highlight-bg:     #E8F1FF;
+  --highlight-text:   #0040DD;
+  --metric-value:     #007AFF;
+}
+
+/* ═══════════════════════════════════════════════
+   LAYOUT: 圆角 / 阴影 / 边框（data-layout）
+   ═══════════════════════════════════════════════ */
+
+/* rounded（默认） */
+[data-layout="rounded"] {
+  --r-highlight:    6px;
+  --r-subsection:   10px;
+  --r-data-table:   12px;
+  --r-summary:      14px;
+  --r-overview:     16px;
+  --r-cover-inner:  20px;
+  --r-page-frame:   8px;
+  --sh-subsection:  0 1px 3px rgba(0,0,0,0.04);
+  --sh-data-table:  0 1px 2px rgba(0,0,0,0.03);
+  --sh-overview:    0 1px 3px rgba(0,0,0,0.04), 0 6px 20px rgba(0,0,0,0.04);
+  --sh-metric:      0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
+  --sh-page-frame:  0 2px 20px rgba(0,0,0,0.06);
+  --sh-cover-inner: 0 24px 64px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.04);
+  --cover-border:   1px solid rgba(255,255,255,0.5);
+  --section-border-width: 4px;
+  --subsection-border: none;
+}
+
+/* square: 全直角 / 弱阴影 */
+[data-layout="square"] {
+  --r-highlight:    0;
+  --r-subsection:   0;
+  --r-data-table:   0;
+  --r-summary:      0;
+  --r-overview:     0;
+  --r-cover-inner:  0;
+  --r-page-frame:   0;
+  --sh-subsection:  0 1px 2px rgba(0,0,0,0.03);
+  --sh-data-table:  0 1px 2px rgba(0,0,0,0.03);
+  --sh-overview:    0 1px 2px rgba(0,0,0,0.03);
+  --sh-metric:      0 1px 2px rgba(0,0,0,0.03);
+  --sh-page-frame:  0 8px 32px rgba(0,0,0,0.08);
+  --sh-cover-inner: 0 1px 1px rgba(0,0,0,0.02);
+  --cover-border:   1px solid rgba(255,255,255,0.3);
+  --section-border-width: 3px;
+  --subsection-border: none;
+}
+
+/* minimal: 全直角 / 无阴影 / 无边框极简 */
+[data-layout="minimal"] {
+  --r-highlight:    0;
+  --r-subsection:   0;
+  --r-data-table:   0;
+  --r-summary:      0;
+  --r-overview:     0;
+  --r-cover-inner:  0;
+  --r-page-frame:   0;
+  --sh-subsection:  none;
+  --sh-data-table:  none;
+  --sh-overview:    none;
+  --sh-metric:      none;
+  --sh-page-frame:  none;
+  --sh-cover-inner: none;
+  --cover-border:   none;
+  --section-border-width: 2px;
+  --subsection-border: 1px solid rgba(255,255,255,0.5);
+}
+
+/* ═══════════════════════════════════════════════
+   COLOR TYPE: 渲染模式（data-color-type）
+   ===============================================
+   liquid 灵感来自 Apple 玻璃质感设计：
+   • 毛玻璃 backdrop-filter: blur(40px) saturate(180%)
+   • 半透明白底 rgba(255,255,255,0.25) 透出渐变背景
+   • 内边框高光模拟玻璃边缘反光
+   • 白色文字 + 透明度层级控制视觉权重
+   ───────────────────────────────────────────────
+   liquid (默认)  | gradient      | solid
+   渐变+光晕+毛玻璃 | 渐变+实心cover | 纯色+实心cover
+   ═══════════════════════════════════════════════ */
+
+/* ── liquid 模式：Apple 玻璃质感 ── */
+[data-color-type="liquid"] body {
+  background: #FFFFFF;
+}
+[data-color-type="liquid"] .cover {
+  background: linear-gradient(160deg, var(--cover-grad-1) 0%, var(--cover-grad-2) 70%, var(--cover-grad-1) 100%);
+}
+[data-color-type="liquid"] .cover::before {
+  display: block;
+}
+[data-color-type="liquid"] .cover .cover-inner {
+  background: linear-gradient(160deg, #FFFFFF 0%, var(--primary) 80%);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.10);
+}
+[data-color-type="liquid"] .cover .cover-inner .cover-label {
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 600;
+  letter-spacing: 3px;
+}
+[data-color-type="liquid"] .cover .cover-inner .cover-title {
+  color: #FFFFFF;
+  font-weight: 700;
+}
+[data-color-type="liquid"] .cover .cover-inner .cover-subtitle {
+  color: rgba(255, 255, 255, 0.85);
+}
+[data-color-type="liquid"] .cover .cover-inner .cover-meta {
+  color: rgba(255, 255, 255, 0.6);
+}
+[data-color-type="liquid"] .cover .cover-inner .cover-lobster {
+  color: rgba(255, 255, 255, 0.5);
+}
+[data-color-type="liquid"] .highlight-box {
+  background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, var(--highlight-bg) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+[data-color-type="liquid"] .summary-box {
+  background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, var(--summary-grad-1) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+[data-color-type="liquid"] .quote-box {
+  background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, var(--quote-grad) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* ── liquid 模式：内容组件 Apple 质感（无 blur，免卡顿）─ */
+
+/* 页面容器 */
+[data-color-type="liquid"] .page-frame {
+  background: rgba(255, 255, 255, 0.92);
+}
+
+/* 概览表格 */
+[data-color-type="liquid"] .overview-table-wrap {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.06),
+              0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+}
+[data-color-type="liquid"] .overview-table-wrap th {
+  background: rgba(255, 255, 255, 0.45);
+}
+
+/* 章节标题 */
+[data-color-type="liquid"] .section-title {
+  background: rgba(255, 255, 255, 0.55);
+}
+
+/* 子章节 */
+[data-color-type="liquid"] .subsection {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.06),
+              0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+}
+
+/* 数据表格 */
+[data-color-type="liquid"] .data-table-wrap {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.06),
+              0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+}
+[data-color-type="liquid"] .data-table-wrap th {
+  background: rgba(255, 255, 255, 0.45);
+}
+
+/* 指标卡 */
+[data-color-type="liquid"] .metric-card {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.06),
+              0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+}
+
+/* 摘要/引用/高亮 */
+[data-color-type="liquid"] .highlight-box {
+  background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, var(--highlight-bg) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+[data-color-type="liquid"] .summary-box {
+  background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, var(--summary-grad-1) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+[data-color-type="liquid"] .quote-box {
+  background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, var(--quote-grad) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* ── gradient 模式：渐变封面 + 纯白 cover-inner，无光晕 ── */
+[data-color-type="gradient"] .cover {
+  background: linear-gradient(160deg, var(--cover-grad-1) 0%, var(--cover-grad-2) 50%, var(--cover-grad-1) 100%);
+}
+[data-color-type="gradient"] .cover::before {
+  display: none;
+}
+[data-color-type="gradient"] .cover .cover-inner {
+  background: #FFFFFF;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+[data-color-type="gradient"] .summary-box {
+  background: linear-gradient(135deg, var(--body-bg) 0%, var(--summary-grad-1) 100%);
+}
+[data-color-type="gradient"] .quote-box {
+  background: linear-gradient(135deg, var(--body-bg) 0%, var(--quote-grad) 100%);
+}
+
+/* ── solid 模式：纯色封面（body_bg）+ 纯色摘要，无任何玻璃效果 ── */
+[data-color-type="solid"] .cover {
+  background: var(--body-bg);
+}
+[data-color-type="solid"] .cover::before {
+  display: none;
+}
+[data-color-type="solid"] .cover .cover-inner {
+  background: #FFFFFF;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+[data-color-type="solid"] .summary-box {
+  background: var(--highlight-bg);
+}
+[data-color-type="solid"] .quote-box {
+  background: var(--primary-bg);
+}
+
+
+/* ═══════════════════════════════════════════════
+   报告样式
+   ═══════════════════════════════════════════════ */
+
+@page {
+  size: A4;
+  margin: 15mm 18mm;
+  @top-left     { content: none; }
+  @top-center   { content: none; }
+  @top-right    { content: none; }
+  @bottom-left  { content: none; }
+  @bottom-center{ content: none; }
+  @bottom-right { content: none; }
+}
+
+@media print {
+  body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  @page { margin: 0; }
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', 'PingFang SC',
+               'Helvetica Neue', 'Microsoft YaHei', sans-serif;
+  font-size: 14px;
+  color: var(--text-primary);
+  background: var(--page-bg);
+  line-height: 1.65;
+  padding: 0;
+  margin: 0;
+}
+
+.page-frame {
+  background: var(--body-bg);
+  overflow: hidden;
+  margin: 4%;
+  border-radius: var(--r-page-frame, 8px);
+  box-shadow: var(--sh-page-frame, 0 2px 20px rgba(0,0,0,0.06));
+}
+
+/* ══ 封面 ═══════════════════════════════════════════════ */
+.cover {
+  width: 100%;
+  min-height: 280mm;
+  /* 默认使用 liquid 模式（无 data-color-type 时） */
+  background: linear-gradient(160deg, var(--cover-grad-1) 0%, var(--cover-grad-2) 70%, var(--cover-grad-1) 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 20mm 20mm 20mm 20mm;
+  page-break-after: always;
+  position: relative;
+}
+/* 默认显示径向光晕（liquid 模式） */
+.cover::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: radial-gradient(ellipse at 20% 30%, rgba(255,255,255,0.15) 0%, transparent 60%);
+  pointer-events: none;
+  display: block;
+}
+/* 默认 liquid cover-inner（白→主题色渐变） */
+.cover .cover-inner {
+  background: linear-gradient(160deg, #FFFFFF 0%, var(--primary) 80%);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.10);
+  padding: 44px 52px;
+  border: var(--cover-border, 1px solid rgba(255,255,255,0.5));
+  border-radius: var(--r-cover-inner, 20px);
+  box-shadow: var(--sh-cover-inner, 0 24px 64px rgba(0,0,0,0.12));
+}
+.cover .cover-label {
+  font-size: 12px;
+  color: var(--primary);
+  font-weight: 600;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+.cover .cover-title {
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.25;
+  margin-bottom: 14px;
+  letter-spacing: -0.5px;
+}
+.cover .cover-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 32px;
+  line-height: 1.55;
+}
+.cover .cover-meta {
+  display: flex;
+  gap: 15px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.cover .cover-lobster {
+  font-size: 32px;
+  margin-top: 24px;
+}
+
+/* ══ 概览表格 ══════════════════════════════════════════ */
+.overview-table-wrap {
+  margin: 15px 20px;
+  background: var(--body-bg);
+  overflow: hidden;
+  box-shadow: var(--sh-overview, 0 1px 3px rgba(0,0,0,0.04));
+  border-radius: var(--r-overview, 16px);
+}
+.overview-table-wrap h3 {
+  font-size: 14px;
+  color: var(--primary);
+  font-weight: 600;
+  margin: 16px 20px 10px;
+  letter-spacing: 0.3px;
+}
+.overview-table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+.overview-table-wrap th {
+  background: var(--table-header-bg);
+  color: var(--table-header-text);
+  padding: 10px 16px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border-light);
+}
+.overview-table-wrap td {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border-medium);
+  vertical-align: top;
+  color: var(--text-secondary);
+}
+.overview-table-wrap tr:last-child td { border-bottom: none; }
+.overview-table-wrap tr:nth-child(even) td { background: var(--table-stripe); }
+
+/* ══ 章节 ════════════════════════════════════════════════ */
+.section {
+  margin: 32px 0;
+}
+.section-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  background-color: var(--secondary-bg);
+  padding: 14px 0 14px 16px;
+  border-left: var(--section-border-width, 4px) solid var(--primary);
+  margin-bottom: 4px;
+  letter-spacing: -0.3px;
+}
+.subsection {
+  margin: 12px 0;
+  background: var(--body-bg);
+  padding: 18px 24px;
+  box-shadow: var(--sh-subsection, 0 1px 3px rgba(0,0,0,0.04));
+  border-radius: var(--r-subsection, 10px);
+  border: var(--subsection-border, none);
+}
+.subsection-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+}
+.subsection-content {
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  line-height: 1.8;
+  margin-bottom: 10px;
+  text-align: justify;
+}
+
+/* ══ 高亮框 ════════════════════════════════════════════════ */
+.highlight-box {
+  background: var(--highlight-bg);
+  padding: 14px 18px;
+  margin: 12px 0;
+  font-size: 13px;
+  color: var(--highlight-text);
+  line-height: 1.7;
+  border-radius: var(--r-highlight, 6px);
+}
+
+/* ══ 数据表格 ════════════════════════════════════════════════ */
+.data-table-wrap {
+  margin: 14px 0;
+  overflow-x: auto;
+  box-shadow: var(--sh-data-table, 0 1px 2px rgba(0,0,0,0.03));
+  border-radius: var(--r-data-table, 12px);
+}
+.data-table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+.data-table-wrap th {
+  background: var(--table-header-bg);
+  color: var(--table-header-text);
+  padding: 9px 14px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.3px;
+  border-bottom: 1px solid var(--border-light);
+}
+.data-table-wrap td {
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--border-medium);
+  min-width: 100px;
+  color: var(--text-secondary);
+}
+.data-table-wrap tr:nth-child(even) td { background: var(--table-stripe); }
+.data-table-wrap tr:last-child td { border-bottom: none; }
+
+/* ══ 摘要 ═══════════════════════════════════════════════════════ */
+.summary-box {
+  /* 默认 liquid 渐变 */
+  background: linear-gradient(135deg, var(--body-bg) 0%, var(--summary-grad-1) 100%);
+  padding: 22px 26px;
+  margin: 32px 0;
+  border-radius: var(--r-summary, 14px);
+}
+.summary-box .summary-label {
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--primary);
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+.summary-box .summary-text {
+  font-size: 13.5px;
+  line-height: 1.8;
+  color: var(--text-primary);
+}
+
+/* ══ 龙虾寄语 ════════════════════════════════════════════════ */
+.quote-box {
+  /* 默认 liquid 渐变 */
+  background: linear-gradient(135deg, var(--body-bg) 0%, var(--quote-grad) 100%);
+  color: var(--text-on-primary);
+  padding: 20px 28px;
+  margin: 24px 0;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: var(--r-summary, 14px);
+  letter-spacing: 0.3px;
+}
+
+/* ══ 免责声明 ════════════════════════════════════════════════ */
+.disclaimer {
+  font-size: 10.5px;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border-medium);
+  padding-top: 14px;
+  margin-top: 32px;
+  line-height: 1.6;
+}
+
+/* ══ 指标卡 ════════════════════════════════════════════════════ */
+.metrics-bar {
+  display: flex;
+  gap: 14px;
+  margin: 30px 20px 20px 20px;
+  flex-wrap: wrap;
+}
+.metric-card {
+  background: var(--body-bg);
+  padding: 14px 18px;
+  text-align: center;
+  min-width: 100px;
+  flex: 1;
+  box-shadow: var(--sh-metric, 0 1px 3px rgba(0,0,0,0.04));
+  border-radius: var(--r-overview, 16px);
+}
+.metric-card .metric-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+  font-weight: 500;
+}
+.metric-card .metric-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--metric-value);
+  margin: 6px 0;
+  letter-spacing: -0.5px;
+}
+.metric-card .metric-change {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+/* ══ 分页控制 ════════════════════════════════════════════════ */
+.page-break { page-break-before: always; }
+</style>
+</head>
+<body data-palette="blue" data-color-type="liquid" data-layout="rounded">
+<div class="page-frame">
+
+<!-- 封面 -->
+<div class="cover">
+  <div class="cover-inner">
+    <div class="cover-label">Lobster Research · 快速选股</div>
+    <div class="cover-title">A股极速选股深度研报 — 「AI+算电协同」主线爆发，成长风格布局指南</div>
+    <div class="cover-subtitle">聚焦电力/光纤/半导体三大主线 · 稳健成长型选股策略</div>
+    <div class="cover-meta">
+      <span>📅 2026-05-12</span>
+      <span>👨‍💻 🦞 龙虾财经研究院</span>
+      <span>🦞 龙虾智能研报中心</span>
+    </div>
+    <div class="cover-lobster">🦞</div>
+  </div>
+</div>
+
+<!-- 概览 + 指标 -->
+
+
+
+<!-- 章节内容 -->
+<div class="page-break"></div>
+<div class="section"><div class="section-title">前置导读 · 选股热力指数 &amp; 选股导航 &amp; 选股快照</div><div class="subsection"><div class="subsection-title">选股热力指数</div><div class="subsection-content">📊 整体情绪评分：**65/100**（结构性分化，非系统性风险）。涨停梯队完整度中等偏上——5板龙头大唐发电、4板通鼎互联、3板康欣新材/蒙娜丽莎/交大昂立、2板7只，连板梯队呈「金字塔」结构，健康度尚可。连板高度为5板（大唐发电），空间板已打开至5板，为短线接力提供了示范效应。今日全市场非ST涨停仅43只（较昨日135只大幅回落），炸板率23%（18只炸板），封板率77%，显示打板资金谨慎但封板意愿尚可。题材方面，「AI+算电协同」为最强主线，发酵第2天；光纤光缆/CPO叠加美股利好映射成为弹性最大的分支。龙虎榜游资参与度方面，锦龙股份出现主力大额吸筹(特大单净流入2.16亿)与游资出逃(净流出465万)的分化格局，表明游资开始高低切。需注意超4200只个股下跌的「假指数、真分化」格局下，选股容错率较低，非主线标的亏钱效应显著。</div><div class="highlight-box">主线清晰但分化剧烈：4100+股下跌掩盖下，「算电协同+光纤光缆」双主线是资金唯一共识</div><div class="data-table-wrap">
+<table><thead><tr><th>指标</th><th>当前值</th><th>评级</th><th>信号含义</th></tr></thead><tbody><tr><td>涨停家数（非ST）</td><td>43只</td><td>🟨偏低</td><td>较昨日135只大幅回落，退潮初期特征</td></tr><tr><td>连板高度</td><td>5板（大唐发电）</td><td>🟩中高</td><td>空间板打开，短线接力有方向</td></tr><tr><td>炸板率</td><td>23%（18只）</td><td>🟩偏低</td><td>封板意愿尚可，非恐慌性</td></tr><tr><td>封板率</td><td>77%</td><td>🟩中高</td><td>打板资金仍偏谨慎但有效封板</td></tr><tr><td>涨跌家数比</td><td>1399:4099</td><td>🟥极弱</td><td>超4100股下跌，亏钱效应显著</td></tr><tr><td>成交额</td><td>32700亿(-8.29%)</td><td>🟨缩量</td><td>缩量调整，未引发恐慌抛售</td></tr><tr><td>昨日涨停表现</td><td>+1.31%</td><td>🟨中性</td><td>短线赚钱效应一般</td></tr><tr><td>情绪阶段</td><td>退潮初期·结构分化</td><td>🟨</td><td>指数稳+题材活，非系统性风险</td></tr></tbody></table>
+</div></div><div class="subsection"><div class="subsection-title">选股导航</div><div class="subsection-content">基于用户画像（成长风格·稳健风控·短期持股6-15天·10万以下资产），本报告推荐**三阶介入策略**：① **确定性仓位（50%）**：配置算电协同/电力主线中军，采用「趋势低吸+首板确认」策略，持股周期5-10天，以5日线为防守；② **进攻仓位（30%）**：博弈光纤光缆/6G新催化方向，采用「二板分歧转一致」接力模型，隔日~3日为主；③ **观察仓位（20%）**：关注半导体设备/券商异动，首板试错或回踩平台低吸。总仓位建议控制在6-7成，留足现金应对波动。杜绝隔日超短打板，更适合「盘中低吸→埋伏→拉高止盈」的稳健成长型打法。</div><div class="data-table-wrap">
+<table><thead><tr><th>策略类型</th><th>仓位比例</th><th>目标板块</th><th>介入模型</th><th>持股周期</th><th>止盈条件</th><th>止损条件</th></tr></thead><tbody><tr><td>确定性仓位</td><td>50%（核心）</td><td>算电协同/电力</td><td>趋势低吸+首板确认</td><td>5-10天</td><td>断板/板块退潮/+12%</td><td>-6%或破5日线</td></tr><tr><td>进攻仓位</td><td>30%（弹性）</td><td>光纤光缆/6G</td><td>二板分歧转一致</td><td>1-5天</td><td>炸板回封/日内+8%</td><td>-5%或破分时均线</td></tr><tr><td>观察仓位</td><td>20%（储备）</td><td>半导体设备/券商</td><td>首板试错/平台低吸</td><td>3-7天</td><td>涨停不封/+8%</td><td>-4%或破箱体下沿</td></tr></tbody></table>
+</div></div><div class="subsection"><div class="subsection-title">选股快照</div><div class="subsection-content">今日核心驱动有三：① **四部门AI+能源双向赋能方案**——到2027年算力中心绿电占比超80%，新建算力中心全面配储，为「算电协同」概念注入制度性利好；② **国常会七万亿新基建**——算力网+6G通信网为最核心方向，资金来源明确（超长期特别国债+政策性金融工具）；③ **央行1.2万亿科创再贷款定向投放**（利率仅1.25%），5月12日正式启动。竞价异动方面，大唐发电早盘3分钟封板，韶能股份4分钟垂直涨停，光纤板块通光线缆20%涨停。板块强度排序：电力/电网设备&gt;光纤光缆/CPO&gt;券商&gt;半导体设备。封单金额TOP：大唐发电91万手封单（约4.2亿）居首。</div></div></div><div class="section"><div class="section-title">第一、个股版图扫描</div><div class="subsection"><div class="subsection-title">个股版图扫描</div><div class="subsection-content">📌 当前涨停梯队全景：**大唐发电（601991）5连板**——算电协同总龙头，大摩测算数据中心55GW电力缺口驱动，封单91万手为全场最强，千亿市值暴动标志机构级资金入场。**通鼎互联（002491）4连板**——光纤光缆龙一，全球光纤出货量6.62亿芯公里(+15.3%)中国占56.3%，叠加韶关8亿光纤扩产项目，但5月11日公司已发风险警示提示短期价格波动不确定。**杭电股份（603618）5天4板**——PCB+光纤双题材，是连板梯队中的弹性品种。**康欣新材（600076）3连板**——半导体+商业航天双概念，股性逐渐激活。**韶能股份（000601）** 今日首板涨停，水电+算电协同，位置低估值合理。<br><br>🔥 核心联动生态：电力板块内部呈现「大唐发电（总龙头）→ 韶能股份/大连热电/晋控电力（跟风补涨）」的梯队联动；光纤板块呈现「通鼎互联（4板领涨）→ 杭电股份（5天4板弹性）→ 远东股份/太阳电缆（低位首板）」的跟风格局。券商板块以锦龙股份（000712）2连板为领涨，长城证券跟涨，但板块整体持续性待观察。半导体方向康欣新材3连板独立走强，暂无梯队呼应。<br><br>💡 历史股性分析：大唐发电作为千亿蓝筹此前极少出现连板走势，5连板属罕见股性激活事件，意味着主力资金（极可能包含机构+北向）深度介入。通鼎互联历史上曾有过4-5板记录，股性中上。韶能股份为低价水电股，首板属于补涨启动，适合稳健低吸。</div><div class="highlight-box">大唐发电5连板为2026年最标志性的蓝筹连板事件，算电协同从概念走向产业落地，千亿市值的暴动=机构级别资金的确认</div><div class="data-table-wrap">
+<table><thead><tr><th>个股</th><th>代码</th><th>连板</th><th>板块</th><th>核心驱动</th><th>市值特征</th><th>股性评级</th></tr></thead><tbody><tr><td>大唐发电</td><td>601991</td><td>5连板</td><td>电力/算电协同</td><td>算电协同总龙头·91万手封单·大摩电力缺口报告</td><td>千亿级(1240亿)</td><td>🟩极强(蓝筹罕见连板)</td></tr><tr><td>通鼎互联</td><td>002491</td><td>4连板</td><td>光纤光缆</td><td>全球光纤需求爆发·8亿扩产·美股映射</td><td>百亿级</td><td>🟩强(历史有连板记忆)</td></tr><tr><td>杭电股份</td><td>603618</td><td>5天4板</td><td>PCB/光纤</td><td>PCB+光纤双题材·弹性品种</td><td>50亿级</td><td>🟩强(弹性高换手充分)</td></tr><tr><td>韶能股份</td><td>000601</td><td>首板</td><td>水电/算电协同</td><td>低价水电·算电协同补涨·位置低</td><td>50亿级</td><td>🟨中(补涨形态)</td></tr><tr><td>锦龙股份</td><td>000712</td><td>2连板</td><td>券商</td><td>并购重组预期·两融新高·大资金控盘</td><td>百亿级</td><td>🟨中(基本面瑕疵需警惕)</td></tr></tbody></table>
+</div></div></div><div class="section"><div class="section-title">第二、个股深度解析</div><div class="subsection"><div class="subsection-title">个股深度解析</div><div class="subsection-content">📌 **大唐发电（601991）核心壁垒分析：** 涨停护城河来自三重逻辑叠加——①政策面：四部门AI+能源方案直接点名算电协同，全国首个标杆项目「大唐中卫50万千瓦光伏+算力绿电直供」已并网送电；②基本面：火电+水电+风电+光伏多元能源结构，装机容量86GW，深度受益电力需求爆发；③资金面：91万手封单为机构主导，非单纯游资行为。从资金验证进度看，5连板过程呈现「放量首板→缩量加速→分歧再放量→一致加速」的健康节奏，筹码锁定良好。<br><br>📌 **通鼎互联（002491）核心壁垒：** 光纤光缆行业基本面强劲——2025年全球出货量创新高，中国占56.3%，美股Lumentum年内涨幅185%映射A股。公司8亿扩产项目落地韶关，产能600吨光棒+2000万芯公里光纤。但需注意公司已发布风险提示，短期价格波动不确定性较大。筹码结构显示4连板后换手率较高，资金验证进度尚处「分歧→一致」过渡期。<br><br>📌 **韶能股份（000601）核心壁垒：** 低价水电股（股价约6-7元），市值约70亿，PB约1.2倍，在电力板块中估值最低。水电资产稳定，算电协同政策催化下有望跟随大唐发电补涨。首板成交温和，筹码尚未过度拥挤，适合作为稳健成长型投资者的低吸品种。</div></div></div><div class="section"><div class="section-title">第三、个股资金侦探</div><div class="subsection"><div class="subsection-title">个股资金侦探</div><div class="subsection-content">📌 **锦龙股份（000712）资金博弈图谱**是今日最值得研究的案例——14:13以近乎90度垂直线秒级封板，特大单净流入2.16亿元（占流通盘3.68%），主力控盘力度极强（主力罗盘角度70.26°）。但游资净流出465万元、散户净流出1713万元，呈现典型的「主力吸筹·游资出逃·散户被挤下车」的妖股筹码格局。这提示两个信号：①短线情绪过热，主力已在暗度陈仓；②游资借冲高撤退，后续断板风险较大。<br><br>📌 **大唐发电资金结构**：5连板过程封单从首日的约30万手逐步放大至91万手（约4.2亿），显示赚钱效应吸引了更多资金接力。但需注意第5板封单虽大，换手率已开始下降，存在「缩量加速」特征——如果后续继续缩量一字，则开板日抛压将显著放大。<br><br>📌 光纤板块资金流动性方面，通鼎互联4连板换手充分（日均换手10%+），筹码流动性好于大唐发电。杭电股份5天4板过程中出现「放量→缩量→再放量」的健康交替，资金验证进度较好。</div><div class="highlight-box">锦龙股份出现「主力大单吸筹+游资出逃」的经典分歧信号，短线高风险偏好者宜观望，稳健型应回避</div><div class="data-table-wrap">
+<table><thead><tr><th>个股</th><th>特大单净流入</th><th>游资动向</th><th>散户动向</th><th>筹码特征</th><th>资金研判</th></tr></thead><tbody><tr><td>大唐发电</td><td>主力资金持续流入</td><td>游资接力活跃</td><td>跟风盘增多</td><td>缩量加速·筹码锁定</td><td>🟩机构主导，资金面健康</td></tr><tr><td>通鼎互联</td><td>换手资金均衡</td><td>游资参与积极</td><td>换手充分</td><td>中度换手·分歧过渡</td><td>🟩资金验证中，关注分歧转一致</td></tr><tr><td>杭电股份</td><td>中小单博弈为主</td><td>游资短线进出</td><td>跟风盘谨慎</td><td>高换手·弹性品种</td><td>🟨波动大，适合快进快出</td></tr><tr><td>韶能股份</td><td>首板资金温和</td><td>游资尚未集中入场</td><td>观望为主</td><td>首板·筹码干净</td><td>🟩首板温和，后续有望放量</td></tr><tr><td>锦龙股份</td><td>+2.16亿(主力控盘)</td><td>净流出465万(出逃)</td><td>净流出1713万(被挤出)</td><td>妖股格局·主力独大</td><td>🟥分歧明显，情绪退潮后风险大</td></tr></tbody></table>
+</div></div></div><div class="section"><div class="section-title">第四、消息与席位情报</div><div class="subsection"><div class="subsection-title">消息与席位情报</div><div class="subsection-content">📌 **消息层级评估：** 今日三大驱动消息均属**国家级**最高层级——①四部门联合发文《AI与能源双向赋能行动方案》（发改委+能源局+工信部+数据局），历史上四部门联合发文往往催生跨月级别的主线行情；②国常会七万亿新基建属国务院级决策，算力网与6G通信网被列为最优先方向；③央行1.2万亿科创再贷款（利率1.25%）属货币工具层面的精准滴灌。三个国家级消息在同一天共振，市场影响级别罕见。<br><br>📌 **个股层面的消息催化：** 大唐发电除政策利好外，中卫算电协同项目（50万千瓦+200亿投资）是公司层面的直接催化剂，是「政策落地的标杆案例」。锦龙股份的2连板更多源于两融余额创新高（2.8万亿）的板块性利好，叠加证券行业并购整合预期（东方证券收购上海证券等），但公司基本面瑕疵显著（扣非亏损、子公司业绩大幅下滑）。<br><br>📌 **监管面预警：** 大唐发电5连板后未发异动公告/风险提示，通鼎互联已在5月11日主动发布风险提示（光纤价格波动），暗示监管风险尚在可控范围。需持续关注后续是否出现重点监控/问询函。<br><br>📌 小作文生态方面，今日市场流传「特朗普访华（5月13-15日）将签署金融开放协议」的传闻，是券商板块异动的助推因素之一，但尚未被官方证实。</div><div class="data-table-wrap">
+<table><thead><tr><th>消息</th><th>层级</th><th>时间</th><th>影响板块</th><th>可信度</th><th>持续性预期</th></tr></thead><tbody><tr><td>AI与能源双向赋能行动方案</td><td>国家级(四部门)</td><td>5月11日发布</td><td>电力/算电协同/光纤</td><td>🟩极高·正式文件</td><td>跨月级别主线</td></tr><tr><td>国常会七万亿新基建</td><td>国务院级</td><td>5月11日</td><td>算力网/6G/新型电网</td><td>🟩极高·国常会决策</td><td>跨季级别驱动</td></tr><tr><td>央行1.2万亿科创再贷款</td><td>央行货币工具</td><td>5月12日启动</td><td>AI/半导体/6G/先进制造</td><td>🟩极高·已定向投放</td><td>年度资金面支撑</td></tr><tr><td>特朗普访华金融开放传闻</td><td>传闻级</td><td>5月13-15日</td><td>券商</td><td>🟨待核实</td><td>短炒题材</td></tr><tr><td>通鼎互联8亿光纤扩产</td><td>公司级</td><td>近期公告</td><td>光纤光缆</td><td>🟩已公告</td><td>项目周期1-2年</td></tr></tbody></table>
+</div></div></div><div class="section"><div class="section-title">第五、主力与散户行为</div><div class="subsection"><div class="subsection-title">主力与散户行为</div><div class="subsection-content">📌 **主力行为特征：** 今日市场呈现典型的「机构主导结构行情」特征。电力板块的拉升以大市值蓝筹为主（大唐发电千亿市值），而非单纯小盘游资炒作，暗示机构资金（公募/保险/北向）在政策驱动下进行系统性调仓——从前期高位的算力租赁/锂矿/电池撤出，切换至电力/电网设备/光纤等受益于算力需求爆发的产业链延伸方向。这与2025年「AI算力→电力/电网」的产业链传导逻辑一脉相承。<br><br>📌 **券商研报反向指标效应：** 中际旭创今日股价突破1000元（创业板第二只千元股），多家券商随即密集发布看多研报。从行为金融学角度，股价突破整数关口+券商集体唱多→往往是短期情绪高点，短线不宜追高。这一点对稳健型投资者尤为重要：**研报密集发布日 ≠ 买入日**。<br><br>📌 **散户行为特征：** 全市场超4100股下跌，散户普遍处于「被套→观望→恐慌」的负向循环中。锦龙股份案例显示散户资金净流出1713万（被主力大资金挤出），说明散户在该股上已从“追涨”转向“恐高卖出”。散户情绪处于低位，意味着短期市场或许离情绪冰点不远——逆向思维角度看，散户恐慌时反而是主线品种低吸的窗口期。</div></div></div><div class="section"><div class="section-title">第六、个股估值建模</div><div class="subsection"><div class="subsection-title">个股估值建模</div><div class="subsection-content">📌 涨停板期权定价模型：连板股的情绪溢价与流动性溢价需区分评估。大唐发电5连板后，情绪溢价约占总涨幅的40%，基本面溢价（AI用电需求+算电协同项目落地）约占60%。当前5板位置，若后续继续连板——情绪溢价占比将逐步提高至50%+，风险回报比随之恶化。<br><br>📌 **大唐发电目标价测算：** 涨停启动前价格4.58元，5连板后约7.3元（累计+60%）。前高压力位在8.0-8.5元（2024年高点区域），若突破则打开至9-10元。但以稳健视角看，6-15天持股周期内，7.5-8.0元为合理止盈区间（约+3~10%空间从当前价），盈亏比约1.5:1。<br><br>📌 **韶能股份目标价测算：** 当前约6.5元，PB约1.2倍，电力板块中最低估值区域。补涨空间看至7.5-8.0元（+15~23%），以5日线6.2元为止损，盈亏比约2:1，是稳健成长型投资者的优选。<br><br>📌 **杭电股份目标价测算：** 5天4板弹性品种，当前约26元。前高在30元附近（+15%），以23元为止损（-11%），盈亏比约1.3:1。波动大，适合小仓位博弈。<br><br>📌 综合盈亏比排序：韶能股份 &gt; 大唐发电 &gt; 杭电股份 &gt; 通鼎互联 &gt; 锦龙股份</div><div class="data-table-wrap">
+<table><thead><tr><th>个股</th><th>当前价(约)</th><th>目标价(6-15天)</th><th>潜在涨幅</th><th>止损价</th><th>预期盈亏比</th><th>优先等级</th></tr></thead><tbody><tr><td>韶能股份(000601)</td><td>6.5元</td><td>7.5-8.0元</td><td>+15%~+23%</td><td>6.2元(-5%)</td><td>3:1~4:1</td><td>🥇首选稳健标的</td></tr><tr><td>大唐发电(601991)</td><td>7.3元</td><td>7.5-8.0元</td><td>+3%~+10%</td><td>6.6元(-10%)</td><td>1:1~1.5:1</td><td>🥈确定性高但空间收窄</td></tr><tr><td>杭电股份(603618)</td><td>26.0元</td><td>28-30元</td><td>+8%~+15%</td><td>23元(-11%)</td><td>1:1~1.3:1</td><td>🥉弹性博弈标的</td></tr><tr><td>通鼎互联(002491)</td><td>16.0元</td><td>17-18元</td><td>+6%~+12%</td><td>14元(-12%)</td><td>1:1~1.5:1</td><td>🟨需等分歧转一致</td></tr><tr><td>锦龙股份(000712)</td><td>12.77元</td><td>14-15元</td><td>+10%~+17%</td><td>11.5元(-10%)</td><td>1:1~1.5:1</td><td>🟥基本面瑕疵大，谨慎</td></tr></tbody></table>
+</div></div></div><div class="section"><div class="section-title">第七、风险全景</div><div class="subsection"><div class="subsection-title">风险全景</div><div class="subsection-content">📌 **风险一：利好兑现/见光死风险（高风险）**——今日四部门政策虽为重磅利好，但市场已提前2天（5月11日）反应，大唐发电5连板、光纤板块涨停潮均属预期内演绎。后续若无更强催化，板块面临「利好出尽」的高开低走风险。历史规律显示：四部门级别的利好披露后3-5个交易日，热门板块往往出现10-15%的技术性回调。<br><br>📌 **风险二：板块退潮龙头补跌（中高风险）**——今日已有4300股下跌，是典型的「指数稳·个股惨」的分化格局。如果大盘持续走弱，当前强势的电力/光纤板块也会面临补跌压力——历史上类似结构行情中，强势板块的补跌往往出现在行情第3-5天。<br><br>📌 **风险三：监管特停风险（中风险）**——大唐发电5连板后尚未发布异动公告，但按过往经验，7连板附近触发停牌核查的概率显著上升。一旦总龙头特停，整个板块情绪将受到严重冲击。<br><br>📌 **风险四：业绩暴雷（中风险）**——锦龙股份扣非净利润为-1.39亿元且亏损扩大，唯一机构预测2026年EPS为-0.07元。短线爆炒与基本面严重背离，一旦情绪退潮，股价可能快速回归。通鼎互联也不排除后续业绩不及预期。<br><br>📌 **风险五：大股东减持窗口（低风险）**——大唐发电等央企减持压力相对较小，但光纤板块中小市值公司需关注大股东减持动向。</div><div class="highlight-box">最大的风险不是大盘下跌，而是利好兑现后板块退潮的『均值回归』——尤其是连板股，每一天的新高都在增加回调的概率</div><div class="data-table-wrap">
+<table><thead><tr><th>风险类别</th><th>风险等级</th><th>受影响标的</th><th>触发条件</th><th>应对预案</th></tr></thead><tbody><tr><td>利好兑现·见光死</td><td>🟥高</td><td>大唐发电/通鼎互联</td><td>政策消息充分消化+无新催化</td><td>逐步止盈，不追高，保留底仓观察</td></tr><tr><td>板块退潮·龙头补跌</td><td>🟥高</td><td>电力/光纤全线</td><td>大盘持续走弱+主线分化</td><td>严守止损线，仓位降至5成以下</td></tr><tr><td>监管特停·核查停牌</td><td>🟨中</td><td>大唐发电(7板+风险)</td><td>7连板附近触发异动核查</td><td>特停期间不开新仓，复牌后观察</td></tr><tr><td>业绩暴雷·基本面背离</td><td>🟥高</td><td>锦龙股份</td><td>一季报/中报披露业绩不及预期</td><td>不参与基本面瑕疵标的</td></tr><tr><td>大股东减持</td><td>🟨中</td><td>光纤/中小市值标的</td><td>减持公告披露</td><td>减持公告后首日观察，不贸然介入</td></tr></tbody></table>
+</div></div></div><div class="section"><div class="section-title">第八、核心结论、选股建议、执行清单</div><div class="subsection"><div class="subsection-title">核心结论、选股建议、执行</div><div class="subsection-content">📌 **核心结论：** 当前市场处于「退潮初期+结构性主线强化」的复合状态。AI+算电协同是2026年年中最具确定性的产业主线，四部门政策+七万亿新基建+万亿再贷款形成「政策·产业·资金」三击共振。但超4100股下跌的背景下，选股容错率极低——只有聚焦主线才能穿越分化。<br><br>📌 **确定性仓位（50%·核心配置）→ 韶能股份（000601）**：水电+算电协同补涨标的，首板启动位置低、估值合理（PB~1.2倍），6.2元止损、7.5-8.0元目标，盈亏比3:1+。操作指令：明日若平开或小幅低开（-1%~+1%），以6.3-6.5元区间低吸入场，仓位25%（约2.5万/10万资产），跌破6.2元止损。后续若回调至6.0元附近可补仓至50%仓位。<br><br>📌 **进攻仓位（30%·弹性博弈）→ 杭电股份（603618）**：5天4板PCB+光纤双题材，高换手弹性品种。操作指令：明日若高开3%以内且竞价量大于昨日5%，以25.5-26.5元小仓位介入（15%，约1.5万），跌破23元止损。若连板则持有至断板止盈。<br><br>📌 **观察仓位（20%·备选）→ 远东股份（600869）**：2连板光纤光缆，位置低于通鼎互联，PB合理。操作指令：暂不入场，列入观察清单。若明日通鼎互联断板而远东股份仍能独立走强，则说明该股已脱离跟风成为新龙，可在放量回踩5日线时低吸（10%，约1万）。<br><br>📌 **回避标的：** 锦龙股份（基本面瑕疵+游资出逃风险）、通鼎互联（4连板+已发风险提示+追高风险大）、大唐发电（5连板缩量加速，开板补跌风险大）。</div><div class="data-table-wrap">
+<table><thead><tr><th>优先级</th><th>标的</th><th>代码</th><th>仓位</th><th>介入策略</th><th>止损</th><th>目标</th><th>持股周期</th></tr></thead><tbody><tr><td>🥇确定性</td><td>韶能股份</td><td>000601</td><td>25%-50%</td><td>低吸(平开/小低开)</td><td>6.2元(-5%)</td><td>7.5-8.0元(+15~23%)</td><td>5-10天</td></tr><tr><td>🥈攻击性</td><td>杭电股份</td><td>603618</td><td>15%</td><td>小仓位试错(高开≤3%)</td><td>23元(-11%)</td><td>28-30元(+8~15%)</td><td>1-5天</td></tr><tr><td>🥉观察</td><td>远东股份</td><td>600869</td><td>10%</td><td>通鼎断板后独立走强则低吸</td><td>5日线</td><td>+10~15%</td><td>3-7天</td></tr></tbody></table>
+</div></div></div><div class="section"><div class="section-title">第九、选股跟踪框架</div><div class="subsection"><div class="subsection-title">选股跟踪框架</div><div class="subsection-content">📌 **关键跃迁信号监测：** ①韶能股份次日竞价量≥昨日成交量的5%（约可推算为300-500万股），且开盘价在6.3-6.6元之间→确认资金接力意愿；②杭电股份次日若高开&gt;5%且封单&gt;5000手→加速信号可持有，若低开&lt;-3%且无资金承接→立即止损；③远东股份关注是否脱离通鼎互联独立走强，若通鼎互联断板而远东红盘→新龙确认信号。<br><br>📌 **关键消息日历（5月13日-5月20日）：** 5月13-15日特朗普访华（需关注中美金融开放协议进展）；5月中旬一季报披露高峰期（注意锦龙股份等基本面瑕疵标的）；四部门AI+能源方案后续各地方落实政策（预计1-2周内各省会出台配套文件）。<br><br>📌 **每日复盘Checklist：** ①查看涨停梯队完整性（5板→4板→3板→2板→首板数量），若某层断档则说明主线在弱化；②查看炸板率，若&gt;40%且回封率&lt;30%→情绪进入冰点，停止新开仓；③查看大唐发电封单变化，若封单从91万手降至30万手以下→龙头走弱信号；④查看成交额是否持续缩量至3万亿以下→流动性收紧信号。<br><br>📌 **技术形态Checklist：** ①突破前高确认：韶能股份若突破7.0元（前高）放量→加仓信号；②平台整理确认：杭电股份若在25-27元形成平台整理（3天以上）→是加仓还是止盈取决于板块整体情绪。</div><div class="data-table-wrap">
+<table><thead><tr><th>监测维度</th><th>核心指标</th><th>健康阈值</th><th>预警信号</th><th>应对动作</th></tr></thead><tbody><tr><td>涨停梯队</td><td>5→4→3→2板连续性</td><td>每层≥1只</td><td>某层断档</td><td>降低总仓位至5成</td></tr><tr><td>情绪温度</td><td>炸板率+回封率</td><td>炸板≤30%/回封≥50%</td><td>炸板&gt;40%/回封&lt;30%</td><td>停止新开仓</td></tr><tr><td>龙头强度</td><td>大唐发电封单</td><td>≥30万手</td><td>封单&lt;15万手或开板</td><td>减仓电力板块</td></tr><tr><td>成交额</td><td>沪深两市总成交</td><td>≥3万亿</td><td>&lt;2.5万亿</td><td>全面减仓至3成</td></tr><tr><td>资金流向</td><td>电力板块主力净流入</td><td>持续净流入</td><td>连续2日净流出</td><td>转防御（增持现金）</td></tr></tbody></table>
+</div></div></div><div class="section"><div class="section-title">第十、交易伦理与可持续盈利</div><div class="subsection"><div class="subsection-title">交易伦理与可持续盈利</div><div class="subsection-content">📌 **止损纪律刚性执行：** 稳健成长型投资的底线是「截断亏损，让利润奔跑」。单笔亏损超过-6%立即无条件离场，不抱幻想、不加仓摊平。对于10万以下的小资金体量，单票最大亏损控制在6000元以内（总资金6%）。纪律就是纪律，做不到止损就不要开仓。<br><br>📌 **仓位管理铁律：** 单票仓位上限50%（约5万/10万总资产），单行业总仓位不超过70%。剩余30%现金为「捡漏储备」——大跌日恐慌低吸的子弹。小资金最大的优势就是灵活，不要在一个票上赌身家。<br><br>📌 **警惕吹票产业链陷阱：** 股吧/雪球/抖音上的「涨停复盘」「明日必涨」「龙头战法」内容，90%是拉高出货的噪音。独立思考的唯一方法就是：关了自媒体，看数据、看K线、看资金流向。如果一只股票的利好在股吧被刷屏，那大概率是卖点而非买点。<br><br>📌 **复利思维：** 按本策略执行，预期单月收益5-8%（年化60-100%）。这需要平均每周盈利1-2%——看起来不多，但复利12个月后的效果是惊人的。追求「每月不亏+小赚」比「追逐涨停板」更能积累真实财富。</div></div></div><div class="section"><div class="section-title">🦞 核心摘要</div><div class="subsection"><div class="subsection-title">总结与建议</div><div class="subsection-content">💡 **今日核心判断：** 5月12日市场看似普跌（4300股下跌），但「AI+算电协同」主线的结构性行情正在从概念走向落地——四部门政策+国常会七万亿+万亿再贷款三击共振，大唐发电5连板为标志性事件。对于稳健成长型投资者而言，这恰恰是「在分化中布局主线」的最佳窗口期。<br><br>🎯 **首选操作（确定性50%仓位）：** 明日（5月13日）韶能股份（000601）平开或小幅低开时低吸建仓25%仓位，跌破6.2元止损，目标7.5-8.0元。杭电股份（603618）小仓位15%博弈高弹性。远东股份（600869）列入观察。<br><br>⚠️ **核心警示：** 当前不是普涨牛市，是「主线能吃肉、非主线大面」的残酷分化格局。必须聚焦算电协同+光纤光缆双主线，回避前期高位赛道（锂矿/稀土/创新药）和基本面瑕疵标的（锦龙股份）。严格执行止损纪律，不追高、不赌板、不扛单。<br><br>📌 游资语录：**退潮时看方向，分化时看主线。不买没有资金验证的逻辑。**</div><div class="highlight-box">🔥 核心判断：AI+算电协同是2026年年中最具确定性的产业主线，在4100股下跌的分化中，正是低吸建仓的窗口而非恐慌出逃的时机</div></div></div>
+
+<!-- 趋势预判表格（若在各章节内未包含则独立显示）-->
+
+
+<!-- 摘要 -->
+<div class="summary-box"><div class="summary-label">📌 写在最后</div><div class="summary-text">2026年5月12日，A股三大指数小幅回调（沪指-0.25%，深成指-0.47%，创业板+0.15%），全市场1399家上涨、4099家下跌，成交额缩至32700亿。但结构性机会极为突出：四部门联合发布《人工智能与能源双向赋能行动方案》，叠加国常会七万亿新基建「六网建设」计划与央行1.2万亿科创再贷款落地，点燃「AI+算电协同」双主线。大唐发电5连板（封单91万手）为总龙头，通鼎互联4连板领涨光纤光缆，通信设备、电网设备板块逆势大涨。本报告基于用户稳健成长型画像（成长风格·稳健风控·短期持股），精选5只主线标的，提供从连板接力到趋势低吸的多周期策略。</div></div>
+
+<!-- 龙虾寄语 -->
+<div class="quote-box">市场越分化，主线越清晰；退潮中逆势的方向，才是资金真金白银投票的结果。</div>
+
+<!-- 免责声明 -->
+<div class="disclaimer">免责声明：本报告由AI生成，数据来源于公开网络包括东方财富、同花顺、新浪财经等，仅供参考，不构成投资建议。投资者据此操作，风险自担。</div>
+
+</div><!-- /.page-frame -->
+</body>
+</html>

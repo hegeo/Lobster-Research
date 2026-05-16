@@ -11,6 +11,7 @@
 """
 
 from __future__ import annotations
+import json
 from typing import Optional
 
 
@@ -103,6 +104,131 @@ def normalize_table(table, section_label="", sub_label=""):
 
     print(f"  ⚠️ table 格式无法识别（{section_label}/{sub_label}）：{type(table).__name__}")
     return None
+
+
+# ═══════════════════════════════════════════════════════════
+#  JSON 自动修复（可独立调用 / 被 task_runner 引用）
+# ═══════════════════════════════════════════════════════════
+
+def auto_fix_json(raw: str) -> str:
+    """
+    通用 JSON 自动修复函数。
+    与 task_runner._fix_json_common_issues 逻辑一致，可供外部独立调用。
+
+    修复清单：
+      1. 字符串内未转义的控制字符（\n, \r, \t → \\n, \\r, \\t）
+      2. 字符串内误用的 ASCII 直引号 ""  → Unicode 引号 ""
+    """
+    result = []
+    i = 0
+    in_string = False
+    escape_next = False
+
+    while i < len(raw):
+        c = raw[i]
+
+        if escape_next:
+            result.append(c)
+            escape_next = False
+            i += 1
+            continue
+
+        if c == '\\' and in_string:
+            result.append(c)
+            escape_next = True
+            i += 1
+            continue
+
+        # 控制字符转义（仅在字符串内）
+        if in_string:
+            cp = ord(c)
+            if cp == 0x0A:
+                result.append('\\n')
+                i += 1
+                continue
+            elif cp == 0x0D:
+                result.append('\\r')
+                i += 1
+                continue
+            elif cp == 0x09:
+                result.append('\\t')
+                i += 1
+                continue
+            elif cp < 0x20:
+                result.append('\\u00' + format(cp, '02x'))
+                i += 1
+                continue
+
+        # 双引号处理
+        if c == '"':
+            if not in_string:
+                in_string = True
+                result.append(c)
+            else:
+                rest = raw[i + 1:].lstrip()
+                if rest and rest[0] in ':,]}\n\r':
+                    in_string = False
+                    result.append(c)
+                elif rest and rest[0] == '"':
+                    in_string = False
+                    result.append(c)
+                else:
+                    # 内容中的中文引号，向前找配对
+                    j = i + 1
+                    close_pos = -1
+                    while j < len(raw):
+                        if raw[j] == '"':
+                            rest2 = raw[j + 1:].lstrip()
+                            if rest2 and rest2[0] in ':,]}\n\r':
+                                break
+                            elif rest2 and rest2[0] == '"':
+                                break
+                            else:
+                                close_pos = j
+                                break
+                        j += 1
+
+                    if close_pos > 0:
+                        inner = raw[i + 1:close_pos]
+                        result.append('\u201c')
+                        result.append(inner)
+                        result.append('\u201d')
+                        i = close_pos + 1
+                        continue
+                    else:
+                        in_string = False
+                        result.append(c)
+            i += 1
+            continue
+
+        result.append(c)
+        i += 1
+
+    return ''.join(result)
+
+
+def load_json_with_auto_fix(path: str) -> dict:
+    """
+    读取 JSON 文件，自动修复后返回 dict。
+    修复失败时抛出异常，保留 .bak 备份。
+    """
+    with open(path, encoding="utf-8") as f:
+        raw = f.read()
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        fixed = auto_fix_json(raw)
+        try:
+            data = json.loads(fixed)
+            # 修复成功，回写
+            with open(path, "w", encoding="utf-8") as f:
+                f.write(fixed)
+            return data
+        except json.JSONDecodeError:
+            # 保留备份
+            import shutil
+            shutil.copy2(path, path + ".bak")
+            raise
 
 
 # ═══════════════════════════════════════════════════════════
@@ -202,6 +328,123 @@ def check_report_input(data: dict, prompt_template: Optional[dict] = None) -> di
         "errors": errors,
         "thresholds": thresholds,
     }
+
+
+# ═══════════════════════════════════════════════════════════
+#  Agent 输出预检（HTML 生成前调用）
+# ═══════════════════════════════════════════════════════════
+
+def preflight_agent_input(
+    data: dict,
+    prompt_template: Optional[dict] = None,
+    user_config: Optional[dict] = None,
+) -> dict:
+    """
+    Agent 输出预检，在 HTML / PDF 生成前调用。
+    目的是尽早发现 Agent 常见遗漏，而非阻断生成。
+
+    检查项:
+      1. 每个 section content 是否 >= 200 字
+      2. 每个 subsection 是否有 highlight 字段（非空字符串）
+      3. 是否包含 _fill_instructions / _prompt_body 残留
+      4. 如果 user_config 提供 total_assets_range="below_10w":
+         检查推荐股票代码是否在 600/000/002 范围内
+
+    返回:
+      {
+        "ok": True/False,
+        "section_count": N,
+        "highlight_missing": [section_title, ...],
+        "short_content": [section_path, ...],
+        "residual_fields": [field_name, ...],
+        "code_violations": [code, ...],
+        "warnings": [str, ...],
+        "errors": [str, ...],
+      }
+    """
+    warnings = []
+    errors = []
+    sections = data.get("sections", [])
+    highlight_missing = []
+    short_content = []
+    residual_fields = []
+    code_violations = []
+
+    # — 检查 1: 每个 section 字数 —
+    for si, s in enumerate(sections):
+        title = s.get("title", f"sections[{si}]")
+        subs = s.get("subsections", [])
+        for sub in subs:
+            sub_title = sub.get("title", "untitled")
+            path = f"{title}/{sub_title}"
+
+            content = sub.get("content", "") or ""
+            clean = content.strip().lstrip("_")
+            if len(clean) < 200:
+                short_content.append(path)
+                warnings.append(f"章节内容不足 200 字: {path}（当前 {len(clean)} 字）")
+
+            # — 检查 2: highlight 字段 —
+            highlight = sub.get("highlight")
+            if not highlight or (isinstance(highlight, str) and highlight.strip().startswith("_")):
+                highlight_missing.append(path)
+                warnings.append(f"highlight 缺失或为占位符: {path}")
+
+    # — 检查 3: 残留字段 —
+    residual_keys = ["_fill_instructions", "_prompt_body"]
+    for key in residual_keys:
+        if key in data:
+            residual_fields.append(key)
+            warnings.append(f"残留字段未清理: {key}（建议在 Agent 输出中删除）")
+
+    # — 检查 4: 代码范围约束 —
+    if user_config:
+        assets_range = user_config.get("total_assets_range", "")
+        if assets_range == "below_10w":
+            # 从 sections 中扫描推荐代码
+            for si, s in enumerate(sections):
+                title = s.get("title", f"sections[{si}]")
+                subs = s.get("subsections", [])
+                for sub in subs:
+                    content = sub.get("content", "") or ""
+                    # 匹配 6 位股票代码
+                    import re
+                    codes = re.findall(r'(?<!\d)(6\d{5}|0\d{5}|300\d{3}|688\d{3})(?!\d)', content)
+                    for code in codes:
+                        if code.startswith("300") or code.startswith("688"):
+                            code_violations.append(code)
+                            warnings.append(
+                                f"超范围标地代码: {code}（below_10w 用户禁止 300/688）"
+                            )
+
+    ok = len(errors) == 0
+
+    return {
+        "ok": ok,
+        "section_count": len(sections),
+        "highlight_missing": highlight_missing,
+        "short_content": short_content,
+        "residual_fields": residual_fields,
+        "code_violations": code_violations,
+        "warnings": warnings,
+        "errors": errors,
+    }
+
+
+def format_preflight_report(result: dict) -> str:
+    """格式化预检结果为一行的摘要"""
+    icon = "✅" if result["ok"] and not result["warnings"] else "⚠️"
+    parts = []
+    if result["highlight_missing"]:
+        parts.append(f"⬜溢出 {len(result['highlight_missing'])} 处")
+    if result["short_content"]:
+        parts.append(f"🩰短线 {len(result['short_content'])} 处")
+    if result["residual_fields"]:
+        parts.append(f"转存 {len(result['residual_fields'])} 个")
+    if result["code_violations"]:
+        parts.append(f"代码越界 {len(result['code_violations'])} 个")
+    w_text = f" | {', '.join(parts)}" if parts else ""
+    return f"{icon} 预检快报: {result['section_count']} sections{w_text}"
 
 
 # ═══════════════════════════════════════════════════════════

@@ -191,7 +191,7 @@ sections 中的每个 content 字段：
   ❌ 禁止：填写"待分析"、"暂无数据"等空洞内容
   ❌ 禁止：数据与 JSON 文件不一致
 
-**详细填写指南见 `references/phase2_guide.md`。**
+**Phase 2 填写说明以 `5_agent_briefing.md` 为准。**
 ```
 
 ---
@@ -312,7 +312,7 @@ Phase 3 完成后，必须按以下顺序执行（不可省略任何一步）：
 | 文件                                | 内容                    |
 |:--------------------------------- |:--------------------- |
 | `references/project_structure.md` | 项目结构、命令速查、样式系统、配置文件体系 |
-| `references/phase2_guide.md`      | Phase 2 填写指南、字数要求     |
+| `references/phase2_guide.md`      | ⚠️ 已废弃。Phase 2 以 agent_briefing 为准 |
 | `references/ps_cheatsheet.md`     | PowerShell 执行规范       |
 | `references/pitfalls.md`          | 踩坑经验（由 AI 在实际调用中自动积累） |
 

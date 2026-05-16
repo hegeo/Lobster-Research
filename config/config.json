@@ -48,14 +48,17 @@
   },
   "system": {
     "encoding": "utf-8",
-    "win_encoding": "gbk"
+    "win_encoding": "gbk",
+    "embed_schema_str": false,
+    "embed_prompt_body": false
   },
   "emu": {
     "enabled": true,
     "follow_user_prefs": true,
+    "use_independent_capital": true,
     "independent_capital": 100000,
     "independent_freq": "short",
-    "independent_style": "value",
+    "independent_style": "growth",
     "independent_risk": "steady",
     "evolution": {
       "enabled": true

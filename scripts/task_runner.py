@@ -659,17 +659,19 @@ class TaskRunner:
 """
             data_check_section = data_check_header + separator.join(check_rows) + separator
 
-        # 构建报告结构参考
+        # 构建报告结构参考（精简版：完整结构见 schema JSON 的 _prompt_body 字段）
         structure_section = ""
         if prompt_body:
+            # 只写第一行标题和一个"共 N 章"摘要，避免全文嵌入
+            first_line = prompt_body.split("\n")[0][:80]
+            chapter_markers = [l.strip() for l in prompt_body.split("\n") if l.strip().startswith("第")]
+            summary = f"**{len(chapter_markers)} 个章节**：{' · '.join(chapter_markers[:5])}…" if chapter_markers else ""
             structure_section = f"""
 ## 报告结构参考（来自模板：{tpl_name}）
 
-以下是大纲结构，按此结构组织报告内容：
+{summary}
 
-```
-{prompt_body}
-```
+📌 完整大纲见 schema JSON 的 _prompt_body 字段，按此结构组织报告内容。
 """
 
         # 数据来源
@@ -694,6 +696,10 @@ class TaskRunner:
 
         # ── 用户画像（从 user_prefs 构建，使用 config.json labels 映射） ──
         user_prefs = meta.get("user_prefs", {})
+        # 读取系统配置开关（嵌入控制）
+        sys_cfg = user_prefs.get("system", {})
+        embed_schema_str = sys_cfg.get("embed_schema_str", True)
+        embed_prompt_body = sys_cfg.get("embed_prompt_body", True)
         user_section = ""
         if user_prefs:
             u = user_prefs.get("user", {})
@@ -727,9 +733,38 @@ class TaskRunner:
 - 保守型/低风险用户：侧重低估值、高股息、防御性标的，仓位控制更严格，止损更窄
 - 积极型/高风险用户：可覆盖追涨、打板、连板接力等激进策略
 - 平衡型用户：确定性仓位为主，博弈性仓位为辅
+- ⚡ **核心原则：选股以投资风格（成长/价值/波段）为第一优先级！风控策略（仓位、止损、品种限制）用于管理风险而非约束选股方向**
 - 报告中的仓位配比、止损幅度、持股周期、选股风格必须与用户画像一致
 - 相关资金比例、仓位比例、操作建议应适配用户实际投资经验水平，提供具体操作说明
-- 不同用户收到的报告内容应有实质性差异，禁止写万能模板
+- 不同用户收到的报告内容应有实质性差异，应该有具体标的，禁止写万能模板
+"""
+            # ── 操作约束（两句话） ──
+            assets_raw = u.get("total_assets_range", "")
+            if assets_raw == "below_10w":
+                extra = "\n- 📌 禁止推荐创业板(300)和科创板(688)，仅限主板(600/000)和中小板(002)。"
+            elif assets_raw == "10w_to_50w":
+                extra = "\n- 📌 可推荐创业板(300)，禁止推荐科创板(688)。"
+            else:
+                extra = ""
+
+            exp_raw = u.get("experience_level", "")
+            style_map = {"beginner": "指令式", "entry": "指令+理由", "intermediate": "策略框架", "professional": "数据归因"}
+            style = style_map.get(exp_raw, "")
+            if style:
+                extra += f"\n- 📌 操作建议写「{style}」。"
+            if extra:
+                user_section = user_section.rstrip() + extra + "\n"
+
+        # 条件构建 schema 嵌入（由 config 控制，节省上下文）
+        if embed_schema_str:
+            schema_section_str = f"""
+```json
+{schema_str}
+```
+"""
+        else:
+            schema_section_str = """
+> 📌 完整 JSON 结构见 `5_agent_report_input.json` 文件，填写前请先打开查看。
 """
 
         content = f"""# 🦞 龙虾调研 Agent 工作简报
@@ -790,11 +825,7 @@ class TaskRunner:
 ---
 
 ## 5_agent_report_input.json 填写模板
-
-```json
-{schema_str}
-```
-
+{schema_section_str}
 ---
 
 ## 填写完成后
@@ -885,6 +916,26 @@ python main.py generate --task-id {meta['task_id']}
                     {"label": "创业板",   "value": "_点位", "change": "_涨跌幅"},
                     {"label": "北向资金", "value": "_亿元", "change": ""},
                 ],
+            })
+
+        # ── 选股研究：短线情绪类指标 + 选股总览表 ──
+        elif report_type == "kuaisu_xuangu":
+            base.update({
+                "metrics": [
+                    {"label": "涨停家数", "value": "_家", "change": ""},
+                    {"label": "连板最高", "value": "_板", "change": ""},
+                    {"label": "炸板率",  "value": "_%", "change": ""},
+                    {"label": "情绪温度", "value": "_🔥", "change": ""},
+                ],
+                "overview_table": {
+                    "headers": ["维度", "评估", "信号", "关注个股"],
+                    "rows": [
+                        ["涨停梯队", "_首板/二板/龙头", "_🟢🟡🔴", "_个股"],
+                        ["板块热度", "_题材强度排序", "_信号", "_龙头"],
+                        ["资金博弈", "_游资参与度", "_信号", "_席位"],
+                        ["操作策略", "_打板/低吸/排板", "_", "_策略"],
+                    ]
+                },
             })
 
         # ── 行业研报 / 持仓诊断 / 选股研究 / 通用：无默认 metrics ──
@@ -980,7 +1031,9 @@ python main.py generate --task-id {meta['task_id']}
 
         # 注入 prompt 模板的参考信息（以下划线开头，会被清理）
         if tpl:
-            if tpl.get("promptBody"):
+            # embed_prompt_body 由 config.json system.embed_prompt_body 控制
+            embed_pb = meta.get("user_prefs", {}).get("system", {}).get("embed_prompt_body", True)
+            if tpl.get("promptBody") and embed_pb:
                 base["_prompt_body"] = tpl["promptBody"]
             if tpl.get("coreIdea"):
                 base["_core_idea"] = tpl["coreIdea"]
@@ -996,12 +1049,17 @@ python main.py generate --task-id {meta['task_id']}
     # ─────────────────────────────────────────────────────────
 
     @staticmethod
-    def _fix_json_chinese_quotes(raw: str) -> str:
+    def _fix_json_common_issues(raw: str) -> str:
         """
-        自动修复 JSON 字符串值中的中文引号冲突。
-        Agent 填写内容时常用 ASCII 双引号 "..." 表示中文引用，
-        但 ASCII " 在 JSON 中是字符串定界符，会导致解析失败。
-        本方法将成对的、非 JSON 结构性的 " 替换为 Unicode 中文引号 "..."。
+        自动修复 5_agent_report_input.json 中的常见 JSON 格式问题。
+
+        修复清单：
+          1. 转义字符串值中未转义的控制字符（换行符 \\n、回车符 \\r、制表符 \\t 等）
+          2. 将字符串值内部误用的 ASCII 直引号 "..." 替换为 Unicode 左右引号 "…"
+          3. （可扩展）其他常见 Agent 填写偏差
+
+        策略：逐字符做状态机，追踪当前是否在 JSON 字符串内，
+        并正确处理转义序列，确保不误伤 JSON 结构字符。
         """
         result = []
         i = 0
@@ -1011,19 +1069,41 @@ python main.py generate --task-id {meta['task_id']}
         while i < len(raw):
             c = raw[i]
 
-            # 处理转义字符
+            # ── 处理转义字符 ──
             if escape_next:
                 result.append(c)
                 escape_next = False
                 i += 1
                 continue
 
+            # ── 反斜杠在字符串内 → 下一个字符是转义的 ──
             if c == '\\' and in_string:
                 result.append(c)
                 escape_next = True
                 i += 1
                 continue
 
+            # ── 控制字符处理（只在字符串内需要转义）──
+            if in_string:
+                cp = ord(c)
+                if cp == 0x0A:   # \\n
+                    result.append('\\n')
+                    i += 1
+                    continue
+                elif cp == 0x0D:  # \\r
+                    result.append('\\r')
+                    i += 1
+                    continue
+                elif cp == 0x09:  # \\t
+                    result.append('\\t')
+                    i += 1
+                    continue
+                elif cp < 0x20:   # 其他控制字符 → uXXXX 转义
+                    result.append('\\u00' + format(cp, '02x'))
+                    i += 1
+                    continue
+
+            # ── 双引号处理（入串/出串/中文引号修复）──
             if c == '"':
                 if not in_string:
                     in_string = True
@@ -1085,14 +1165,22 @@ python main.py generate --task-id {meta['task_id']}
             with open(agent_input_path, encoding="utf-8") as f:
                 raw_text = f.read()
 
-            # 第一次尝试：直接解析
+            # 尝试链：直接 → 综合修复 → 回写
             try:
                 report_data = json.loads(raw_text)
             except json.JSONDecodeError:
-                # 自动修复中文引号冲突后重试
-                fixed_text = self._fix_json_chinese_quotes(raw_text)
-                report_data = json.loads(fixed_text)
-                # 将修复后的 JSON 回写文件，避免下次再出错
+                self._log.warn("JSON 解析失败，尝试自动修复常见问题…")
+                fixed_text = self._fix_json_common_issues(raw_text)
+                try:
+                    report_data = json.loads(fixed_text)
+                except json.JSONDecodeError as e:
+                    self._log.warn(f"修复后仍解析失败: {e}")
+                    self._log.warn("将修复后内容回写，供人工核查")
+                    with open(agent_input_path + ".bak", "w", encoding="utf-8") as f:
+                        f.write(raw_text)
+                    raise
+                # 修复成功，回写文件避免下次再出错
+                self._log.info("  ✅ JSON 自动修复成功，已回写")
                 with open(agent_input_path, "w", encoding="utf-8") as f:
                     f.write(fixed_text)
 

@@ -21,7 +21,10 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from config.config import get_settings, get
 
 # 质量校验
-from scripts.validate_quality import check_report_input, format_quality_report
+from scripts.validate_quality import (
+    check_report_input, format_quality_report,
+    preflight_agent_input, format_preflight_report,
+)
 
 
 # ─────────────────────────────────────────────────────────
@@ -105,6 +108,9 @@ def consolidate_briefing(task_dir: str, meta: dict) -> dict:
     runner.project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     schema = runner._get_agent_input_schema(meta)
 
+    # 读取系统配置开关（嵌入控制）
+    embed_schema_str = meta.get("user_prefs", {}).get("system", {}).get("embed_schema_str", True)
+
     # 构建纯文本版本给 LLM
     briefing_text = f"""# 龙虾调研 - Agent 任务简报
 
@@ -125,7 +131,8 @@ def consolidate_briefing(task_dir: str, meta: dict) -> dict:
         elif val:
             briefing_text += f"- {os.path.basename(val)}\n"
 
-    briefing_text += f"""
+    if embed_schema_str:
+        briefing_text += f"""
 ## 输出结构要求
 
 请按以下 JSON Schema 填充 5_agent_report_input.json：
@@ -134,6 +141,13 @@ def consolidate_briefing(task_dir: str, meta: dict) -> dict:
 {json.dumps(schema, ensure_ascii=False, indent=2)}
 ```
 
+所有以 _ 开头的字段是注释占位，需填入实际内容后删除 _ 前缀。
+"""
+    else:
+        briefing_text += """
+## 输出结构要求
+
+📌 完整 JSON 结构见 `report_schema` 字段，使用 write_report_input_json 工具时按该结构填充。
 所有以 _ 开头的字段是注释占位，需填入实际内容后删除 _ 前缀。
 """
     search_queries = meta.get("search_queries", [])
@@ -387,6 +401,14 @@ def run_alone_mode(task_dir: str, meta: dict, project_root: str) -> dict:
             try:
                 with open(input_path, encoding="utf-8") as f:
                     report_data = json.load(f)
+                # ── Agent 输出预检（尽早发现常见遗漏） ──
+                preflight = preflight_agent_input(
+                    report_data,
+                    meta.get("prompt_template"),
+                    meta.get("user_prefs"),
+                )
+                print(f"  {format_preflight_report(preflight)}")
+                # ── 质量门禁（字数和章节完整性） ──
                 quality = check_report_input(report_data, meta.get("prompt_template"))
                 print(f"  {format_quality_report(quality)}")
 

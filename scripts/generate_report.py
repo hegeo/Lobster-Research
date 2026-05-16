@@ -302,6 +302,19 @@ def generate_report(
     # 生成 HTML
     html_content = _build_html(data, report_label, css, body_attrs)
 
+    # ── 质量门禁（deep 模式章节/字数不达标则提前中止，不浪费渲染时间）──
+    quality = check_report_input(data, _get_prompt_template(data))
+    th = quality.get("thresholds", {})
+    if quality.get("mode") == "deep":
+        if quality["section_count"] < th.get("min_sections", 8):
+            err_msg = f"深度研报需要 ≥{th.get('min_sections', 8)} 个章节（当前 {quality['section_count']}）"
+            print(f"  ❌ 质量门禁触发：{err_msg}")
+            return {"success": False, "error": err_msg}
+        if quality["total_chars"] < th.get("min_chars", 5000):
+            err_msg = f"深度研报需要 ≥{th.get('min_chars', 5000)} 字（当前 {quality['total_chars']} 字）"
+            print(f"  ❌ 质量门禁触发：{err_msg}")
+            return {"success": False, "error": err_msg}
+
     # 输出路径
     if not output_path:
         output_dir = os.path.join(_SKILL_ROOT, "output")

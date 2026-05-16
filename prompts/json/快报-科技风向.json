@@ -35,7 +35,8 @@
         {
           "title": "巨头动向",
           "content": "_基于数据文件和搜索结果的巨头动向分析，300字",
-          "table": "_Agent 填充表格数据（格式：{headers:[...], rows:[[...]]}）"
+          "table": "_Agent 填充表格数据（格式：{headers:[...], rows:[[...]]}）",
+          "highlight": "_核心判断一句话"
         }
       ]
     },
@@ -45,7 +46,8 @@
         {
           "title": "技术突破",
           "content": "_基于数据文件和搜索结果的技术突破分析，300字",
-          "table": "_Agent 填充表格数据（格式：{headers:[...], rows:[[...]]}）"
+          "table": "_Agent 填充表格数据（格式：{headers:[...], rows:[[...]]}）",
+          "highlight": "_核心判断一句话"
         }
       ]
     },
@@ -55,7 +57,8 @@
         {
           "title": "产业动态",
           "content": "_基于数据文件和搜索结果的产业动态分析，300字",
-          "table": "_Agent 填充表格数据（格式：{headers:[...], rows:[[...]]}）"
+          "table": "_Agent 填充表格数据（格式：{headers:[...], rows:[[...]]}）",
+          "highlight": "_核心判断一句话"
         }
       ]
     },
@@ -65,7 +68,8 @@
         {
           "title": "地缘与政策",
           "content": "_基于数据文件和搜索结果的地缘与政策分析，300字",
-          "table": "_Agent 填充表格数据（格式：{headers:[...], rows:[[...]]}）"
+          "table": "_Agent 填充表格数据（格式：{headers:[...], rows:[[...]]}）",
+          "highlight": "_核心判断一句话"
         }
       ]
     },
@@ -75,7 +79,8 @@
         {
           "title": "下季瞭望",
           "content": "_基于数据文件和搜索结果的下季瞭望分析，300字",
-          "table": "_Agent 填充表格数据（格式：{headers:[...], rows:[[...]]}）"
+          "table": "_Agent 填充表格数据（格式：{headers:[...], rows:[[...]]}）",
+          "highlight": "_核心判断一句话"
         }
       ]
     },
