@@ -42,7 +42,8 @@
       "global_max_results": 16,
       "fresh_days": 7,
       "request_timeout": 12,
-      "similarity_threshold": 0.6
+      "similarity_threshold": 0.6,
+      "max_age_months": 6
     }
   },
   "apis": {

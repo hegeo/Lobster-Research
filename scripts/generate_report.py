@@ -10,12 +10,11 @@
 """
 from __future__ import annotations
 
-import os, sys, io
+import os, sys, io, re, shutil
 from datetime import datetime
 from typing import Optional
 
 from scripts.validate_quality import normalize_table, check_report_input, format_quality_report
-# UTF-8 stdout：仅当当前 stdout 不是 UTF-8 编码时才重定向，避免二次包装
 if getattr(sys.stdout, 'encoding', None) != 'utf-8':
     try:
         sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
@@ -24,7 +23,6 @@ if getattr(sys.stdout, 'encoding', None) != 'utf-8':
 _SKILL_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, _SKILL_ROOT)
 
-from modules.extend import REPORT_TYPES, match_report_type, get_template, LOBSTER_QUOTES
 from config.config import get
 REPORT_STYLE = get("output.report_style", "liquid")
 REPORT_COLOR_TYPE = get("output.color_type", "liquid")
@@ -115,14 +113,81 @@ def _escape_html(text: str) -> str:
             .replace("'", "&#x27;"))
 
 
+def _strip_bold_markers(text: str) -> str:
+    """去除 markdown **粗体** 标记，保留内部文本"""
+    if not text:
+        return ""
+    return re.sub(r'\*\*(.*?)\*\*', r'\1', text)
+
+
+def _get_chinese_report_name(data: dict, report_label: str) -> str:
+    """生成中文文件名前缀（不含扩展名）
+
+    优先级:
+      1. data.prompt_template.name → 取「-」后部分（如"研报-选股研究"→"选股研究"）
+      2. report_label（从 explicit_type 传入）
+      3. fallback: "报告"
+
+    注意：
+      - 不再调用 get_template(data)，因为 get_template() 期望 str key，
+        传入 dict 会触发 "unhashable type: 'dict'" 错误（2026-05-13 修复）。
+      - 在 task_runner.py 的 generate_report 路径中，此函数返回值不会被
+        使用（output_path 已由调用方提供），仅在 standalone 调用时生效。
+    """
+    pt = data.get("prompt_template")
+    if pt and isinstance(pt, dict):
+        name = pt.get("name", "")
+        if name and "-" in name:
+            name = name.split("-", 1)[-1].strip()
+        if name:
+            return re.sub(r'[\\/*?:"<>|\s·]+', "_", name)
+    if report_label:
+        return re.sub(r'[\\/*?:"<>|\s·]+', "_", report_label)
+    return "报告"
+
+
+def _copy_to_delivery_paths(output_path: str, report_label: str = "") -> dict:
+    """报告生成后，拷贝到配置的 delivery 路径（workbuddy / openclaw 工作区）
+
+    Returns:
+        {"copied": [path1, ...], "errors": [msg, ...]}
+    """
+    result = {"copied": [], "errors": []}
+    try:
+        enabled = get("delivery.enabled", False)
+        if not enabled:
+            return result
+
+        for key in ("workbuddy_path", "openclaw_path"):
+            dest_dir = get(f"delivery.{key}", "")
+            if not dest_dir:
+                continue
+            try:
+                os.makedirs(dest_dir, exist_ok=True)
+                dest_path = os.path.join(dest_dir, os.path.basename(output_path))
+                shutil.copy2(output_path, dest_path)
+                result["copied"].append(dest_path)
+                print(f"  📄 已拷贝到 {key}: {dest_path}")
+            except Exception as e:
+                msg = f"{key} 拷贝失败: {e}"
+                result["errors"].append(msg)
+                print(f"  ⚠️ {msg}")
+    except Exception as e:
+        result["errors"].append(f"delivery 配置读取失败: {e}")
+    return result
+
+
 def _build_section(s: dict) -> str:
     """生成单个章节 HTML"""
     title = _escape_html(s.get("title", ""))
     subs_html = ""
     for sub in s.get("subsections", []):
         sub_title = _escape_html(sub.get("title", ""))
-        content = _escape_html(sub.get("content", "")).replace("\n", "<br>")
-        highlight = _escape_html(sub.get("highlight", ""))
+        # 去除 markdown 粗体标记 **
+        raw_content = _strip_bold_markers(sub.get("content", ""))
+        content = _escape_html(raw_content).replace("\n", "<br>")
+        raw_highlight = _strip_bold_markers(sub.get("highlight", ""))
+        highlight = _escape_html(raw_highlight)
         table = sub.get("table", None)
 
         sub_html = f'<div class="subsection-title">{sub_title}</div>' if sub_title else ""
@@ -196,7 +261,7 @@ def _build_html(data: dict, report_type_label: str = "龙虾研报", css: str = 
     <div class="cover-meta">
       <span>📅 {date}</span>
       <span>👨‍💻 {author}</span>
-      <span>🦞 龙虾智能研报中心</span>
+      <span>🦞 龙虾智能研报中心 </span>
     </div>
     <div class="cover-lobster">🦞</div>
   </div>
@@ -276,16 +341,14 @@ def generate_report(
     if data is None:
         data = {}
 
-    # 解析类型
-    if explicit_type and explicit_type in REPORT_TYPES:
-        rt = REPORT_TYPES[explicit_type]
-        report_key = explicit_type
-        report_label = rt.get("label", explicit_type)
-    else:
-        matched = match_report_type(user_input) if user_input else list(REPORT_TYPES.keys())[0]
-        rt = REPORT_TYPES.get(matched, REPORT_TYPES["kuaisu_kuaibao"])
-        report_key = matched
-        report_label = rt.get("label", matched)
+    # 解析报告标签（用于中文文件名生成）
+    # explicit_type 由 task_runner 从 meta.report_type 传入，优先使用
+    # 标签最终由 _get_chinese_report_name 从 data.prompt_template.name 解析
+    report_key = explicit_type or "kuaisu_kuaibao"
+    report_label = report_key
+
+    # 中文报告名用于文件名
+    chinese_name = _get_chinese_report_name(data, report_label)
 
     fmt = output_format or config_output_format or "html"
 
@@ -321,12 +384,15 @@ def generate_report(
         os.makedirs(output_dir, exist_ok=True)
         ts = now.strftime("%Y%m%d_%H%M%S")
         ext = "html" if fmt == "html" else "pdf"
-        output_path = os.path.join(output_dir, f"{report_key}_{ts}.{ext}")
+        output_path = os.path.join(output_dir, f"{chinese_name}_{ts}.{ext}")
 
     try:
         if fmt == "html":
             with open(output_path, "w", encoding="utf-8") as f:
                 f.write(html_content)
+
+            # 拷贝到 delivery 工作区
+            _copy_to_delivery_paths(output_path, report_label)
 
             # 质量快报
             quality = check_report_input(data, _get_prompt_template(data))
@@ -372,6 +438,9 @@ def generate_report(
                         quality = check_report_input(data, _get_prompt_template(data))
                         print(f"  {format_quality_report(quality)}")
 
+                        # 拷贝 PDF 到 delivery 工作区
+                        _copy_to_delivery_paths(output_path, report_label)
+
                         return {
                             "success": True,
                             "format": "pdf",
@@ -388,6 +457,8 @@ def generate_report(
             # 降级：返回 HTML 路径（由调用方自行打印）
             quality = check_report_input(data, _get_prompt_template(data))
             print(f"  {format_quality_report(quality)}")
+            # 拷贝 HTML 到 delivery 工作区
+            _copy_to_delivery_paths(html_path, report_label)
             return {
                 "success": True,
                 "format": "html",

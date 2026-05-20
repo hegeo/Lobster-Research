@@ -22,7 +22,7 @@ REQUEST_INTERVAL = (3, 8)     # 页面间隔等待秒数范围
 STOCK_SWITCH_WAIT = (5, 10)   # 股票切换等待秒数范围
 
 # 2. 输出配置
-OUTPUT_BASE_DIR = "stock_data"
+OUTPUT_BASE_DIR = "output\stock_data"
 EXPORT_PLAIN_TXT = True       # 是否输出纯文本TXT
 EXPORT_CLEANED_HTML = False    # 是否输出清洗后的HTML
 

@@ -20,6 +20,7 @@
     "default_dir": "output"
   },
   "market": {
+    "regime": "bull",
     "index_codes": {
       "sh000001": "上证指数",
       "sz399001": "深证成指",
@@ -50,7 +51,9 @@
     "encoding": "utf-8",
     "win_encoding": "gbk",
     "embed_schema_str": false,
-    "embed_prompt_body": false
+    "embed_prompt_body": false,
+    "compress_data_context": true,
+    "compress_agent_context": true
   },
   "emu": {
     "enabled": true,
@@ -103,6 +106,12 @@
       "message": "消息",
       "markdown": "结构化文档",
       "pdf": "PDF文档"
+    },
+    "market_regime": {
+      "bull": "牛市（进攻型，重仓+弹性标的优先）",
+      "bear": "熊市（防守型，轻仓+防御标的优先）",
+      "oscillate": "震荡市（平衡型，高抛低吸，控制仓位）",
+      "recovery": "复苏期（试探型，逐步加仓，低估标的优先）"
     }
   }
 }

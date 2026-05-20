@@ -123,6 +123,63 @@ def _style_from_config(user_prefs: dict, key: str, fallback: str) -> str:
         return fallback
 
 
+# ═══════════════════════════════════════════════════════════
+#  上下文压缩（依赖 compress_text.py 的 TextCompressor）
+# ═══════════════════════════════════════════════════════════
+
+def _compress_data_files(task_dir: str):
+    """压缩任务目录下所有 JSON 数据文件（排除 _meta.json 和 5_agent_report_input.json）"""
+    from scripts.compress_text import TextCompressor
+    compressor = TextCompressor()
+    total_orig = 0
+    total_comp = 0
+    count = 0
+    for fname in os.listdir(task_dir):
+        if not fname.endswith(".json"):
+            continue
+        if fname.startswith("_meta") or fname.startswith("5_agent"):
+            continue
+        fpath = os.path.join(task_dir, fname)
+        try:
+            with open(fpath, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            # 语义压缩 + 紧凑格式
+            compressed = compressor.compress_json_corpus(data)
+            raw = json.dumps(compressed, ensure_ascii=False, separators=(',', ':'))
+            with open(fpath, "w", encoding="utf-8") as f:
+                f.write(raw)
+            total_orig += compressor.get_stats().original_length
+            total_comp += compressor.get_stats().compressed_length
+            count += 1
+        except Exception as e:
+            _log.warn(f"  压缩失败 {fname}: {e}")
+    if count:
+        ratio = f"{total_comp/total_orig:.1%}" if total_orig else "?"
+        _log.info(f"  📦 数据上下文压缩: {count} 个文件, {ratio}")
+        print(f"  📦 数据上下文压缩完成: {count} 个文件, 总压缩比 {ratio}")
+
+
+def _compress_agent_briefing(task_dir: str):
+    """压缩 Agent 简报文件（5_agent_briefing.md）"""
+    from scripts.compress_text import TextCompressor
+    bf = os.path.join(task_dir, "5_agent_briefing.md")
+    if not os.path.exists(bf):
+        return
+    compressor = TextCompressor()
+    try:
+        with open(bf, "r", encoding="utf-8") as f:
+            text = f.read()
+        compressed = compressor.compress_plain_text(text)
+        with open(bf, "w", encoding="utf-8") as f:
+            f.write(compressed)
+        s = compressor.get_stats()
+        ratio = f"{s.compress_ratio:.1%}" if s.compress_ratio else f"{len(compressed)}/{len(text)}"
+        _log.info(f"  📦 智能体简报压缩: 5_agent_briefing.md, {ratio}")
+        print(f"  📦 智能体简报压缩完成: {len(text)} → {len(compressed)} ({ratio})")
+    except Exception as e:
+        _log.warn(f"  压缩简报失败: {e}")
+
+
 # CLI 子命令对应的 domain id 映射（"命令名" → "domain id"）
 # company 和 stock 都对应 main.json 中各自的 domain，
 # 但 company 有更详细的 search_templates（参见 company domain 配置）
@@ -166,7 +223,6 @@ REPORT_TYPES = _build_report_types()
 # 预留步骤（待实现，已注册路由和 stub 方法）
 # 触发时自动创建占位文件，不会中断流程
 RESERVED_STEPS = frozenset({
-    "news_market_flash",
     "search_research",
     "search_market_batch",
     "search_stock_batch",
@@ -662,6 +718,15 @@ def run_task(cmd: str, args: argparse.Namespace):
                     meta["files"]["search"] = paths
                     step_ok("search", f"搜索完成 {len(paths)} 个关键词")
 
+            elif step == "news_market_flash":
+                ok, path = runner.run_market_flash_news()
+                meta["steps"]["news_market_flash"] = "done" if ok else "failed"
+                if ok:
+                    meta["files"]["news_market_flash"] = path
+                    step_ok("news_market_flash", os.path.basename(path))
+                else:
+                    step_warn("news_market_flash", "市场快讯获取失败")
+
             elif step in RESERVED_STEPS:
                 ok, path = runner.run_reserved_step(step)
                 meta["steps"][step] = "done" if ok else "failed"
@@ -681,8 +746,16 @@ def run_task(cmd: str, args: argparse.Namespace):
     save_meta(task_dir, meta)
     _log.info(f"✅ Phase 1 完成 | 任务 {task_id} | status=DATA_DONE | 步骤状态: {meta['steps']}")
 
+    # ── 可选：压缩数据上下文 ──
+    if get_user_config("system.compress_data_context", False):
+        _compress_data_files(task_dir)
+
     # ── Step 2: 生成 Agent 指引文件 ──────────────────────────
     runner.write_agent_briefing()
+
+    # ── 可选：压缩智能体简报 ──
+    if get_user_config("system.compress_agent_context", False):
+        _compress_agent_briefing(task_dir)
 
     # ── Alone 模式检查 ──
     run_mode = get_user_config("system.run_mode", "skill")
@@ -1239,6 +1312,15 @@ def run_smart_task(domain: dict, tier: str, prompt_template: str, agent_hint: st
                     meta["files"]["search"] = paths
                     step_ok("search", f"搜索完成 {len(paths)} 个关键词")
 
+            elif step == "news_market_flash":
+                ok, path = runner.run_market_flash_news()
+                meta["steps"]["news_market_flash"] = "done" if ok else "failed"
+                if ok:
+                    meta["files"]["news_market_flash"] = path
+                    step_ok("news_market_flash", os.path.basename(path))
+                else:
+                    step_warn("news_market_flash", "市场快讯获取失败")
+
             elif step in RESERVED_STEPS:
                 ok, path = runner.run_reserved_step(step)
                 meta["steps"][step] = "done" if ok else "failed"
@@ -1257,8 +1339,16 @@ def run_smart_task(domain: dict, tier: str, prompt_template: str, agent_hint: st
     save_meta(task_dir, meta)
     _log.info(f"✅ Phase 1 完成 (smart) | 任务 {task_id} | status=DATA_DONE | 步骤状态: {meta['steps']}")
 
+    # ── 可选：压缩数据上下文 ──
+    if get_user_config("system.compress_data_context", False):
+        _compress_data_files(task_dir)
+
     # ── 生成 Agent 指引 ──
     runner.write_agent_briefing()
+
+    # ── 可选：压缩智能体简报 ──
+    if get_user_config("system.compress_agent_context", False):
+        _compress_agent_briefing(task_dir)
 
     # ── Alone 模式检查 ──
     run_mode = get_user_config("system.run_mode", "skill")

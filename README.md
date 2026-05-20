@@ -6,7 +6,7 @@
 **Your AI research assistant.**
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue)](https://www.python.org/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![License](https://img.shields.io/badge/License-Commercial-yellow)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey)]()
 
 </div>
@@ -376,7 +376,7 @@ python -m test.runner --execute --report   # 实际执行 + 输出报告
 
 ### 开源协议
 
-MIT License — 详见 [LICENSE](LICENSE)。
+免费个人使用 · 商用需授权 — 详见 [LICENSE](LICENSE)。
 
 ---
 
@@ -632,7 +632,7 @@ Want to adapt Lobster Research for your local market? See **[LOCALIZATION.md](LO
 
 ### License
 
-MIT License — see [LICENSE](LICENSE) for details.
+Free for personal use · Commercial use requires license — see [LICENSE](LICENSE) for details.
 
 ---
 

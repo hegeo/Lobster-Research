@@ -478,7 +478,26 @@ def run_alone_mode(task_dir: str, meta: dict, project_root: str) -> dict:
                 print(f"  ⚠️ 报告生成异常: {e}")
         else:
             # cli 模式
-            print(f"\n  📋 5_agent_report_input.json 已就绪，可运行以下命令生成报告文件：")
-            print(f"     python main.py generate --task-id {meta['task_id']}")
+            print(f"\n  📋 5_agent_report_input.json 已就绪")
+
+            # ── 模拟持仓：cli 模式下也触发交易决策（不依赖 generate_report）──
+            report_type = meta.get("report_type", "")
+            if report_type in ("chicang_zhenduan", "gupiao_fenxi", "qiye_baogao"):
+                try:
+                    from scripts.emu_manager import run_full_cycle
+                    agent_input_path = os.path.join(task_dir, "5_agent_report_input.json")
+                    if os.path.exists(agent_input_path):
+                        with open(agent_input_path, encoding="utf-8") as f:
+                            report_data = json.load(f)
+                        emu_result = run_full_cycle(report_data, meta)
+                        executed = emu_result.get("executed", 0)
+                        decisions = emu_result.get("decisions", 0)
+                        if decisions > 0:
+                            print(f"  🦞 [模拟盘] 执行 {executed}/{decisions} 笔交易 "
+                                  f"(激进因子: {emu_result.get('aggressiveness',1.0):.2f})")
+                        else:
+                            print(f"  🦞 [模拟盘] 无交易决策")
+                except Exception as e:
+                    print(f"  ⚠️ 模拟盘异常: {e}")
 
     return result

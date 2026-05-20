@@ -119,6 +119,8 @@ _DEFAULT_CONFIG = {
         "run_mode": "skill",
         "encoding": "utf-8",
         "win_encoding": "gbk",
+        "compress_data_context": False,
+        "compress_agent_context": False,
     },
     "alone": {
         "output_mode": "cli",
@@ -182,6 +184,11 @@ _DEFAULT_CONFIG = {
             "cli": "CLI 纯文本输出",
             "report": "生成报告文件（HTML+PDF）",
         },
+    },
+    "delivery": {
+        "enabled": False,
+        "workbuddy_path": "",
+        "openclaw_path": "",
     },
 }
 

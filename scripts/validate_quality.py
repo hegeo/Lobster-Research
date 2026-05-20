@@ -31,15 +31,15 @@ def _get_quality_thresholds(report_type: str, prompt_template: Optional[dict] = 
     # 从模板 type 判断
     tpl_type = (prompt_template or {}).get("type", "")
     if tpl_type == "快报":
-        return {"min_sections": 3, "min_tables": 0, "min_chars": 1800, "mode": "quick"}
+        return {"min_sections": 3, "min_tables": 0, "min_chars": 1800, "mode": "quick", "min_chars_per_section": 150}
     if tpl_type == "研报":
-        return {"min_sections": 8, "min_tables": 3, "min_chars": 5000, "mode": "deep"}
+        return {"min_sections": 8, "min_tables": 3, "min_chars": 5000, "mode": "deep", "min_chars_per_section": 300}
 
     # fallback: 从 report_type 名称判断
     quick_types = ["kuaibao", "dongtai", "shunshi", "kuaisu"]
     if any(q in report_type for q in quick_types):
-        return {"min_sections": 3, "min_tables": 0, "min_chars": 1800, "mode": "quick"}
-    return {"min_sections": 8, "min_tables": 3, "min_chars": 5000, "mode": "deep"}
+        return {"min_sections": 3, "min_tables": 0, "min_chars": 1800, "mode": "quick", "min_chars_per_section": 150}
+    return {"min_sections": 8, "min_tables": 3, "min_chars": 5000, "mode": "deep", "min_chars_per_section": 300}
 
 
 # ═══════════════════════════════════════════════════════════
@@ -235,9 +235,33 @@ def load_json_with_auto_fix(path: str) -> dict:
 #  5_agent_report_input.json 校验
 # ═══════════════════════════════════════════════════════════
 
+PLACEHOLDER_PATTERNS = ["待确认", "无数据", "未知", "暂无数据", "待补充"]
+
+
+def _scan_table_placeholders(table: dict, section_label: str, sub_label: str) -> list:
+    """扫描表格单元中的占位符，返回警告列表"""
+    found = []
+    if not table:
+        return found
+    rows = table.get("rows", [])
+    for ri, row in enumerate(rows):
+        for ci, cell in enumerate(row):
+            cell_str = str(cell)
+            for pattern in PLACEHOLDER_PATTERNS:
+                if pattern in cell_str:
+                    found.append(f"表格含占位符「{pattern}」: {section_label}/{sub_label} row[{ri}] col[{ci}]")
+                    break
+    return found
+
+
 def check_report_input(data: dict, prompt_template: Optional[dict] = None) -> dict:
     """
-    校验 5_agent_report_input.json 的结构完整性。
+    校验 5_agent_report_input.json 的结构完整性。增强版：
+
+    - 充实度: 每个章节字数统计与阈值检查
+    - 丰富度: subsection 分布统计与空内容检测
+    - 可读度: 表格列数匹配、highlight 非空
+    - 数据完善: 扫描表格占位符
 
     返回:
       {
@@ -248,7 +272,13 @@ def check_report_input(data: dict, prompt_template: Optional[dict] = None) -> di
         "total_chars": N,
         "warnings": [...],
         "errors": [...],
-        "thresholds": {...}
+        "thresholds": {...},
+        "section_chars": {...},
+        "subsection_distribution": {...},
+        "empty_subsections": [...],
+        "table_issues": [...],
+        "highlight_missing": [...],
+        "placeholder_warnings": [...]
       }
     """
     report_type = data.get("_report_type", "") or ""
@@ -256,6 +286,14 @@ def check_report_input(data: dict, prompt_template: Optional[dict] = None) -> di
     mode = thresholds["mode"]
     warnings = []
     errors = []
+
+    # 新增字段
+    section_chars = {}
+    subsection_distribution = {}
+    empty_subsections = []
+    table_issues = []
+    highlight_missing = []
+    placeholder_warnings = []
 
     # — 检查 sections —
     sections = data.get("sections", [])
@@ -266,7 +304,7 @@ def check_report_input(data: dict, prompt_template: Optional[dict] = None) -> di
             f"sections 不足: 当前 {section_count} 个, 期望 ≥{thresholds['min_sections']} ({mode}模式)"
         )
 
-    # — 遍历 sections 统计 table 数和字数 —
+    # — 遍历 sections 统计 —
     table_count = 0
     total_chars = 0
     empty_content_sections = []
@@ -274,27 +312,66 @@ def check_report_input(data: dict, prompt_template: Optional[dict] = None) -> di
     for si, s in enumerate(sections):
         title = s.get("title", f"sections[{si}]")
         subs = s.get("subsections", [])
+        subsection_distribution[title] = len(subs)
+
+        # 丰富度: section 级别 subsection 数量
+        if mode == "deep" and len(subs) < 2:
+            warnings.append(f"章节「{title}」子节数不足: {len(subs)} 个, 研报建议 ≥2 个")
+
+        section_total = 0
         for sub in subs:
+            sub_title = sub.get("title", "")
             content = sub.get("content", "")
+            section_total += len(content)
             total_chars += len(content)
 
             # 检查 content 是否为占位符或过短
             clean = content.strip().lstrip("_")
             if len(clean) < 20:
-                empty_content_sections.append(f"{title}/{sub.get('title', 'untitled')}")
+                empty_content_sections.append(f"{title}/{sub_title}")
+                empty_subsections.append(f"{title}/{sub_title}")
+
+            # 可读度: highlight 非空检查
+            highlight = sub.get("highlight", "")
+            if not highlight or (isinstance(highlight, str) and highlight.strip().startswith("_")):
+                highlight_missing.append(f"{title}/{sub_title}")
 
             # 检查 table 格式
             table = sub.get("table")
             if table:
                 if isinstance(table, list):
                     warnings.append(
-                        f"table 格式需转换: {title}/{sub.get('title', '')} 当前为 array，需 {headers,rows} 格式"
+                        f"table 格式需转换: {title}/{sub_title} 当前为 array，需 {{headers,rows}} 格式"
                     )
                 elif isinstance(table, dict):
                     t_headers = table.get("headers", [])
+                    t_rows = table.get("rows", [])
                     if not t_headers:
-                        warnings.append(f"table headers 为空: {title}/{sub.get('title', '')}")
+                        table_issues.append(f"table headers 为空: {title}/{sub_title}")
+                    # 可读度: headers vs rows 列数匹配
+                    if t_headers and t_rows:
+                        for ri, row in enumerate(t_rows):
+                            if len(row) != len(t_headers):
+                                table_issues.append(
+                                    f"table 列数不匹配: {title}/{sub_title} headers={len(t_headers)} 列, row[{ri}]={len(row)} 列"
+                                )
+                    # 可读度: 至少 1 行数据
+                    if t_headers and len(t_rows) < 1:
+                        table_issues.append(f"table 无数据行: {title}/{sub_title}")
+                    # 数据完善: 扫描占位符
+                    placeholder_warnings.extend(
+                        _scan_table_placeholders(table, title, sub_title)
+                    )
                     table_count += 1
+
+        section_chars[title] = section_total
+
+        # 充实度: section 级别字数检查
+        min_per = thresholds.get("min_chars_per_section", 300 if mode == "deep" else 150)
+        if section_total < min_per:
+            warnings.append(
+                f"章节「{title}」字数不足: {section_total} 字, 期望 ≥{min_per} 字 ({mode}模式)"
+            )
 
     # — 检查顶层字段 —
     if mode == "deep":
@@ -305,7 +382,7 @@ def check_report_input(data: dict, prompt_template: Optional[dict] = None) -> di
 
     # — 空内容告警 —
     if empty_content_sections:
-        for sec in empty_content_sections[:5]:  # 最多显示 5 条
+        for sec in empty_content_sections[:5]:
             warnings.append(f"内容过短或未填入: {sec}")
         if len(empty_content_sections) > 5:
             warnings.append(f"... 还有 {len(empty_content_sections) - 5} 个章节内容过短")
@@ -315,6 +392,14 @@ def check_report_input(data: dict, prompt_template: Optional[dict] = None) -> di
         warnings.append(
             f"总字数不足: 当前约 {total_chars} 字, 期望 ≥{thresholds['min_chars']} ({mode}模式)"
         )
+
+    # — 汇总 table / highlight / placeholder 警告 —
+    for issue in table_issues:
+        warnings.append(issue)
+    for h in highlight_missing:
+        warnings.append(f"highlight 缺失或为占位符: {h}")
+    for pw in placeholder_warnings:
+        warnings.append(pw)
 
     ok = len(errors) == 0
 
@@ -327,6 +412,12 @@ def check_report_input(data: dict, prompt_template: Optional[dict] = None) -> di
         "warnings": warnings,
         "errors": errors,
         "thresholds": thresholds,
+        "section_chars": section_chars,
+        "subsection_distribution": subsection_distribution,
+        "empty_subsections": empty_subsections,
+        "table_issues": table_issues,
+        "highlight_missing": highlight_missing,
+        "placeholder_warnings": placeholder_warnings,
     }
 
 

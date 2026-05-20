@@ -97,11 +97,11 @@ _fetch_cfg = _engines_cfg.get("fetch_count", {})
 _keep_cfg  = _engines_cfg.get("keep_count", {})
 
 FETCH_COUNT = {
-    "serpbase":    _fetch_cfg.get("serpbase", 10),
-    "bing_api":    _fetch_cfg.get("bing_api", 10),
+    "serpbase":    _fetch_cfg.get("serpbase", 5),
+    "bing_api":    _fetch_cfg.get("bing_api", 5),
     "tavily":      _fetch_cfg.get("tavily", 5),
-    "prosearch":   _fetch_cfg.get("prosearch", 10),
-    "baidu":       _fetch_cfg.get("baidu", 12),
+    "prosearch":   _fetch_cfg.get("prosearch", 5),
+    "baidu":       _fetch_cfg.get("baidu", 10),
     "bing_intl":   _fetch_cfg.get("bing_intl", 10),
 }
 KEEP_COUNT = {
@@ -118,6 +118,8 @@ _defaults = _ws.get("defaults", {})
 DEFAULT_LIMIT    = _defaults.get("global_max_results", 16)
 DEFAULT_TIMEOUT  = _defaults.get("request_timeout", 12)
 SIMILARITY_THRESHOLD = _defaults.get("similarity_threshold", 0.6)
+# 时效性过滤：超过该月数的结果将被丢弃，0 = 不限
+MAX_AGE_MONTHS   = _defaults.get("max_age_months", 0)
 
 # CLI mode
 LIMIT = DEFAULT_LIMIT
@@ -178,6 +180,31 @@ def get_quality_score(title: str, snippet: str = "", url: str = "") -> int:
 def is_junk(title: str, snippet: str = "") -> bool:
     """基于内容判断是否为垃圾/广告"""
     return _text_contains(f"{title} {snippet}", _JUNK_MARKERS)
+
+
+# ==============================================================================
+# Bad URL 过滤 — 排除无价值的搜索页/跳转页
+# ==============================================================================
+_BAD_URL_PATTERNS = [
+    re.compile(r"^/s\?"),        # Baidu 搜索 /s?wd=...
+    re.compile(r"^/search\?"),   # 通用搜索 /search?q=...
+    re.compile(r"^/so\?"),       # 360 搜索 /so?q=...
+    re.compile(r"^/link\?"),     # 跳转链接 /link?...
+    re.compile(r"^/www\.\w+"),   # 相对路径的 www 跳转
+]
+
+
+def is_bad_url(url: str) -> bool:
+    """检查 URL 是否为无价值的搜索页/跳转页，True 表示应过滤"""
+    if not url or not url.strip():
+        return True
+    url = url.strip()
+    # 相对路径（不以 http 开头）且匹配搜索页模式 → bad
+    if not url.startswith("http"):
+        for pattern in _BAD_URL_PATTERNS:
+            if pattern.match(url):
+                return True
+    return False
 
 
 # ==============================================================================
@@ -312,6 +339,57 @@ def parse_date(text: str) -> str:
     if not m:
         return ""
     return m.group(1).replace("年", "-").replace("月", "-").replace("日", "")[:10]
+
+
+# ── 时效性过滤 ─────────────────────────────────────────────
+def _parse_date_to_ym(date_str: str) -> Optional[tuple]:
+    """将 '2024-12-30' 解析为 (2024, 12)，无法解析时返回 None"""
+    if not date_str or not isinstance(date_str, str):
+        return None
+    try:
+        parts = date_str.strip().split("-")
+        if len(parts) >= 2:
+            return (int(parts[0]), int(parts[1]))
+    except (ValueError, IndexError):
+        pass
+    return None
+
+
+def _months_ago(ref_year: int, ref_month: int, max_months: int) -> str:
+    """返回 max_months 月前的日期边界字符串 'YYYY-MM'"""
+    total = ref_year * 12 + ref_month - max_months
+    y, m = divmod(total, 12)
+    if m == 0:
+        y -= 1
+        m = 12
+    return f"{y:04d}-{m:02d}"
+
+
+def filter_by_date(results: list, max_months: int) -> list:
+    """
+    过滤搜索结果，丢弃超过 max_months 月的陈旧条目。
+    max_months = 0 时不过滤。
+    date 字段格式：'2024-12-30'
+    """
+    if max_months <= 0:
+        return results
+    now = time.localtime()
+    cutoff = _months_ago(now.tm_year, now.tm_mon, max_months)
+    kept = []
+    dropped = 0
+    for r in results:
+        d = r.get("date", "")
+        ym = _parse_date_to_ym(d)
+        if ym is None:
+            # 无日期 = 无法判断时效，保留（宁滥勿缺）
+            kept.append(r)
+        elif f"{ym[0]:04d}-{ym[1]:02d}" >= cutoff:
+            kept.append(r)
+        else:
+            dropped += 1
+    if dropped:
+        print(f"  📅 时效性过滤: 丢弃 {dropped} 条 ({max_months}个月前)", file=sys.stderr)
+    return kept
 
 
 # ==============================================================================
@@ -684,7 +762,11 @@ def is_similar(a: str, b: str, threshold=None) -> bool:
 
 
 def filter_sort_and_trim(all_results, max_total=None, skip_quality_sort=False):
-    """对搜索结果去重、排序、裁剪（基于内容质量评分）"""
+    """对搜索结果去重、时效过滤、排序、裁剪（基于内容质量评分）"""
+    # ── 时效性过滤 ──
+    if MAX_AGE_MONTHS > 0:
+        all_results = filter_by_date(all_results, MAX_AGE_MONTHS)
+
     grouped = {}
     for r in all_results:
         src = r["source"]
@@ -705,6 +787,8 @@ def filter_sort_and_trim(all_results, max_total=None, skip_quality_sort=False):
             if len(t) < 4:
                 continue
             if is_junk(t, it.get("snippet", "")):
+                continue
+            if is_bad_url(it.get("url", "")):
                 continue
             if not it.get("snippet") or len(it["snippet"].strip()) < 20:
                 continue

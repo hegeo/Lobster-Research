@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import akshare as ak
 import pandas as pd
+import json
 import sys
 from typing import Optional, Dict, List, Union
 
@@ -56,8 +57,21 @@ class AKShareStockAPI:
     # ==================== 5. 新闻 ====================
     def get_stock_news(self, symbol: str):
         df = ak.stock_news_em(symbol=symbol)
-        print(f"📰 {symbol} 最新新闻")
+        print(f"\n📰 {symbol} 最新新闻")
         print(df.head(15))
+
+    def get_news_json(self, keyword: str) -> list:
+        """获取新闻并以 JSON 格式返回列表，keyword 支持股票代码或关键词（如 A股、焦点）"""
+        try:
+            df = ak.stock_news_em(symbol=keyword)
+            if df is None or df.empty:
+                return []
+            cols = [c for c in ["发布时间", "新闻标题", "新闻内容", "文章来源"] if c in df.columns]
+            records = df[cols].head(20).to_dict(orient="records")
+            # 将 Timestamp 等不可 JSON 序列化类型转为字符串
+            return json.loads(json.dumps(records, ensure_ascii=False, default=str))
+        except Exception as e:
+            return [{"error": str(e), "keyword": keyword}]
 
     # ==================== 6. 热门股票 ====================
     def get_hot_stock(self):
@@ -70,6 +84,11 @@ class AKShareStockAPI:
 if __name__ == "__main__":
     api = AKShareStockAPI()
 
+    # 解析 --json 标志
+    json_mode = "--json" in sys.argv
+    if json_mode:
+        sys.argv.remove("--json")
+
     if len(sys.argv) < 2:
         print("="*70)
         print("使用方法（命令行输入）：")
@@ -81,6 +100,8 @@ if __name__ == "__main__":
         print("python stock.py 北向                # 北向资金")
         print("python stock.py 资金排名            # 资金流排行")
         print("python stock.py 新闻 000001         # 个股新闻")
+        print("python stock.py --json 新闻 A股     # A股市场新闻(JSON)")
+        print("python stock.py --json 新闻 焦点    # 焦点新闻(JSON)")
         print("python stock.py 热门                # 热门股票")
         print("="*70)
         sys.exit()
@@ -114,8 +135,12 @@ if __name__ == "__main__":
             api.get_fund_flow_rank()
 
         elif cmd == "新闻":
-            code = sys.argv[2]
-            api.get_stock_news(code)
+            keyword = sys.argv[2]
+            if json_mode:
+                data = api.get_news_json(keyword)
+                print(json.dumps(data, ensure_ascii=False, indent=2))
+            else:
+                api.get_stock_news(keyword)
 
         elif cmd == "热门":
             api.get_hot_stock()
